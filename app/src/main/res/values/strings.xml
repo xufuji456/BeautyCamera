@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">BeautyCamera</string>
+    <string name="beauty_camera">宠萌相机</string>
+    <string name="swap">切换相机</string>
+    <string name="cat_ear">猫耳朵</string>
+    <string name="rabbit_ear">兔耳朵</string>
+</resources>
