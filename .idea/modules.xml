@@ -2,9 +2,15 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/BeautyEffect.iml" filepath="$PROJECT_DIR$/BeautyEffect.iml" />
-      <module fileurl="file://$PROJECT_DIR$/OpenCVLibrary320/OpenCVLibrary320.iml" filepath="$PROJECT_DIR$/OpenCVLibrary320/OpenCVLibrary320.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/BeautyCamera.iml" filepath="$PROJECT_DIR$/.idea/modules/BeautyCamera.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/OpenCVLibrary320/BeautyCamera.OpenCVLibrary320.iml" filepath="$PROJECT_DIR$/.idea/modules/OpenCVLibrary320/BeautyCamera.OpenCVLibrary320.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/OpenCVLibrary320/BeautyCamera.OpenCVLibrary320.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/OpenCVLibrary320/BeautyCamera.OpenCVLibrary320.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/OpenCVLibrary320/BeautyCamera.OpenCVLibrary320.main.iml" filepath="$PROJECT_DIR$/.idea/modules/OpenCVLibrary320/BeautyCamera.OpenCVLibrary320.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/OpenCVLibrary320/BeautyCamera.OpenCVLibrary320.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/OpenCVLibrary320/BeautyCamera.OpenCVLibrary320.unitTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/BeautyCamera.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/BeautyCamera.app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/BeautyCamera.app.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/BeautyCamera.app.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/BeautyCamera.app.main.iml" filepath="$PROJECT_DIR$/.idea/modules/app/BeautyCamera.app.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/BeautyCamera.app.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/BeautyCamera.app.unitTest.iml" />
     </modules>
   </component>
 </project>
