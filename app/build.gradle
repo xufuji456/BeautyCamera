@@ -1,13 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion '25.0.2'
+    compileSdkVersion 32
 
     defaultConfig {
         applicationId "com.frank.camera"
         minSdkVersion 21
-        targetSdkVersion 25
+        targetSdkVersion 32
         versionCode 1
         versionName "1.0"
     }
@@ -20,12 +19,12 @@ android {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile fileTree(dir: "$buildDir/native-libs", include: 'native-libs.jar')
-    compile project(':OpenCVLibrary320')
-    compile 'com.android.support:appcompat-v7:25.3.1'
-    compile 'com.android.support.constraint:constraint-layout:1.0.2'
-    testCompile 'junit:junit:4.12'
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation fileTree(dir: "$buildDir/native-libs", include: 'native-libs.jar')
+    implementation 'com.android.support:appcompat-v7:28.0.0'
+
+    implementation project(':OpenCVLibrary320')
+    implementation project(':BeautyFilter')
 }
 
 task nativeLibsToJar(type: Jar, description: 'create a jar archive of the native libs') {
