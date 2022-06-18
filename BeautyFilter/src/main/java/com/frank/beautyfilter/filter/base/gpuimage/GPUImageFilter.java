@@ -20,20 +20,20 @@ import java.util.LinkedList;
 public class GPUImageFilter {
 
     public final static String NORMAL_VERTEX_SHADER =
-                    "attribute vec4 position;\n" +
-                    "attribute vec4 inputTextureCoordinate;\n" +
-                    "varying vec2 textureCoordinate;\n" +
-                    "void main() {\n" +
-                    "   gl_Position = position;\n" +
-                    "   textureCoordinate = inputTextureCoordinate.xy;\n" +
-                    "}";
+            "attribute vec4 position;\n" +
+            "attribute vec4 inputTextureCoordinate;\n" +
+            "varying vec2 textureCoordinate;\n" +
+            "void main() {\n" +
+            "   gl_Position = position;\n" +
+            "   textureCoordinate = inputTextureCoordinate.xy;\n" +
+            "}";
 
     public final static String NORMAL_FRAGMENT_SHADER =
-                    "varying highp vec2 textureCoordinate;\n" +
-                    "uniform sampler2D inputImageTexture;\n" +
-                    "void main() {" +
-                        "gl_FragColor = texture2D(inputImageTexture, textureCoordinate);\n" +
-                    "}";
+            "varying highp vec2 textureCoordinate;\n" +
+            "uniform sampler2D inputImageTexture;\n" +
+            "void main() {" +
+                "gl_FragColor = texture2D(inputImageTexture, textureCoordinate);\n" +
+            "}";
 
     private final String mVertexShader;
     private final String mFragmentShader;
