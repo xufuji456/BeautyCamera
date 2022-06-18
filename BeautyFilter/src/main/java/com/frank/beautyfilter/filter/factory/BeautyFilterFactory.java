@@ -2,6 +2,7 @@ package com.frank.beautyfilter.filter.factory;
 
 import com.frank.beautyfilter.filter.base.gpuimage.GPUImageBrightnessFilter;
 import com.frank.beautyfilter.filter.base.gpuimage.GPUImageContrastFilter;
+import com.frank.beautyfilter.filter.base.gpuimage.GPUImageExposureFilter;
 import com.frank.beautyfilter.filter.base.gpuimage.GPUImageFilter;
 import com.frank.beautyfilter.filter.helper.BeautyFilterType;
 
