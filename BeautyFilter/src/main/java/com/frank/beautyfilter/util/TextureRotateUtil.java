@@ -35,7 +35,7 @@ public class TextureRotateUtil {
             1.0f, 1.0f
     };
 
-    public final static float[] TEXTURE_CUBE       = {
+    public final static float[] TEXTURE_VERTEX     = {
             -1.0f, -1.0f,
             1.0f, -1.0f,
             -1.0f, 1.0f,

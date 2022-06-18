@@ -1,5 +1,6 @@
 package com.frank.beautyfilter.filter.factory;
 
+import com.frank.beautyfilter.filter.base.gpuimage.GPUImageFilter;
 import com.frank.beautyfilter.filter.helper.BeautyFilterType;
 
 /**
@@ -12,6 +13,7 @@ public class BeautyFilterFactory {
     private static BeautyFilterType filterType = BeautyFilterType.NONE;
 
     public static GPUImageFilter getFilter(BeautyFilterType type) {
+        filterType = type;
         switch (type) {
             case AMARO:
                 return new BeautyAmaroFilter();
@@ -52,7 +54,7 @@ public class BeautyFilterFactory {
             case HUDSON:
                 return new BeautyHudsonFilter();
             case HUE:
-                return new GPUImageFilter();
+                return new GPUImageHueFilter();
             case INKWELL:
                 return new BeautyInkwellFilter();
             case IMAGE_ADJUST:
