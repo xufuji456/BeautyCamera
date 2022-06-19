@@ -8,7 +8,7 @@ import android.os.Environment;
  * @date 2022/6/18 4:54 下午
  * @desc
  */
-public class MagicParams {
+public class BeautyParams {
 
     public static Context context;
 //    public static MagicBaseView magicBaseView;

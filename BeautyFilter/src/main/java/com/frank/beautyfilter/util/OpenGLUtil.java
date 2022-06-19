@@ -148,7 +148,7 @@ public class OpenGLUtil {
     public static String readShaderFromSource(final int resourceId) {
         String line;
         StringBuilder builder = new StringBuilder();
-        InputStream inputStream = MagicParams.context.getResources().openRawResource(resourceId);
+        InputStream inputStream = BeautyParams.context.getResources().openRawResource(resourceId);
         InputStreamReader reader = new InputStreamReader(inputStream);
         BufferedReader bufferedReader = new BufferedReader(reader);
         try {
