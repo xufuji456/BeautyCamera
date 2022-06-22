@@ -7,6 +7,7 @@ import com.frank.beautyfilter.filter.advance.BeautyLatteFilter;
 import com.frank.beautyfilter.filter.advance.BeautyPixarFilter;
 import com.frank.beautyfilter.filter.advance.BeautyRomanceFilter;
 import com.frank.beautyfilter.filter.advance.BeautySketchFilter;
+import com.frank.beautyfilter.filter.advance.BeautySkinWhitenFilter;
 import com.frank.beautyfilter.filter.advance.BeautySunriseFilter;
 import com.frank.beautyfilter.filter.advance.BeautySweetFilter;
 import com.frank.beautyfilter.filter.base.gpuimage.GPUImageBrightnessFilter;
