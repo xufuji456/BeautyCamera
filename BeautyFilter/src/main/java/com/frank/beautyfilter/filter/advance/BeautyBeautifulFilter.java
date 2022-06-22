@@ -12,12 +12,12 @@ import com.frank.beautyfilter.util.OpenGLUtil;
  * @date 2022/6/21 3:50 下午
  * @desc
  */
-public class BeautyWhiteFilter extends GPUImageFilter {
+public class BeautyBeautifulFilter extends GPUImageFilter {
 
     private int paramLocation;
     private int stepOffsetLocation;
 
-    public BeautyWhiteFilter() {
+    public BeautyBeautifulFilter() {
         super(NORMAL_VERTEX_SHADER, OpenGLUtil.readShaderFromSource(R.raw.beauty));
     }
 

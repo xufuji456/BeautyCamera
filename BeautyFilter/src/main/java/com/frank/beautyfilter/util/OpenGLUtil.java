@@ -134,7 +134,7 @@ public class OpenGLUtil {
     }
 
     // GLES11Ext GL10
-    public static int getExternalOESTexturedId() {
+    public static int getExternalOESTextureId() {
         int[] textures = new int[1];
         GLES20.glGenTextures(1, textures, 0);
         GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textures[0]);
