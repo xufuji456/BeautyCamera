@@ -3,6 +3,7 @@ package com.frank.beautyfilter.filter.factory;
 import com.frank.beautyfilter.filter.advance.BeautyCoolFilter;
 import com.frank.beautyfilter.filter.advance.BeautyImageAdjustFilter;
 import com.frank.beautyfilter.filter.advance.BeautyLatteFilter;
+import com.frank.beautyfilter.filter.advance.BeautyPixarFilter;
 import com.frank.beautyfilter.filter.advance.BeautyRomanceFilter;
 import com.frank.beautyfilter.filter.advance.BeautySketchFilter;
 import com.frank.beautyfilter.filter.advance.BeautySunriseFilter;
