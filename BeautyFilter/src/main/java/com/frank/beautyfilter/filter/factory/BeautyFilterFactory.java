@@ -4,6 +4,7 @@ import com.frank.beautyfilter.filter.advance.BeautyCoolFilter;
 import com.frank.beautyfilter.filter.advance.BeautyImageAdjustFilter;
 import com.frank.beautyfilter.filter.advance.BeautyLatteFilter;
 import com.frank.beautyfilter.filter.advance.BeautyRomanceFilter;
+import com.frank.beautyfilter.filter.advance.BeautySketchFilter;
 import com.frank.beautyfilter.filter.advance.BeautySunriseFilter;
 import com.frank.beautyfilter.filter.base.gpuimage.GPUImageBrightnessFilter;
 import com.frank.beautyfilter.filter.base.gpuimage.GPUImageContrastFilter;
