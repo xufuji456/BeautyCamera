@@ -5,6 +5,7 @@ import com.frank.beautyfilter.filter.advance.BeautyHealthyFilter;
 import com.frank.beautyfilter.filter.advance.BeautyImageAdjustFilter;
 import com.frank.beautyfilter.filter.advance.BeautyLatteFilter;
 import com.frank.beautyfilter.filter.advance.BeautyPixarFilter;
+import com.frank.beautyfilter.filter.advance.BeautyRiseFilter;
 import com.frank.beautyfilter.filter.advance.BeautyRomanceFilter;
 import com.frank.beautyfilter.filter.advance.BeautySketchFilter;
 import com.frank.beautyfilter.filter.advance.BeautySkinWhitenFilter;
