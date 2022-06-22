@@ -1,4 +1,4 @@
-package com.frank.beautyfilter.display;
+package com.frank.beautyfilter.widget;
 
 import android.content.Context;
 import android.graphics.Bitmap;
