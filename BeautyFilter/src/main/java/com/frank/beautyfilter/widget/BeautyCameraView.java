@@ -16,6 +16,7 @@ import com.frank.beautyfilter.filter.advance.BeautyBeautifulFilter;
 import com.frank.beautyfilter.filter.base.BeautyCameraFilter;
 import com.frank.beautyfilter.filter.helper.BeautyFilterType;
 import com.frank.beautyfilter.helper.SavePictureTask;
+import com.frank.beautyfilter.recorder.video.TextureVideoRecorder;
 import com.frank.beautyfilter.util.BeautyParams;
 import com.frank.beautyfilter.util.OpenGLUtil;
 import com.frank.beautyfilter.util.Rotation;
@@ -51,7 +52,7 @@ public class BeautyCameraView extends BeautyBaseView {
     private final static int RECORDING_RESUME = 2;
 
     private CameraEngine cameraEngine;
-    private VideoRecorder videoRecorder;
+    private TextureVideoRecorder videoRecorder;
 
     public BeautyCameraView(Context context) {
         super(context);
@@ -64,7 +65,7 @@ public class BeautyCameraView extends BeautyBaseView {
         recordingStatus = RECORDING_OFF;
         scaleType = ScaleType.CENTER_CROP;
         cameraEngine = new CameraEngine();
-        videoRecorder = new VideoRecorder();
+        videoRecorder = new TextureVideoRecorder();
         outputFile = new File(BeautyParams.videoPath, BeautyParams.videoName);
     }
 
@@ -149,14 +150,16 @@ public class BeautyCameraView extends BeautyBaseView {
         if (recordEnable) {
             switch (recordingStatus) {
                 case RECORDING_OFF:
-                    Camera.CameraInfo info = CameraEngine.getCameraInfo();
+                    CameraPrivateInfo info = cameraEngine.getCameraInfo();
                     videoRecorder.setPreviewSize(info.previewWidth, info.pictureHeight);
-                    videoRecorder.setTextureBuffer(gLTextureBuffer);
-                    videoRecorder.setCubeBuffer(gLCubeBuffer);
-                    videoRecorder.startRecording(new TextureMovieEncoder.EncoderConfig(
-                            outputFile, info.previewWidth, info.pictureHeight,
-                            1000000, EGL14.eglGetCurrentContext(),
-                            info));
+                    videoRecorder.setTextureBuffer(mTextureBuffer);
+                    videoRecorder.setCubeBuffer(mVertexBuffer);
+                    videoRecorder.startRecording(new TextureVideoRecorder.RecorderConfig(
+                            info.previewWidth,
+                            info.pictureHeight,
+                            1000000,
+                            outputFile,
+                            EGL14.eglGetCurrentContext()));
                     recordingStatus = RECORDING_ON;
                     break;
                 case RECORDING_RESUME:
@@ -218,7 +221,7 @@ public class BeautyCameraView extends BeautyBaseView {
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
         super.surfaceDestroyed(holder);
-        CameraEngine.releaseCamera();
+        cameraEngine.releaseCamera();
     }
 
     private Bitmap drawPhoto(Bitmap bitmap, boolean isRotated) {
