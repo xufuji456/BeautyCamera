@@ -178,7 +178,13 @@ public final class EglCore {
                 && eglSurface.equals(EGL14.eglGetCurrentSurface(EGL14.EGL_DRAW));
     }
 
-    public String queryString (int what) {
+    public int querySurface(EGLSurface eglSurface, int what) {
+        int[] value = new int[1];
+        EGL14.eglQuerySurface(mEGLDisplay, eglSurface, what, value, 0);
+        return value[0];
+    }
+
+    public String queryString(int what) {
         return EGL14.eglQueryString(mEGLDisplay, what);
     }
 
