@@ -4,4 +4,7 @@
     <string name="swap">切换相机</string>
     <string name="cat_ear">猫耳朵</string>
     <string name="rabbit_ear">兔耳朵</string>
+
+    <string name="filter_none">Original</string>
+
 </resources>

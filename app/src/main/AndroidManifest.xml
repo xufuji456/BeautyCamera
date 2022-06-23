@@ -3,8 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.frank.camera">
 
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
@@ -14,20 +14,22 @@
         android:theme="@style/AppTheme">
         <activity
             android:name="com.frank.camera.activity.MainActivity"
-            android:screenOrientation="portrait"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name="com.frank.camera.activity.FaceBeautyActivity"
             android:screenOrientation="landscape"
             android:theme="@style/FullscreenTheme" />
+        <activity android:name="com.frank.camera.activity.BaseActivity" />
 
-        <activity android:name="com.frank.camera.activity.BaseActivity"/>
+        <activity
+            android:name=".beauty.activity.BeautyFilterActivity"
+            android:exported="false" />
 
         <provider
             android:name="androidx.startup.InitializationProvider"
