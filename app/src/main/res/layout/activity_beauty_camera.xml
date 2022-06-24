@@ -15,7 +15,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:padding="5dp"
-            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
             android:orientation="horizontal"
             android:background="@android:color/transparent">
             <ImageView
@@ -24,7 +24,7 @@
                 android:id="@+id/btn_camera_mode"
                 android:src="@drawable/ic_video"/>
             <ImageView
-                android:layout_marginLeft="10dp"
+                android:layout_marginStart="10dp"
                 android:layout_width="wrap_content"
                 android:id="@+id/btn_camera_switch"
                 android:layout_height="wrap_content"
@@ -40,7 +40,6 @@
             android:layout_height="120.0dip"
             android:paddingTop="5dip"
             android:paddingBottom="5dip"
-            android:layout_alignParentBottom="true"
             android:background="@android:color/white">
             <ImageView
                 android:id="@+id/btn_camera_beauty"
