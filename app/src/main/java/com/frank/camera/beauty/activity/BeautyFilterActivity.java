@@ -74,6 +74,8 @@ public class BeautyFilterActivity extends AppCompatActivity implements View.OnCl
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_beauty_camera);
+        BeautyEngine.Builder builder = new BeautyEngine.Builder();
+        mBeautyEngine = builder.build((BeautyCameraView)findViewById(R.id.glsurfaceview_camera));
         initView();
     }
 
@@ -94,6 +96,7 @@ public class BeautyFilterActivity extends AppCompatActivity implements View.OnCl
         layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
         mFilterListView.setLayoutManager(layoutManager);
         mFilterAdapter = new FilterAdapter(this);
+        mFilterAdapter.setFilterTypes(types);
         mFilterListView.setAdapter(mFilterAdapter);
         mFilterAdapter.setOnFilterChangeListener(mOnFilterChangeListener);
 
@@ -134,7 +137,7 @@ public class BeautyFilterActivity extends AppCompatActivity implements View.OnCl
                 switchMode();
                 break;
             case R.id.btn_camera_shutter:
-                if (PermissionChecker.checkSelfPermission(this, permissions[0]) != PackageManager.PERMISSION_GRANTED) {
+                if (PermissionChecker.checkSelfPermission(this, permissions[0]) != PermissionChecker.PERMISSION_GRANTED) {
                     ActivityCompat.requestPermissions(this, permissions, view.getId());
                 } else {
                     if(mBeautyMode == MODE_PICTURE) {
