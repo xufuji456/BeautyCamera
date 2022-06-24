@@ -29,6 +29,7 @@ public class CameraEngine {
     public boolean openCamera(int cameraId) {
         if (mCamera == null) {
             try {
+                mCameraId = cameraId;
                 mCamera = Camera.open(cameraId);
                 setDefaultParams();
                 return true;
@@ -69,7 +70,7 @@ public class CameraEngine {
             mCameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
         }
         releaseCamera();
-        openCamera();
+        openCamera(mCameraId);
         startPreview(mSurfaceTexture);
     }
 
@@ -143,6 +144,16 @@ public class CameraEngine {
         Parameters params = mCamera.getParameters();
         params.setRotation(rotation);
         mCamera.setParameters(params);
+    }
+
+    public int getOrientation() {
+        Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
+        Camera.getCameraInfo(mCameraId, cameraInfo);
+        return cameraInfo.orientation;
+    }
+
+    public boolean isFlipHorizontal() {
+        return getCameraInfo().isFront;
     }
 
     public void takePicture(Camera.ShutterCallback shutterCallback, Camera.PictureCallback rawCallback,
