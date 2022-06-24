@@ -25,7 +25,6 @@
             android:name="com.frank.camera.activity.FaceBeautyActivity"
             android:screenOrientation="landscape"
             android:theme="@style/FullscreenTheme" />
-        <activity android:name="com.frank.camera.activity.BaseActivity" />
 
         <activity
             android:name=".beauty.activity.BeautyFilterActivity"

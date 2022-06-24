@@ -7,17 +7,23 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+
 import androidx.annotation.IdRes;
+import androidx.appcompat.app.AppCompatActivity;
+
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.RadioGroup;
+
 import com.frank.camera.R;
 import com.frank.camera.listener.OnPhotoTakenListener;
 import com.frank.camera.view.FaceBeautyView;
+
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -25,7 +31,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-public class FaceBeautyActivity extends BaseActivity implements RadioGroup.OnCheckedChangeListener,View.OnClickListener{
+public class FaceBeautyActivity extends AppCompatActivity implements RadioGroup.OnCheckedChangeListener, View.OnClickListener {
 
     private final static String TAG = FaceBeautyActivity.class.getSimpleName();
     private FaceBeautyView faceBeautyView;
@@ -46,29 +52,29 @@ public class FaceBeautyActivity extends BaseActivity implements RadioGroup.OnChe
         initOpenCV();
     }
 
-    private void initView(){
+    private void initView() {
         faceBeautyView = (FaceBeautyView) findViewById(R.id.photograph_view);
         findViewById(R.id.btn_swap).setOnClickListener(this);
         findViewById(R.id.btn_snap).setOnClickListener(this);
         ((RadioGroup) findViewById(R.id.group_beauty)).setOnCheckedChangeListener(this);
     }
 
-    private void initOpenCV(){
+    private void initOpenCV() {
         boolean result = OpenCVLoader.initDebug();
-        if(result){
+        if (result) {
             Log.i(TAG, "initOpenCV success...");
             //初始化人脸检测器
             faceBeautyView.initDetector(getApplicationContext());
             //打开camera
             faceBeautyView.setLoadSuccess(true);
             faceBeautyView.enableView();
-        }else {
+        } else {
             Log.e(TAG, "initOpenCV fail...");
         }
     }
 
-    public void onCheckedChanged(RadioGroup group, @IdRes int checkedId){
-        switch (checkedId){
+    public void onCheckedChanged(RadioGroup group, @IdRes int checkedId) {
+        switch (checkedId) {
             case R.id.btn_cat://猫耳朵
                 faceBeautyView.selectBeauty(0);
                 break;
@@ -82,7 +88,7 @@ public class FaceBeautyActivity extends BaseActivity implements RadioGroup.OnChe
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
+        switch (v.getId()) {
             case R.id.btn_swap://切换摄像头
                 faceBeautyView.swapCamera();
                 break;
@@ -97,8 +103,8 @@ public class FaceBeautyActivity extends BaseActivity implements RadioGroup.OnChe
     /**
      * 执行拍照
      */
-    private void takePhoto(){
-        if(!hasInit){
+    private void takePhoto() {
+        if (!hasInit) {
             initPhotoListener();
             hasInit = true;
         }
@@ -106,11 +112,11 @@ public class FaceBeautyActivity extends BaseActivity implements RadioGroup.OnChe
         shootSound();//播放拍照声音
     }
 
-    private void initPhotoListener(){
+    private void initPhotoListener() {
         faceBeautyView.setOnPhotoTakenListener(new OnPhotoTakenListener() {
             @Override
             public void onPhotoTaken(Mat frameData) {
-                if(doTaken && frameData != null){
+                if (doTaken && frameData != null) {
                     doTaken = false;
                     savePicture(frameData);
                 }
@@ -120,9 +126,10 @@ public class FaceBeautyActivity extends BaseActivity implements RadioGroup.OnChe
 
     /**
      * 保存图片
+     *
      * @param frameData 帧数据
      */
-    private void savePicture(Mat frameData){
+    private void savePicture(Mat frameData) {
         Bitmap bitmap = Bitmap.createBitmap(frameData.width(), frameData.height(), Bitmap.Config.ARGB_8888);
         Utils.matToBitmap(frameData, bitmap);
         String fileName = PATH + File.separator + dataFormat.format(new Date(System.currentTimeMillis())) + ".jpg";
@@ -133,8 +140,8 @@ public class FaceBeautyActivity extends BaseActivity implements RadioGroup.OnChe
             outputStream.flush();
         } catch (IOException e) {
             e.printStackTrace();
-        }finally {
-            if(outputStream != null){
+        } finally {
+            if (outputStream != null) {
                 try {
                     outputStream.close();
                 } catch (IOException e) {
@@ -145,11 +152,11 @@ public class FaceBeautyActivity extends BaseActivity implements RadioGroup.OnChe
     }
 
     /**
-     *   播放系统拍照声音
+     * 播放系统拍照声音
      */
     public void shootSound() {
         AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        int volume = audioManager.getStreamVolume( AudioManager.STREAM_NOTIFICATION);
+        int volume = audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION);
         if (volume != 0) {
             if (mediaPlayer == null) {
                 mediaPlayer = MediaPlayer.create(this, Uri.parse("file:///system/media/audio/ui/camera_click.ogg"));
