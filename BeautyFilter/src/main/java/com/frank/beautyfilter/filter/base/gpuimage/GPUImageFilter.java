@@ -60,10 +60,10 @@ public class GPUImageFilter {
         mVertexShader = vertexShader;
         mFragmentShader = fragmentShader;
 
-        mVertexBuffer = ByteBuffer.allocateDirect(TextureRotateUtil.TEXTURE_VERTEX.length * 4)
+        mVertexBuffer = ByteBuffer.allocateDirect(TextureRotateUtil.VERTEX.length * 4)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
-        mVertexBuffer.put(TextureRotateUtil.TEXTURE_VERTEX).position(0);
+        mVertexBuffer.put(TextureRotateUtil.VERTEX).position(0);
 
         mTextureBuffer = ByteBuffer.allocateDirect(TextureRotateUtil.TEXTURE_ROTATE_0.length * 4)
                 .order(ByteOrder.nativeOrder())

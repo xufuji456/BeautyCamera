@@ -43,6 +43,8 @@ public class SavePictureTask {
     }
 
     public void execute(Bitmap bitmap) {
+        if (bitmap == null)
+            return;
         Thread thread = new Thread(() -> {
             String result = saveBitmap(bitmap);
             if (mListener != null)

@@ -39,7 +39,7 @@ import javax.microedition.khronos.opengles.GL10;
  */
 public class BeautyCameraView extends BeautyBaseView {
 
-    private File outputFile;
+    private final File outputFile;
     private int recordingStatus;
     protected boolean recordEnable;
 
@@ -51,18 +51,18 @@ public class BeautyCameraView extends BeautyBaseView {
     private final static int RECORDING_ON = 1;
     private final static int RECORDING_RESUME = 2;
 
-    private CameraEngine cameraEngine;
-    private TextureVideoRecorder videoRecorder;
+    private final CameraEngine cameraEngine;
+    private final TextureVideoRecorder videoRecorder;
 
     public BeautyCameraView(Context context) {
-        super(context);
+        this(context, null);
     }
 
     public BeautyCameraView(Context context, AttributeSet attrs) {
         super(context, attrs);
         this.getHolder().addCallback(this);
         recordEnable = false;
-        recordingStatus = RECORDING_OFF;
+        recordingStatus = -1;
         scaleType = ScaleType.CENTER_CROP;
         cameraEngine = new CameraEngine();
         videoRecorder = new TextureVideoRecorder();
@@ -81,8 +81,7 @@ public class BeautyCameraView extends BeautyBaseView {
                     public void run() {
                         final Bitmap photo = drawPhoto(bitmap, cameraEngine.getCameraInfo().isFront);
                         GLES20.glViewport(0, 0, surfaceWidth, surfaceHeight);
-                        if (photo != null)
-                            task.execute(photo);
+                        task.execute(photo);
                     }
                 });
                 cameraEngine.startPreview();
@@ -259,24 +258,24 @@ public class BeautyCameraView extends BeautyBaseView {
         GLES20.glViewport(0, 0, width, height);
         int textureId = OpenGLUtil.loadTexture(bitmap, OpenGLUtil.NO_TEXTURE, true);
 
-        FloatBuffer gLCubeBuffer = ByteBuffer.allocateDirect(TextureRotateUtil.TEXTURE_VERTEX.length * 4)
+        FloatBuffer glVertexBuffer = ByteBuffer.allocateDirect(TextureRotateUtil.VERTEX.length * 4)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
-        FloatBuffer gLTextureBuffer = ByteBuffer.allocateDirect(TextureRotateUtil.TEXTURE_ROTATE_0.length * 4)
+        FloatBuffer glTextureBuffer = ByteBuffer.allocateDirect(TextureRotateUtil.TEXTURE_ROTATE_0.length * 4)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
-        gLCubeBuffer.put(TextureRotateUtil.TEXTURE_VERTEX).position(0);
+        glVertexBuffer.put(TextureRotateUtil.VERTEX).position(0);
         if (isRotated)
-            gLTextureBuffer.put(TextureRotateUtil.getRotateTexture(Rotation.NORMAL, false, false)).position(0);
+            glTextureBuffer.put(TextureRotateUtil.getRotateTexture(Rotation.NORMAL, false, false)).position(0);
         else
-            gLTextureBuffer.put(TextureRotateUtil.getRotateTexture(Rotation.NORMAL, false, true)).position(0);
+            glTextureBuffer.put(TextureRotateUtil.getRotateTexture(Rotation.NORMAL, false, true)).position(0);
 
 
         if (filter == null) {
-            beautyFilter.onDrawFrame(textureId, gLCubeBuffer, gLTextureBuffer);
+            beautyFilter.onDrawFrame(textureId, glVertexBuffer, glTextureBuffer);
         } else {
             beautyFilter.onDrawFrame(textureId);
-            filter.onDrawFrame(mFrameBufferTextures[0], gLCubeBuffer, gLTextureBuffer);
+            filter.onDrawFrame(mFrameBufferTextures[0], glVertexBuffer, glTextureBuffer);
         }
         IntBuffer ib = IntBuffer.allocate(width * height);
         GLES20.glReadPixels(0, 0, width, height, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, ib);

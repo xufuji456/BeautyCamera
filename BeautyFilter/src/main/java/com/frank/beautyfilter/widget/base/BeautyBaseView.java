@@ -42,15 +42,15 @@ public abstract class BeautyBaseView extends GLSurfaceView implements GLSurfaceV
     protected ScaleType scaleType = ScaleType.FIX_XY;
 
     public BeautyBaseView(Context context) {
-        super(context);
+        this(context, null);
     }
 
     public BeautyBaseView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mVertexBuffer = ByteBuffer.allocateDirect(TextureRotateUtil.TEXTURE_VERTEX.length * 4)
+        mVertexBuffer = ByteBuffer.allocateDirect(TextureRotateUtil.VERTEX.length * 4)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
-        mVertexBuffer.put(TextureRotateUtil.TEXTURE_VERTEX).position(0);
+        mVertexBuffer.put(TextureRotateUtil.VERTEX).position(0);
         mTextureBuffer = ByteBuffer.allocateDirect(TextureRotateUtil.TEXTURE_ROTATE_0.length * 4)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
@@ -65,8 +65,8 @@ public abstract class BeautyBaseView extends GLSurfaceView implements GLSurfaceV
     public void onSurfaceCreated(GL10 gl10, EGLConfig eglConfig) {
         GLES20.glDisable(GL10.GL_DITHER);
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-        GLES20.glEnable(GLES20.GL_CULL_FACE);
-        GLES20.glEnable(GLES20.GL_DEPTH_TEST);
+        GLES20.glEnable(GL10.GL_CULL_FACE);
+        GLES20.glEnable(GL10.GL_DEPTH_TEST);
     }
 
     @Override
@@ -93,11 +93,11 @@ public abstract class BeautyBaseView extends GLSurfaceView implements GLSurfaceV
     public abstract void savePicture(SavePictureTask task);
 
     private float addDistance(float coordinate, float distance) {
-        return coordinate == 0.0f ? distance : 1- distance;
+        return coordinate == 0.0f ? distance : 1 - distance;
     }
 
     protected void adjustSize(int rotation, boolean horizontalFlip, boolean verticalFlip) {
-        float[] vertexData = TextureRotateUtil.TEXTURE_VERTEX;
+        float[] vertexData = TextureRotateUtil.VERTEX;
         float[] textureData = TextureRotateUtil.getRotateTexture(Rotation.fromInt(rotation),
                 horizontalFlip, verticalFlip);
         float ratio1 = (float) surfaceWidth / imageWidth;
@@ -110,10 +110,10 @@ public abstract class BeautyBaseView extends GLSurfaceView implements GLSurfaceV
 
         if (scaleType == ScaleType.CENTER_INSIDE) {
             vertexData = new float[] {
-                    TextureRotateUtil.TEXTURE_VERTEX[0] / ratioHeight, TextureRotateUtil.TEXTURE_VERTEX[1] / ratioWidth,
-                    TextureRotateUtil.TEXTURE_VERTEX[2] / ratioHeight, TextureRotateUtil.TEXTURE_VERTEX[3] / ratioWidth,
-                    TextureRotateUtil.TEXTURE_VERTEX[4] / ratioHeight, TextureRotateUtil.TEXTURE_VERTEX[5] / ratioWidth,
-                    TextureRotateUtil.TEXTURE_VERTEX[6] / ratioHeight, TextureRotateUtil.TEXTURE_VERTEX[7] / ratioWidth,
+                    TextureRotateUtil.VERTEX[0] / ratioHeight, TextureRotateUtil.VERTEX[1] / ratioWidth,
+                    TextureRotateUtil.VERTEX[2] / ratioHeight, TextureRotateUtil.VERTEX[3] / ratioWidth,
+                    TextureRotateUtil.VERTEX[4] / ratioHeight, TextureRotateUtil.VERTEX[5] / ratioWidth,
+                    TextureRotateUtil.VERTEX[6] / ratioHeight, TextureRotateUtil.VERTEX[7] / ratioWidth,
             };
         } else if (scaleType == ScaleType.CENTER_CROP) {
             float horizontalDist = (1 - 1 / ratioWidth) / 2;
