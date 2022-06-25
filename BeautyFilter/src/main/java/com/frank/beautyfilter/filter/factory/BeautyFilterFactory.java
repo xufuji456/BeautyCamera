@@ -3,6 +3,7 @@ package com.frank.beautyfilter.filter.factory;
 import com.frank.beautyfilter.filter.advance.BeautyAntiqueFilter;
 import com.frank.beautyfilter.filter.advance.BeautyCoolFilter;
 import com.frank.beautyfilter.filter.advance.BeautyCrayonFilter;
+import com.frank.beautyfilter.filter.advance.BeautyFairytaleFilter;
 import com.frank.beautyfilter.filter.advance.BeautyHealthyFilter;
 import com.frank.beautyfilter.filter.advance.BeautyImageAdjustFilter;
 import com.frank.beautyfilter.filter.advance.BeautyPixarFilter;
@@ -64,7 +65,7 @@ public class BeautyFilterFactory {
             case CRAYON:
                 return new BeautyCrayonFilter();
             case FAIRYTALE:
-                return new BeautyFairyTaleFilter();
+                return new BeautyFairytaleFilter();
             case HUDSON:
                 return new BeautyHudsonFilter();
             case INKWELL:
