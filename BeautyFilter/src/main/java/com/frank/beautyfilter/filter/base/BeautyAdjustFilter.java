@@ -28,7 +28,6 @@ public class BeautyAdjustFilter extends GPUImageFilter {
 
     @Override
     public void init() {
-        super.init();
         for (GPUImageFilter filter : filters) {
             filter.init();
         }
@@ -38,27 +37,28 @@ public class BeautyAdjustFilter extends GPUImageFilter {
     public void onInputSizeChanged(int width, int height) {
         super.onInputSizeChanged(width, height);
 
-        for (int i=0; i<filters.size(); i++) {
+        int size = filters.size();
+        for (int i=0; i<size; i++) {
             filters.get(i).onInputSizeChanged(width, height);
         }
-        if (frameBuffer != null && (width != frameWidth || height != frameHeight || frameBuffer.length != filters.size()-1)) {
+        if (frameBuffer != null && (width != frameWidth || height != frameHeight || frameBuffer.length != size-1)) {
             destroyFrameBuffer();
             frameWidth = width;
             frameHeight = height;
         }
         if (frameBuffer == null) {
-            frameBuffer = new int[filters.size()-1];
-            frameBufferTexture = new int[filters.size()-1];
+            frameBuffer = new int[size-1];
+            frameBufferTexture = new int[size-1];
 
-            for (int i=0; i<filters.size()-1; i++) {
+            for (int i=0; i<size-1; i++) {
                 GLES20.glGenFramebuffers(1, frameBuffer, i);
                 GLES20.glGenTextures(1, frameBufferTexture, i);
                 GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, frameBufferTexture[i]);
 
                 GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-                GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-                GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-                GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
+                GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+                GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
+                GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
                 GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, width, height,
                         0, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, null);
 
@@ -88,8 +88,7 @@ public class BeautyAdjustFilter extends GPUImageFilter {
                 GLES20.glViewport(0, 0, mInputWidth, mInputHeight);
                 GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBuffer[i]);
                 GLES20.glClearColor(0, 0, 0, 0);
-                filter.onDrawFrame(prevTextureId, vertexBuffer, textureBuffer);//TODO
-//                filter.onDrawFrame(prevTextureId, mVertexBuffer, mTextureBuffer);
+                filter.onDrawFrame(prevTextureId, mVertexBuffer, mTextureBuffer);
                 GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
                 prevTextureId = frameBufferTexture[i];
             }
@@ -109,7 +108,6 @@ public class BeautyAdjustFilter extends GPUImageFilter {
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         for (GPUImageFilter filter : filters) {
             filter.destroy();
         }

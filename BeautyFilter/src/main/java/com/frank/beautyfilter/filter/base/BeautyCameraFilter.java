@@ -60,7 +60,7 @@ public class BeautyCameraFilter extends GPUImageFilter {
         GLES20.glVertexAttribPointer(mAttributePosition, 2, GLES20.GL_FLOAT, false, 0, vertexBuffer);
         GLES20.glEnableVertexAttribArray(mAttributePosition);
         textureBuffer.position(0);
-        GLES20.glVertexAttribPointer(mAttributeTextureCoordinate, 2, GLES20.GL_FLOAT, false, 0, vertexBuffer);
+        GLES20.glVertexAttribPointer(mAttributeTextureCoordinate, 2, GLES20.GL_FLOAT, false, 0, textureBuffer);
         GLES20.glEnableVertexAttribArray(mAttributeTextureCoordinate);
         GLES20.glUniformMatrix4fv(textureTransformLocation, 1, false, textureTransformMatrix, 0);
 
@@ -125,7 +125,7 @@ public class BeautyCameraFilter extends GPUImageFilter {
     }
 
     public void initFrameBuffer(int width, int height) {
-        if (frameBuffer != null && (frameWidth == -1 || frameHeight == -1))
+        if (frameBuffer != null && (frameWidth != width || frameHeight != height))
             destroyFrameBuffer();
         if (frameBuffer == null) {
             frameWidth = width;
