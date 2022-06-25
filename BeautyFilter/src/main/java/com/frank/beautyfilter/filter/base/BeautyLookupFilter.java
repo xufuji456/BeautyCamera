@@ -13,7 +13,7 @@ import com.frank.beautyfilter.util.OpenGLUtil;
  */
 public class BeautyLookupFilter extends GPUImageFilter {
 
-    public static final String LOOKUP_FRAGMENT_SHADER = ""+
+    public static final String LOOKUP_FRAGMENT_SHADER = "" +
             "varying highp vec2 textureCoordinate;\n" +
             " \n" +
             " uniform sampler2D inputImageTexture;\n" +
@@ -58,37 +58,37 @@ public class BeautyLookupFilter extends GPUImageFilter {
     public int mLookupTextureUniform;
     public int mLookupSourceTexture = OpenGLUtil.NO_TEXTURE;
 
-    protected void onInit(){
+    protected void onInit() {
         super.onInit();
         mLookupTextureUniform = GLES20.glGetUniformLocation(getProgramId(), "inputImageTexture2");
     }
 
-    protected void onInitialized(){
+    protected void onInitialized() {
         super.onInitialized();
-        runOnDraw(new Runnable(){
-            public void run(){
+        runOnDraw(new Runnable() {
+            public void run() {
                 mLookupSourceTexture = OpenGLUtil.loadTexture(BeautyParams.context, mLookupTable);
             }
         });
     }
 
-    protected void onDestroy(){
+    protected void onDestroy() {
         super.onDestroy();
         int[] texture = new int[]{mLookupSourceTexture};
         GLES20.glDeleteTextures(1, texture, 0);
         mLookupSourceTexture = -1;
     }
 
-    protected void onDrawArraysAfter(){
-        if (mLookupSourceTexture != -1){
+    protected void onDrawArraysAfter() {
+        if (mLookupSourceTexture != -1) {
             GLES20.glActiveTexture(GLES20.GL_TEXTURE3);
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
             GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         }
     }
 
-    protected void onDrawArraysPre(){
-        if (mLookupSourceTexture != -1){
+    protected void onDrawArraysPre() {
+        if (mLookupSourceTexture != -1) {
             GLES20.glActiveTexture(GLES20.GL_TEXTURE3);
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mLookupSourceTexture);
             GLES20.glUniform1i(mLookupTextureUniform, 3);
