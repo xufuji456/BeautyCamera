@@ -37,7 +37,6 @@ import java.util.Locale;
 public class BeautyFilterActivity extends AppCompatActivity implements View.OnClickListener {
 
     private ImageView btnMode;
-    private ImageView btnShutter;
     private LinearLayout mFilterLayout;
 
     private BeautyEngine mBeautyEngine;
@@ -79,8 +78,8 @@ public class BeautyFilterActivity extends AppCompatActivity implements View.OnCl
 
     private void initView() {
         btnMode = findViewById(R.id.btn_camera_mode);
-        btnShutter = findViewById(R.id.btn_camera_shutter);
         mFilterLayout = findViewById(R.id.layout_filter);
+        ImageView btnShutter = findViewById(R.id.btn_camera_shutter);
         RecyclerView mFilterListView = findViewById(R.id.filter_list_view);
 
         findViewById(R.id.btn_camera_mode).setOnClickListener(this);
@@ -88,6 +87,7 @@ public class BeautyFilterActivity extends AppCompatActivity implements View.OnCl
         findViewById(R.id.btn_camera_filter).setOnClickListener(this);
         findViewById(R.id.btn_camera_beauty).setOnClickListener(this);
         findViewById(R.id.btn_camera_shutter).setOnClickListener(this);
+        findViewById(R.id.btn_camera_switch).setOnClickListener(this);
         findViewById(R.id.btn_camera_closefilter).setOnClickListener(this);
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
