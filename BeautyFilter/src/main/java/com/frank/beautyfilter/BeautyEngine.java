@@ -15,17 +15,9 @@ import java.io.File;
  */
 public class BeautyEngine {
 
-    private static BeautyEngine beautyEngine;
-
-    private BeautyEngine(Builder builder) {
-
-    }
-
-    public static BeautyEngine getInstance() {
-        if (beautyEngine == null) {
-            throw new NullPointerException("must be built first!");
-        }
-        return beautyEngine;
+    public BeautyEngine(BeautyBaseView baseView) {
+        BeautyParams.context = baseView.getContext();
+        BeautyParams.beautyBaseView = baseView;
     }
 
     public void setFilter(BeautyFilterType type) {
@@ -54,16 +46,6 @@ public class BeautyEngine {
     public void savePicture(File file, SavePictureTask.OnPictureSavedListener listener) {
         SavePictureTask task = new SavePictureTask(file, listener);
         BeautyParams.beautyBaseView.savePicture(task);
-    }
-
-    public static class Builder {
-
-        public BeautyEngine build(BeautyBaseView baseView) {
-            BeautyParams.context = baseView.getContext();
-            BeautyParams.beautyBaseView = baseView;
-            return new BeautyEngine(this);
-        }
-
     }
 
 }

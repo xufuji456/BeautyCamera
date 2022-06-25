@@ -39,10 +39,8 @@ public class BeautyFilterActivity extends AppCompatActivity implements View.OnCl
     private ImageView btnMode;
     private ImageView btnShutter;
     private LinearLayout mFilterLayout;
-    private RecyclerView mFilterListView;
 
     private BeautyEngine mBeautyEngine;
-    private FilterAdapter mFilterAdapter;
     private BeautyCameraView mCameraView;
 
     private boolean isRecording = false;
@@ -75,8 +73,7 @@ public class BeautyFilterActivity extends AppCompatActivity implements View.OnCl
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_beauty_camera);
-        BeautyEngine.Builder builder = new BeautyEngine.Builder();
-        mBeautyEngine = builder.build((BeautyCameraView)findViewById(R.id.glsurfaceview_camera));
+        mBeautyEngine = new BeautyEngine((BeautyCameraView)findViewById(R.id.glsurfaceview_camera));
         initView();
     }
 
@@ -84,7 +81,7 @@ public class BeautyFilterActivity extends AppCompatActivity implements View.OnCl
         btnMode = findViewById(R.id.btn_camera_mode);
         btnShutter = findViewById(R.id.btn_camera_shutter);
         mFilterLayout = findViewById(R.id.layout_filter);
-        mFilterListView = findViewById(R.id.filter_list_view);
+        RecyclerView mFilterListView = findViewById(R.id.filter_list_view);
 
         findViewById(R.id.btn_camera_mode).setOnClickListener(this);
         findViewById(R.id.btn_camera_filter).setOnClickListener(this);
@@ -96,7 +93,7 @@ public class BeautyFilterActivity extends AppCompatActivity implements View.OnCl
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
         mFilterListView.setLayoutManager(layoutManager);
-        mFilterAdapter = new FilterAdapter(this);
+        FilterAdapter mFilterAdapter = new FilterAdapter(this);
         mFilterAdapter.setFilterTypes(types);
         mFilterListView.setAdapter(mFilterAdapter);
         mFilterAdapter.setOnFilterChangeListener(mOnFilterChangeListener);
@@ -215,7 +212,7 @@ public class BeautyFilterActivity extends AppCompatActivity implements View.OnCl
                 return null;
         }
         String timestamp = new SimpleDateFormat("yyyy:MM:dd_HH:mm:ss", Locale.getDefault()).format(new Date());
-        return new File(dir.getPath() + File.separator + timestamp + "jpg");
+        return new File(dir.getPath() + File.separator + timestamp + ".jpg");
     }
 
     private void showFilter() {
