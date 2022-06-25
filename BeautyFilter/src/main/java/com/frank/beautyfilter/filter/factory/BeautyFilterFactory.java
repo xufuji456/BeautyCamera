@@ -10,6 +10,7 @@ import com.frank.beautyfilter.filter.advance.BeautyImageAdjustFilter;
 import com.frank.beautyfilter.filter.advance.BeautyInkwellFilter;
 import com.frank.beautyfilter.filter.advance.BeautyPixarFilter;
 import com.frank.beautyfilter.filter.advance.BeautyRomanceFilter;
+import com.frank.beautyfilter.filter.advance.BeautySierraFilter;
 import com.frank.beautyfilter.filter.advance.BeautySketchFilter;
 import com.frank.beautyfilter.filter.advance.BeautySkinWhitenFilter;
 import com.frank.beautyfilter.filter.advance.BeautySunriseFilter;
