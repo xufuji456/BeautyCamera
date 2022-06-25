@@ -73,8 +73,8 @@ public class OpenGLUtil {
                     0, GLES20.GL_RGBA, type, data);
         } else {
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId);
-            GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, width, height,
-                    0, GLES20.GL_RGBA, type, data);
+            GLES20.glTexSubImage2D(GLES20.GL_TEXTURE_2D, 0, 0, 0, width, height,
+                    GLES20.GL_RGBA, type, data);
             textures[0] = textureId;
         }
         return textures[0];

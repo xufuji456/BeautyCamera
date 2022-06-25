@@ -43,6 +43,7 @@ public class BeautyFilterActivity extends AppCompatActivity implements View.OnCl
 
     private BeautyEngine mBeautyEngine;
     private FilterAdapter mFilterAdapter;
+    private BeautyCameraView mCameraView;
 
     private boolean isRecording = false;
 
@@ -106,11 +107,11 @@ public class BeautyFilterActivity extends AppCompatActivity implements View.OnCl
 
         Point size = new Point();
         getWindowManager().getDefaultDisplay().getSize(size);
-        BeautyCameraView cameraView = findViewById(R.id.glsurfaceview_camera);
-        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) cameraView.getLayoutParams();
+        mCameraView = findViewById(R.id.glsurfaceview_camera);
+        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) mCameraView.getLayoutParams();
         params.width = size.x;
         params.height = size.x * 4 / 3;
-        cameraView.setLayoutParams(params);
+        mCameraView.setLayoutParams(params);
     }
 
     @SuppressLint("NonConstantResourceId")
@@ -148,14 +149,14 @@ public class BeautyFilterActivity extends AppCompatActivity implements View.OnCl
                 }
                 break;
             case R.id.btn_camera_switch:
-                mBeautyEngine.switchCamera();
+                mCameraView.switchCamera();
                 break;
             default:
                 break;
         }
     }
 
-    private final FilterAdapter.OnFilterChangeListener mOnFilterChangeListener = new FilterAdapter.OnFilterChangeListener(){
+    private final FilterAdapter.OnFilterChangeListener mOnFilterChangeListener = new FilterAdapter.OnFilterChangeListener() {
 
         @Override
         public void onFilterChanged(BeautyFilterType filterType, int position) {

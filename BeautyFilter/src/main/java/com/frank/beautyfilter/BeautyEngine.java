@@ -51,10 +51,6 @@ public class BeautyEngine {
         }
     }
 
-    public void switchCamera() {
-
-    }
-
     public void savePicture(File file, SavePictureTask.OnPictureSavedListener listener) {
         SavePictureTask task = new SavePictureTask(file, listener);
         BeautyParams.beautyBaseView.savePicture(task);

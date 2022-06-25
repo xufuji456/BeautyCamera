@@ -300,4 +300,10 @@ public class BeautyCameraView extends BeautyBaseView {
         cameraFilter.onBeautyLevelChanged();
     }
 
+    public void switchCamera() {
+        if (cameraEngine != null) {
+            cameraEngine.switchCamera();
+        }
+    }
+
 }
