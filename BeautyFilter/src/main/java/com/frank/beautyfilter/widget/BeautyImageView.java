@@ -52,7 +52,7 @@ public class BeautyImageView extends BeautyBaseView {
 
     }
 
-    @Override
+ /*    @Override
     public void onDrawFrame(GL10 gl10) {
         super.onDrawFrame(gl10);
         if (textureId == OpenGLUtil.NO_TEXTURE) {
@@ -89,5 +89,5 @@ public class BeautyImageView extends BeautyBaseView {
             }
         }
     }
-
+*/
 }

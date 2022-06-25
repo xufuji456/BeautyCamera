@@ -54,17 +54,30 @@ public class BeautyFilterActivity extends AppCompatActivity implements View.OnCl
 
     private final static BeautyFilterType[] types = new BeautyFilterType[] {
             BeautyFilterType.NONE,
+            BeautyFilterType.ANTIQUE,
+            BeautyFilterType.BEAUTY,
+            BeautyFilterType.BRIGHTNESS,
+            BeautyFilterType.CONTRAST,
             BeautyFilterType.COOL,
+            BeautyFilterType.CRAYON,
+            BeautyFilterType.EXPOSURE,
+            BeautyFilterType.FAIRYTALE,
             BeautyFilterType.HEALTHY,
+            BeautyFilterType.HUDSON,
+            BeautyFilterType.HUE,
+            BeautyFilterType.INKWELL,
             BeautyFilterType.IMAGE_ADJUST,
-            BeautyFilterType.LATTE,
             BeautyFilterType.PIXAR,
-            BeautyFilterType.RISE,
             BeautyFilterType.ROMANCE,
+            BeautyFilterType.SATURATION,
+            BeautyFilterType.SHARPEN,
+            BeautyFilterType.SIERRA,
             BeautyFilterType.SKETCH,
             BeautyFilterType.SKINWHITEN,
             BeautyFilterType.SUNRISE,
-            BeautyFilterType.SWEETS
+            BeautyFilterType.TENDER,
+            BeautyFilterType.WARM,
+            BeautyFilterType.WHITECAT
     };
 
     @Override
