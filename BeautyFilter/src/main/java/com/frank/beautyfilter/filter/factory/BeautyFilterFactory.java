@@ -1,5 +1,6 @@
 package com.frank.beautyfilter.filter.factory;
 
+import com.frank.beautyfilter.filter.advance.BeautyAntiqueFilter;
 import com.frank.beautyfilter.filter.advance.BeautyCoolFilter;
 import com.frank.beautyfilter.filter.advance.BeautyHealthyFilter;
 import com.frank.beautyfilter.filter.advance.BeautyImageAdjustFilter;
