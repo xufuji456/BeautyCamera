@@ -10,6 +10,7 @@ import android.os.Message;
 
 import androidx.annotation.NonNull;
 
+import com.frank.beautyfilter.BeautyManager;
 import com.frank.beautyfilter.filter.base.gpuimage.GPUImageFilter;
 import com.frank.beautyfilter.filter.helper.BeautyFilterParam;
 import com.frank.beautyfilter.filter.helper.BeautyFilterType;
@@ -30,6 +31,8 @@ import javax.microedition.khronos.opengles.GL10;
 public class BeautyImageDisplay extends BeautyBaseDisplay {
 
     private Bitmap mOriginBitmap;
+
+    private boolean mIsSaving = false;
 
     private final BeautyManager mBeautyManager;
 
