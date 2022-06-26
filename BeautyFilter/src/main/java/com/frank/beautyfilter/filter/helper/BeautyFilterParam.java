@@ -11,7 +11,7 @@ public class BeautyFilterParam {
 
     public static int mGPUPower = 1;
 
-    public static void initMagicFilterParam(GL10 gl){
+    public static void initFilterParam(GL10 gl){
         mGPUPower = getGPUPower(gl.glGetString(GL10.GL_RENDERER));
     }
 
