@@ -79,7 +79,17 @@ public class BeautyLookupFilter extends GPUImageFilter {
         mLookupSourceTexture = -1;
     }
 
-    protected void onDrawArraysAfter() {
+    @Override
+    protected void onDrawArrayBefore() {
+        if (mLookupSourceTexture != -1) {
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE3);
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mLookupSourceTexture);
+            GLES20.glUniform1i(mLookupTextureUniform, 3);
+        }
+    }
+
+    @Override
+    protected void onDrawArrayAfter() {
         if (mLookupSourceTexture != -1) {
             GLES20.glActiveTexture(GLES20.GL_TEXTURE3);
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
@@ -87,11 +97,4 @@ public class BeautyLookupFilter extends GPUImageFilter {
         }
     }
 
-    protected void onDrawArraysPre() {
-        if (mLookupSourceTexture != -1) {
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE3);
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mLookupSourceTexture);
-            GLES20.glUniform1i(mLookupTextureUniform, 3);
-        }
-    }
 }

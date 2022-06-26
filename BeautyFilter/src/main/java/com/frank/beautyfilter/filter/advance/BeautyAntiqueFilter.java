@@ -28,19 +28,21 @@ public class BeautyAntiqueFilter extends GPUImageFilter {
         this.mToneCurveTexture[0] = -1;
     }
 
-    protected void onDrawArraysAfter() {
-        if (this.mToneCurveTexture[0] != -1) {
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE3);
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        }
-    }
-
-    protected void onDrawArraysPre() {
+    @Override
+    protected void onDrawArrayBefore() {
         if (this.mToneCurveTexture[0] != -1) {
             GLES20.glActiveTexture(GLES20.GL_TEXTURE3);
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mToneCurveTexture[0]);
             GLES20.glUniform1i(this.mToneCurveTextureUniformLocation, 3);
+        }
+    }
+
+    @Override
+    protected void onDrawArrayAfter() {
+        if (this.mToneCurveTexture[0] != -1) {
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE3);
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         }
     }
 

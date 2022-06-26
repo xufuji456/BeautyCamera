@@ -43,7 +43,8 @@ public class BeautyPixarFilter extends GPUImageFilter {
         });
     }
 
-    protected void onDrawArraysPre() {
+    @Override
+    protected void onDrawArrayBefore() {
         for (int i=0; i<inputTextureHandle.length && inputTextureHandle[i] != OpenGLUtil.NO_TEXTURE; i++) {
             GLES20.glActiveTexture(GLES20.GL_TEXTURE0 + (i+3));
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, inputTextureHandle[i]);
@@ -51,11 +52,12 @@ public class BeautyPixarFilter extends GPUImageFilter {
         }
     }
 
-    protected void onDrawArraysAfter() {
+    @Override
+    protected void onDrawArrayAfter() {
         for (int i=0; i<inputTextureHandle.length && inputTextureHandle[i] != OpenGLUtil.NO_TEXTURE; i++) {
             GLES20.glActiveTexture(GLES20.GL_TEXTURE0 + (i+3));
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE0); //TODO
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         }
     }
 

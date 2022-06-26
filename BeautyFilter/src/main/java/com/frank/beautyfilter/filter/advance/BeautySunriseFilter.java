@@ -41,30 +41,8 @@ public class BeautySunriseFilter extends GPUImageFilter {
         mMaskGrey3TextureId = -1;
     }
 
-    protected void onDrawArraysAfter() {
-        if (mToneCurveTexture[0] != -1) {
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE3);
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        }
-        if (mMaskGrey1TextureId != -1) {
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE4);
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        }
-        if (mMaskGrey2TextureId != -1) {
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE5);
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        }
-        if (mMaskGrey3TextureId != -1) {
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE6);
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        }
-    }
-
-    protected void onDrawArraysPre() {
+    @Override
+    protected void onDrawArrayBefore() {
         if (mToneCurveTexture[0] != -1) {
             GLES20.glActiveTexture(GLES20.GL_TEXTURE3);
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mToneCurveTexture[0]);
@@ -84,6 +62,30 @@ public class BeautySunriseFilter extends GPUImageFilter {
             GLES20.glActiveTexture(GLES20.GL_TEXTURE6);
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mMaskGrey3TextureId);
             GLES20.glUniform1i(mMaskGrey3UniformLocation, 6);
+        }
+    }
+
+    @Override
+    protected void onDrawArrayAfter() {
+        if (mToneCurveTexture[0] != -1) {
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE3);
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+        }
+        if (mMaskGrey1TextureId != -1) {
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE4);
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+        }
+        if (mMaskGrey2TextureId != -1) {
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE5);
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+        }
+        if (mMaskGrey3TextureId != -1) {
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE6);
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         }
     }
 
@@ -137,7 +139,7 @@ public class BeautySunriseFilter extends GPUImageFilter {
                 GLES20.glActiveTexture(GLES20.GL_TEXTURE5);
                 mMaskGrey2TextureId = OpenGLUtil.loadTexture(BeautyParams.context, "filter/amaro_mask2.jpg");
                 GLES20.glActiveTexture(GLES20.GL_TEXTURE6);
-                mMaskGrey3TextureId = OpenGLUtil.loadTexture(BeautyParams.context, "filter/toy_mask1.jpg");
+                mMaskGrey3TextureId = OpenGLUtil.loadTexture(BeautyParams.context, "filter/toy_mask.jpg");
             }
         });
     }

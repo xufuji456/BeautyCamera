@@ -29,21 +29,23 @@ public class BeautySierraFilter extends GPUImageFilter {
             inputTextureHandles[i] = -1;
     }
 
-    protected void onDrawArraysAfter() {
-        for (int i = 0; i < inputTextureHandles.length
-                && inputTextureHandles[i] != OpenGLUtil.NO_TEXTURE; i++) {
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE0 + (i + 3));
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        }
-    }
-
-    protected void onDrawArraysPre() {
+    @Override
+    protected void onDrawArrayBefore() {
         for (int i = 0; i < inputTextureHandles.length
                 && inputTextureHandles[i] != OpenGLUtil.NO_TEXTURE; i++) {
             GLES20.glActiveTexture(GLES20.GL_TEXTURE0 + (i + 3));
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, inputTextureHandles[i]);
             GLES20.glUniform1i(inputTextureUniformLocations[i], (i + 3));
+        }
+    }
+
+    @Override
+    protected void onDrawArrayAfter() {
+        for (int i = 0; i < inputTextureHandles.length
+                && inputTextureHandles[i] != OpenGLUtil.NO_TEXTURE; i++) {
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE0 + (i + 3));
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         }
     }
 

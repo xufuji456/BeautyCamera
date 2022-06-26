@@ -37,20 +37,8 @@ public class BeautyHealthyFilter extends GPUImageFilter {
         mMaskGrey1TextureId = -1;
     }
 
-    protected void onDrawArraysAfter() {
-        if (mToneCurveTexture[0] != -1) {
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE3);
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        }
-        if (mMaskGrey1TextureId != -1) {
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE4);
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        }
-    }
-
-    protected void onDrawArraysPre() {
+    @Override
+    protected void onDrawArrayBefore() {
         if (mToneCurveTexture[0] != -1) {
             GLES20.glActiveTexture(GLES20.GL_TEXTURE3);
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mToneCurveTexture[0]);
@@ -60,6 +48,20 @@ public class BeautyHealthyFilter extends GPUImageFilter {
             GLES20.glActiveTexture(GLES20.GL_TEXTURE4);
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mMaskGrey1TextureId);
             GLES20.glUniform1i(mMaskGrey1UniformLocation, 4);
+        }
+    }
+
+    @Override
+    protected void onDrawArrayAfter() {
+        if (mToneCurveTexture[0] != -1) {
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE3);
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+        }
+        if (mMaskGrey1TextureId != -1) {
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE4);
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         }
     }
 
@@ -96,7 +98,7 @@ public class BeautyHealthyFilter extends GPUImageFilter {
                     arrayOfByte[(3 + i * 4)] = -1;
                 }
                 GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, 256, 1, 0, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, ByteBuffer.wrap(arrayOfByte));
-                mMaskGrey1TextureId = OpenGLUtil.loadTexture(BeautyParams.context, "filter/healthy_mask_1.jpg");
+                mMaskGrey1TextureId = OpenGLUtil.loadTexture(BeautyParams.context, "filter/healthy_mask.jpg");
             }
         });
     }

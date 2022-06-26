@@ -35,25 +35,8 @@ public class BeautyWarmFilter extends GPUImageFilter {
         mMaskGrey2TextureId = -1;
     }
 
-    protected void onDrawArraysAfter() {
-        if (mToneCurveTexture[0] != -1) {
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE3);
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        }
-        if (mMaskGrey1TextureId != -1) {
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE4);
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        }
-        if (mMaskGrey2TextureId != -1) {
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE5);
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        }
-    }
-
-    protected void onDrawArraysPre() {
+    @Override
+    protected void onDrawArrayBefore() {
         if (mToneCurveTexture[0] != -1) {
             GLES20.glActiveTexture(GLES20.GL_TEXTURE3);
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mToneCurveTexture[0]);
@@ -68,6 +51,25 @@ public class BeautyWarmFilter extends GPUImageFilter {
             GLES20.glActiveTexture(GLES20.GL_TEXTURE5);
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mMaskGrey2TextureId);
             GLES20.glUniform1i(mMaskGrey2UniformLocation, 5);
+        }
+    }
+
+    @Override
+    protected void onDrawArrayAfter() {
+        if (mToneCurveTexture[0] != -1) {
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE3);
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+        }
+        if (mMaskGrey1TextureId != -1) {
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE4);
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+        }
+        if (mMaskGrey2TextureId != -1) {
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE5);
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         }
     }
 
@@ -114,8 +116,8 @@ public class BeautyWarmFilter extends GPUImageFilter {
                     arrayOfByte[(3 + (1024 + j * 4))] = ((byte) arrayOfInt8[j]);
                 }
                 GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, 256, 2, 0, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, ByteBuffer.wrap(arrayOfByte));
-                mMaskGrey1TextureId = OpenGLUtil.loadTexture(BeautyParams.context, "filter/warm_layer1.jpg");
-                mMaskGrey2TextureId = OpenGLUtil.loadTexture(BeautyParams.context, "filter/bluevintage_mask1.jpg");
+                mMaskGrey1TextureId = OpenGLUtil.loadTexture(BeautyParams.context, "filter/warm_layer.jpg");
+                mMaskGrey2TextureId = OpenGLUtil.loadTexture(BeautyParams.context, "filter/bluevintage_mask.jpg");
             }
         });
     }

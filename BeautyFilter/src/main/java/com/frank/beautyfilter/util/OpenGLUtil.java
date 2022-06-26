@@ -80,20 +80,33 @@ public class OpenGLUtil {
         return textures[0];
     }
 
+    private static Bitmap getBitmapFromAssetFile(Context context, String name) {
+        try {
+            AssetManager assetManager = context.getResources().getAssets();
+            InputStream stream = assetManager.open(name);
+            Bitmap bitmap = BitmapFactory.decodeStream(stream);
+            stream.close();
+            return bitmap;
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
     public static int loadTexture(final Context context, final String name) {
         if (context == null || name == null)
             return NO_TEXTURE;
         final int[] textures = new int[1];
-        Bitmap bitmap;
-       AssetManager assetManager = context.getResources().getAssets();
-        try {
-           InputStream stream = assetManager.open(name);
-           bitmap = BitmapFactory.decodeStream(stream);
-           stream.close();
-        } catch (IOException e) {
+        GLES20.glGenTextures(1, textures, 0);
+        if (textures[0] == 0)
             return NO_TEXTURE;
-        }
-        bindTexture(textures);
+        Bitmap bitmap = getBitmapFromAssetFile(context, name);
+        if (bitmap == null)
+            return NO_TEXTURE;
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0]);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S,     GLES20.GL_CLAMP_TO_EDGE);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T,     GLES20.GL_CLAMP_TO_EDGE);
         GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
         bitmap.recycle();
         return textures[0];

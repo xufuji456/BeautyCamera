@@ -26,12 +26,11 @@ public class BeautyCrayonFilter extends GPUImageFilter {
         super.onInit();
         mStrengthLocation = GLES20.glGetUniformLocation(getProgramId(), "strength");
         mStepOffsetLocation = GLES20.glGetUniformLocation(getProgramId(), "singleStepOffset");
-        setFloat(mStrengthLocation, 2.0f); // repeat
     }
 
     protected void onInitialized() {
         super.onInitialized();
-        setFloat(mStrengthLocation, 0.5f); // repeat
+        setFloat(mStrengthLocation, 2.0f);
     }
 
     @Override

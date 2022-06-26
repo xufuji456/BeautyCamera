@@ -98,21 +98,23 @@ public class BeautySkinWhitenFilter extends GPUImageFilter {
         GLES20.glUniform1f(heightUniformLocation, 1.f / height);
     }
 
-    protected void onDrawArraysPre() {
-        super.onDrawArrayBefore();
-        if (toneCurveTexture[0] != OpenGLUtil.NO_TEXTURE) {
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE3);
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, toneCurveTexture[0]);
-            GLES20.glUniform1i(toneCurveUniformLocation, 3);
-        }
-    }
-
-    protected void onDrawArraysAfter() {
+    @Override
+    protected void onDrawArrayAfter() {
         super.onDrawArrayAfter();
         if (toneCurveTexture[0] != OpenGLUtil.NO_TEXTURE) {
             GLES20.glActiveTexture(GLES20.GL_TEXTURE3);
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
             GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+        }
+    }
+
+    @Override
+    protected void onDrawArrayBefore() {
+        super.onDrawArrayBefore();
+        if (toneCurveTexture[0] != OpenGLUtil.NO_TEXTURE) {
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE3);
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, toneCurveTexture[0]);
+            GLES20.glUniform1i(toneCurveUniformLocation, 3);
         }
     }
 
