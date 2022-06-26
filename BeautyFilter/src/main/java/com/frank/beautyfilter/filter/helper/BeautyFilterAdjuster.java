@@ -15,7 +15,7 @@ import com.frank.beautyfilter.filter.base.gpuimage.GPUImageSharpenFilter;
  * @date 2022/6/21 4:00 下午
  * @desc
  */
-class BeautyFilterAdjuster {
+public class BeautyFilterAdjuster {
 
     private final Adjuster<? extends GPUImageFilter> adjuster;
 
