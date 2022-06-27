@@ -9,6 +9,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.frank.beautyfilter.BeautyManager;
 import com.frank.beautyfilter.filter.base.gpuimage.GPUImageFilter;
 import com.frank.beautyfilter.helper.SavePictureTask;
 import com.frank.beautyfilter.util.OpenGLUtil;
@@ -52,7 +53,7 @@ public class BeautyImageView extends BeautyBaseView {
 
     }
 
- /*    @Override
+     @Override
     public void onDrawFrame(GL10 gl10) {
         super.onDrawFrame(gl10);
         if (textureId == OpenGLUtil.NO_TEXTURE) {
@@ -89,5 +90,5 @@ public class BeautyImageView extends BeautyBaseView {
             }
         }
     }
-*/
+
 }

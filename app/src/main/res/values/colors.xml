@@ -15,5 +15,6 @@
     <color name="filter_color_green_dark">#568f35</color>
     <color name="filter_color_red">#ff6666</color>
     <color name="filter_color_red_dark">#b93221</color>
+    <color name="filter_color_orange">#fe9833</color>
 
 </resources>
