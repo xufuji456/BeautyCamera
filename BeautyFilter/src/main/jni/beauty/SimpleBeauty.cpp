@@ -1,5 +1,5 @@
 #include "SimpleBeauty.h"
-#include "math.h"
+#include <cmath>
 #include "bitmap/BitmapOperation.h"
 #include "bitmap/Conversion.h"
 
@@ -13,31 +13,31 @@
 SimpleBeauty *SimpleBeauty::instance;
 
 SimpleBeauty *SimpleBeauty::getInstance() {
-    if (instance == NULL)
+    if (instance == nullptr)
         instance = new SimpleBeauty();
     return instance;
 }
 
 SimpleBeauty::SimpleBeauty() {
-    mIntegralMatrix = NULL;
-    mIntegralMatrixSqr = NULL;
-    mImageData_yuv = NULL;
-    mSkinMatrix = NULL;
-    mImageData_rgb = NULL;
+    mIntegralMatrix = nullptr;
+    mIntegralMatrixSqr = nullptr;
+    mImageData_yuv = nullptr;
+    mSkinMatrix = nullptr;
+    mImageData_rgb = nullptr;
     mSmoothLevel = 0.0;
     mWhitenLevel = 0.0;
 }
 
 SimpleBeauty::~SimpleBeauty() {
-    if (mIntegralMatrix != NULL)
+    if (mIntegralMatrix != nullptr)
         delete[] mIntegralMatrix;
-    if (mIntegralMatrixSqr != NULL)
+    if (mIntegralMatrixSqr != nullptr)
         delete[] mIntegralMatrixSqr;
-    if (mImageData_yuv != NULL)
+    if (mImageData_yuv != nullptr)
         delete[] mImageData_yuv;
-    if (mSkinMatrix != NULL)
+    if (mSkinMatrix != nullptr)
         delete[] mSkinMatrix;
-    if (mImageData_rgb != NULL)
+    if (mImageData_rgb != nullptr)
         delete[] mImageData_rgb;
 }
 
@@ -46,11 +46,11 @@ void SimpleBeauty::initMagicBeauty(JniBitmap *jniBitmap) {
     mImageWidth = jniBitmap->_bitmapInfo.width;
     mImageHeight = jniBitmap->_bitmapInfo.height;
 
-    if (mImageData_rgb == NULL)
+    if (mImageData_rgb == nullptr)
         mImageData_rgb = new uint32_t[mImageWidth * mImageHeight];
     memcpy(mImageData_rgb, jniBitmap->_storedBitmapPixels,
            sizeof(uint32_t) * mImageWidth * mImageHeight);
-    if (mImageData_yuv == NULL)
+    if (mImageData_yuv == nullptr)
         mImageData_yuv = new uint8_t[mImageWidth * mImageHeight * 3];
     Conversion::RGBToYCbCr((uint8_t *) mImageData_rgb, mImageData_yuv, mImageWidth * mImageHeight);
     initSkinMatrix();
@@ -58,9 +58,9 @@ void SimpleBeauty::initMagicBeauty(JniBitmap *jniBitmap) {
 }
 
 void SimpleBeauty::unInitMagicBeauty() {
-    if (instance != NULL)
+    if (instance != nullptr)
         delete instance;
-    instance = NULL;
+    instance = nullptr;
 }
 
 void SimpleBeauty::startSkinSmooth(float smoothLevel) {
@@ -100,7 +100,7 @@ void SimpleBeauty::_startSkinWhite(float whiteLevel) {
 }
 
 void SimpleBeauty::_startSkinSmooth(float smoothLevel) {
-    if (mIntegralMatrix == NULL || mIntegralMatrixSqr == NULL || mSkinMatrix == NULL) {
+    if (mIntegralMatrix == nullptr || mIntegralMatrixSqr == nullptr || mSkinMatrix == nullptr) {
         LOGE("not init correctly");
         return;
     }
@@ -123,12 +123,12 @@ void SimpleBeauty::_startSkinSmooth(float smoothLevel) {
                 int i2 = iMax * mImageWidth + (jMin - 1);
                 int i1 = (iMin - 1) * mImageWidth + jMax;
 
-                float m = (mIntegralMatrix[i4]
+                float m = (float)(mIntegralMatrix[i4]
                            + mIntegralMatrix[i3]
                            - mIntegralMatrix[i2]
                            - mIntegralMatrix[i1]) / squar;
 
-                float v = (mIntegralMatrixSqr[i4]
+                float v = (float)(mIntegralMatrixSqr[i4]
                            + mIntegralMatrixSqr[i3]
                            - mIntegralMatrixSqr[i2]
                            - mIntegralMatrixSqr[i1]) / squar - m * m;
@@ -143,7 +143,7 @@ void SimpleBeauty::_startSkinSmooth(float smoothLevel) {
 }
 
 void SimpleBeauty::initSkinMatrix() {
-    if (mSkinMatrix == NULL)
+    if (mSkinMatrix == nullptr)
         mSkinMatrix = new uint8_t[mImageWidth * mImageHeight];
     for (int i = 0; i < mImageHeight; i++) {
         for (int j = 0; j < mImageWidth; j++) {
@@ -162,13 +162,13 @@ void SimpleBeauty::initSkinMatrix() {
 }
 
 void SimpleBeauty::initIntegral() {
-    if (mIntegralMatrix == NULL)
+    if (mIntegralMatrix == nullptr)
         mIntegralMatrix = new uint64_t[mImageWidth * mImageHeight];
-    if (mIntegralMatrixSqr == NULL)
+    if (mIntegralMatrixSqr == nullptr)
         mIntegralMatrixSqr = new uint64_t[mImageWidth * mImageHeight];
 
-    uint64_t *columnSum = new uint64_t[mImageWidth];
-    uint64_t *columnSumSqr = new uint64_t[mImageWidth];
+    auto *columnSum = new uint64_t[mImageWidth];
+    auto *columnSumSqr = new uint64_t[mImageWidth];
 
     columnSum[0] = mImageData_yuv[0];
     columnSumSqr[0] = mImageData_yuv[0] * mImageData_yuv[0];
