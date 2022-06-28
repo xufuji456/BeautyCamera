@@ -27,19 +27,19 @@ import javax.microedition.khronos.opengles.GL10;
  */
 public abstract class BeautyBaseView extends GLSurfaceView implements GLSurfaceView.Renderer {
 
-    protected GPUImageFilter filter;
+    protected GPUImageFilter mFilter;
 
-    protected int textureId = OpenGLUtil.NO_TEXTURE;
+    protected int mTextureId = OpenGLUtil.NO_TEXTURE;
 
     protected FloatBuffer mVertexBuffer;
 
     protected FloatBuffer mTextureBuffer;
 
-    protected int imageWidth, imageHeight;
+    protected int mImageWidth, mImageHeight;
 
-    protected int surfaceWidth, surfaceHeight;
+    protected int mSurfaceWidth, mSurfaceHeight;
 
-    protected ScaleType scaleType = ScaleType.FIX_XY;
+    protected ScaleType mScaleType = ScaleType.FIX_XY;
 
     public BeautyBaseView(Context context) {
         this(context, null);
@@ -72,15 +72,15 @@ public abstract class BeautyBaseView extends GLSurfaceView implements GLSurfaceV
     @Override
     public void onSurfaceChanged(GL10 gl10, int width, int height) {
         GLES20.glViewport(0, 0, width, height);
-        surfaceWidth = width;
-        surfaceHeight = height;
-        onFilterChanged();
+        mSurfaceWidth = width;
+        mSurfaceHeight = height;
+        onFilterChanged(null);
     }
 
-    protected void onFilterChanged() {
-        if (filter != null) {
-            filter.onInputSizeChanged(imageWidth, imageHeight);
-            filter.onOutputSizeChanged(surfaceWidth, surfaceHeight);
+    protected void onFilterChanged(GPUImageFilter filter) {
+        if (mFilter != null) {
+            mFilter.onInputSizeChanged(mImageWidth, mImageHeight);
+            mFilter.onOutputSizeChanged(mSurfaceWidth, mSurfaceHeight);
         }
     }
 
@@ -100,22 +100,22 @@ public abstract class BeautyBaseView extends GLSurfaceView implements GLSurfaceV
         float[] vertexData = TextureRotateUtil.VERTEX;
         float[] textureData = TextureRotateUtil.getRotateTexture(Rotation.fromInt(rotation),
                 horizontalFlip, verticalFlip);
-        float ratio1 = (float) surfaceWidth / imageWidth;
-        float ratio2 = (float) surfaceHeight / imageHeight;
+        float ratio1 = (float) mSurfaceWidth / mImageWidth;
+        float ratio2 = (float) mSurfaceHeight / mImageHeight;
         float ratioMax = Math.max(ratio1, ratio2);
-        int imageWidthNew = Math.round(imageWidth * ratioMax);
-        int imageHeightNew = Math.round(imageHeight * ratioMax);
-        float ratioWidth = (float) imageWidthNew / surfaceWidth;
-        float ratioHeight = (float) imageHeightNew / surfaceHeight;
+        int imageWidthNew = Math.round(mImageWidth * ratioMax);
+        int imageHeightNew = Math.round(mImageHeight * ratioMax);
+        float ratioWidth = (float) imageWidthNew / mSurfaceWidth;
+        float ratioHeight = (float) imageHeightNew / mSurfaceHeight;
 
-        if (scaleType == ScaleType.CENTER_INSIDE) {
+        if (mScaleType == ScaleType.CENTER_INSIDE) {
             vertexData = new float[] {
                     TextureRotateUtil.VERTEX[0] / ratioHeight, TextureRotateUtil.VERTEX[1] / ratioWidth,
                     TextureRotateUtil.VERTEX[2] / ratioHeight, TextureRotateUtil.VERTEX[3] / ratioWidth,
                     TextureRotateUtil.VERTEX[4] / ratioHeight, TextureRotateUtil.VERTEX[5] / ratioWidth,
                     TextureRotateUtil.VERTEX[6] / ratioHeight, TextureRotateUtil.VERTEX[7] / ratioWidth,
             };
-        } else if (scaleType == ScaleType.CENTER_CROP) {
+        } else if (mScaleType == ScaleType.CENTER_CROP) {
             float horizontalDist = (1 - 1 / ratioWidth) / 2;
             float verticalDist   = (1 - 1 / ratioHeight) / 2;
             textureData = new float[] {
@@ -124,7 +124,7 @@ public abstract class BeautyBaseView extends GLSurfaceView implements GLSurfaceV
                     addDistance(textureData[4], verticalDist), addDistance(textureData[5], horizontalDist),
                     addDistance(textureData[6], verticalDist), addDistance(textureData[7], horizontalDist),
             };
-        } else if (scaleType == ScaleType.FIX_XY) {
+        } else if (mScaleType == ScaleType.FIX_XY) {
 
         }
 
@@ -135,12 +135,12 @@ public abstract class BeautyBaseView extends GLSurfaceView implements GLSurfaceV
     }
 
     protected void deleteTextures() {
-        if (textureId != OpenGLUtil.NO_TEXTURE) {
+        if (mTextureId != OpenGLUtil.NO_TEXTURE) {
             queueEvent(new Runnable() {
                 @Override
                 public void run() {
-                    GLES20.glDeleteTextures(1, new int[] {textureId}, 0);
-                    textureId = OpenGLUtil.NO_TEXTURE;
+                    GLES20.glDeleteTextures(1, new int[] {mTextureId}, 0);
+                    mTextureId = OpenGLUtil.NO_TEXTURE;
                 }
             });
         }
@@ -150,13 +150,13 @@ public abstract class BeautyBaseView extends GLSurfaceView implements GLSurfaceV
         queueEvent(new Runnable() {
             @Override
             public void run() {
-                if (filter != null)
-                    filter.destroy();
-                filter = null;
-                filter = BeautyFilterFactory.getFilter(type);
-                if (filter != null)
-                    filter.init();
-                onFilterChanged();
+                if (mFilter != null)
+                    mFilter.destroy();
+                mFilter = null;
+                mFilter = BeautyFilterFactory.getFilter(type);
+                if (mFilter != null)
+                    mFilter.init();
+                onFilterChanged(mFilter);
             }
         });
         requestRender();

@@ -14,6 +14,7 @@ import com.frank.beautyfilter.camera.CameraEngine;
 import com.frank.beautyfilter.camera.CameraPrivateInfo;
 import com.frank.beautyfilter.filter.advance.BeautyBeautifulFilter;
 import com.frank.beautyfilter.filter.base.BeautyCameraFilter;
+import com.frank.beautyfilter.filter.base.gpuimage.GPUImageFilter;
 import com.frank.beautyfilter.filter.helper.BeautyFilterType;
 import com.frank.beautyfilter.helper.SavePictureTask;
 import com.frank.beautyfilter.recorder.video.TextureVideoRecorder;
@@ -63,7 +64,7 @@ public class BeautyCameraView extends BeautyBaseView {
         this.getHolder().addCallback(this);
         recordEnable = false;
         recordingStatus = -1;
-        scaleType = ScaleType.CENTER_CROP;
+        mScaleType = ScaleType.CENTER_CROP;
         cameraEngine = new CameraEngine();
         videoRecorder = new TextureVideoRecorder();
         outputFile = new File(BeautyParams.videoPath, BeautyParams.videoName);
@@ -80,7 +81,7 @@ public class BeautyCameraView extends BeautyBaseView {
                     @Override
                     public void run() {
                         final Bitmap photo = drawPhoto(bitmap, cameraEngine.getCameraInfo().isFront);
-                        GLES20.glViewport(0, 0, surfaceWidth, surfaceHeight);
+                        GLES20.glViewport(0, 0, mSurfaceWidth, mSurfaceHeight);
                         task.execute(photo);
                     }
                 });
@@ -94,13 +95,13 @@ public class BeautyCameraView extends BeautyBaseView {
             cameraEngine.openCamera();
         CameraPrivateInfo info = cameraEngine.getCameraInfo();
         if (info.orientation == 90 || info.orientation == 270) {
-            imageWidth = info.previewHeight;
-            imageHeight = info.previewWidth;
+            mImageWidth = info.previewHeight;
+            mImageHeight = info.previewWidth;
         } else {
-            imageWidth = info.previewWidth;
-            imageHeight = info.previewHeight;
+            mImageWidth = info.previewWidth;
+            mImageHeight = info.previewHeight;
         }
-        cameraFilter.onInputSizeChanged(imageWidth, imageHeight);
+        cameraFilter.onInputSizeChanged(mImageWidth, mImageHeight);
         adjustSize(info.orientation, info.isFront, true);
         if (surfaceTexture != null)
             cameraEngine.startPreview(surfaceTexture);
@@ -125,10 +126,10 @@ public class BeautyCameraView extends BeautyBaseView {
         if (cameraFilter == null)
             cameraFilter = new BeautyCameraFilter();
         cameraFilter.init();
-        if (textureId == OpenGLUtil.NO_TEXTURE) {
-            textureId = OpenGLUtil.getExternalOESTextureId();
-            if (textureId != OpenGLUtil.NO_TEXTURE) {
-                surfaceTexture = new SurfaceTexture(textureId);
+        if (mTextureId == OpenGLUtil.NO_TEXTURE) {
+            mTextureId = OpenGLUtil.getExternalOESTextureId();
+            if (mTextureId != OpenGLUtil.NO_TEXTURE) {
+                surfaceTexture = new SurfaceTexture(mTextureId);
                 surfaceTexture.setOnFrameAvailableListener(onFrameAvailableListener);
             }
         }
@@ -186,12 +187,12 @@ public class BeautyCameraView extends BeautyBaseView {
         float[] mtx = new float[16];
         surfaceTexture.getTransformMatrix(mtx);
         cameraFilter.setTextureTransformMatrix(mtx);
-        int id = textureId;
-        if (filter == null) {
-            cameraFilter.onDrawFrame(textureId, mVertexBuffer, mTextureBuffer);
+        int id = mTextureId;
+        if (mFilter == null) {
+            cameraFilter.onDrawFrame(mTextureId, mVertexBuffer, mTextureBuffer);
         } else {
-            id = cameraFilter.onDrawToTexture(textureId);
-            filter.onDrawFrame(id, mVertexBuffer, mTextureBuffer);
+            id = cameraFilter.onDrawToTexture(mTextureId);
+            mFilter.onDrawFrame(id, mVertexBuffer, mTextureBuffer);
         }
         videoRecorder.setTextureId(id);
         videoRecorder.frameAvailable(surfaceTexture);
@@ -204,11 +205,11 @@ public class BeautyCameraView extends BeautyBaseView {
     }
 
     @Override
-    protected void onFilterChanged() {
-        super.onFilterChanged();
-        cameraFilter.onOutputSizeChanged(surfaceWidth, surfaceHeight);
-        if (filter != null)
-            cameraFilter.initFrameBuffer(imageWidth, imageHeight);
+    protected void onFilterChanged(GPUImageFilter filter) {
+        super.onFilterChanged(filter);
+        cameraFilter.onOutputSizeChanged(mSurfaceWidth, mSurfaceHeight);
+        if (mFilter != null)
+            cameraFilter.initFrameBuffer(mImageWidth, mImageHeight);
         else
             cameraFilter.destroyFrameBuffer();
     }
@@ -234,9 +235,9 @@ public class BeautyCameraView extends BeautyBaseView {
         beautyFilter.onOutputSizeChanged(width, height);
         beautyFilter.onInputSizeChanged(width, height);
 
-        if (filter != null) {
-            filter.onInputSizeChanged(width, height);
-            filter.onOutputSizeChanged(width, height);
+        if (mFilter != null) {
+            mFilter.onInputSizeChanged(width, height);
+            mFilter.onOutputSizeChanged(width, height);
         }
         GLES20.glGenFramebuffers(1, mFrameBuffers, 0);
         GLES20.glGenTextures(1, mFrameBufferTextures, 0);
@@ -271,11 +272,11 @@ public class BeautyCameraView extends BeautyBaseView {
             glTextureBuffer.put(TextureRotateUtil.getRotateTexture(Rotation.NORMAL, false, true)).position(0);
 
 
-        if (filter == null) {
+        if (mFilter == null) {
             beautyFilter.onDrawFrame(textureId, glVertexBuffer, glTextureBuffer);
         } else {
             beautyFilter.onDrawFrame(textureId);
-            filter.onDrawFrame(mFrameBufferTextures[0], glVertexBuffer, glTextureBuffer);
+            mFilter.onDrawFrame(mFrameBufferTextures[0], glVertexBuffer, glTextureBuffer);
         }
         IntBuffer ib = IntBuffer.allocate(width * height);
         GLES20.glReadPixels(0, 0, width, height, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, ib);
@@ -289,9 +290,9 @@ public class BeautyCameraView extends BeautyBaseView {
 
         beautyFilter.destroy();
         beautyFilter = null;
-        if (filter != null) {
-            filter.onOutputSizeChanged(surfaceWidth, surfaceHeight);
-            filter.onInputSizeChanged(imageWidth, imageHeight);
+        if (mFilter != null) {
+            mFilter.onOutputSizeChanged(mSurfaceWidth, mSurfaceHeight);
+            mFilter.onInputSizeChanged(mImageWidth, mImageHeight);
         }
         return result;
     }
