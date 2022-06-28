@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class FilterLayoutUtils {
+public class FilterLayoutUtil {
 
     private int position;
     private final Context mContext;
@@ -35,25 +35,9 @@ public class FilterLayoutUtils {
     private BeautyFilterType mFilterType = BeautyFilterType.NONE;
 
 
-    public FilterLayoutUtils(Context context, BeautyBaseDisplay beautyDisplay) {
+    public FilterLayoutUtil(Context context, BeautyBaseDisplay beautyDisplay) {
         mContext = context;
         mBeautyDisplay = beautyDisplay;
-    }
-
-    public void init() {
-        btn_Favourite = ((Activity) mContext).findViewById(R.id.btn_camera_favourite);
-        btn_Favourite.setOnClickListener(btn_Favourite_listener);
-
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(mContext);
-        linearLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
-        RecyclerView mFilterListView = ((Activity) mContext).findViewById(R.id.filter_listView);
-        mFilterListView.setLayoutManager(linearLayoutManager);
-
-        mAdapter = new FilterAdapter(mContext);
-        mFilterListView.setAdapter(mAdapter);
-        initFilterInfos();
-        mAdapter.setFilterList(filterList);
-        mAdapter.setOnFilterChangeListener(onFilterChangeListener);
     }
 
     public void init(View view) {
@@ -79,7 +63,7 @@ public class FilterLayoutUtils {
         @Override
         public void onFilterChanged(BeautyFilterType filterType, int position) {
             BeautyFilterType type = filterList.get(position).getFilterType();
-            FilterLayoutUtils.this.position = position;
+            FilterLayoutUtil.this.position = position;
             mBeautyDisplay.setFilter(filterType);
             mFilterType = filterType;
             if (position != 0)
@@ -92,7 +76,7 @@ public class FilterLayoutUtils {
                     if (filterList.get(i).getFilterType() == type) {
                         filterList.get(i).setSelected(true);
                         mAdapter.setLastSelected(i);
-                        FilterLayoutUtils.this.position = i;
+                        FilterLayoutUtil.this.position = i;
                         mAdapter.notifyItemChanged(i);
                     } else if (filterList.get(i).isSelected()) {
                         filterList.get(i).setSelected(false);

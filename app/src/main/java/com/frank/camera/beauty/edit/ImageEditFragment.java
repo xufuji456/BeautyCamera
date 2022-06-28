@@ -11,10 +11,10 @@ public abstract class ImageEditFragment extends Fragment {
 
     protected Context mContext;
     protected OnHideListener mOnHideListener;
-    protected BeautyImageDisplay mMagicDisplay;
+    protected BeautyImageDisplay mBeautyDisplay;
 
-    public ImageEditFragment(Context context, BeautyImageDisplay magicDisplay) {
-        this.mMagicDisplay = magicDisplay;
+    public ImageEditFragment(Context context, BeautyImageDisplay beautyDisplay) {
+        this.mBeautyDisplay = beautyDisplay;
         this.mContext = context;
     }
 
@@ -26,14 +26,14 @@ public abstract class ImageEditFragment extends Fragment {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     onDialogButtonClick(dialog);
-                    mMagicDisplay.commit();
+                    mBeautyDisplay.commit();
                 }
             }).setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     onDialogButtonClick(dialog);
-                    mMagicDisplay.restore();
+                    mBeautyDisplay.restore();
                 }
             }).create().show();
         } else {

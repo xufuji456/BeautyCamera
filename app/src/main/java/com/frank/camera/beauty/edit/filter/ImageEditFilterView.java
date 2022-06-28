@@ -10,13 +10,13 @@ import android.view.ViewGroup;
 import com.frank.beautyfilter.display.BeautyImageDisplay;
 import com.frank.beautyfilter.filter.helper.BeautyFilterType;
 import com.frank.camera.R;
-import com.frank.camera.beauty.edit.FilterLayoutUtils;
+import com.frank.camera.beauty.edit.FilterLayoutUtil;
 import com.frank.camera.beauty.edit.ImageEditFragment;
 
 @SuppressLint("ValidFragment")
 public class ImageEditFilterView extends ImageEditFragment {
 	
-	private FilterLayoutUtils mFilterLayoutUtils;
+	private FilterLayoutUtil mFilterLayoutUtil;
 	
 	public ImageEditFilterView(Context context, BeautyImageDisplay beautyDisplay) {
 		super(context, beautyDisplay);
@@ -30,20 +30,20 @@ public class ImageEditFilterView extends ImageEditFragment {
 
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {
-		mFilterLayoutUtils = new FilterLayoutUtils(getActivity(), mMagicDisplay);
-		mFilterLayoutUtils.init(getView());
+		mFilterLayoutUtil = new FilterLayoutUtil(getActivity(), mBeautyDisplay);
+		mFilterLayoutUtil.init(getView());
 		super.onCreate(savedInstanceState);
 	}
 
 	@Override
 	public void onHiddenChanged(boolean hidden) {
 		if(!hidden)
-			mFilterLayoutUtils.init(getView());
+			mFilterLayoutUtil.init(getView());
 	}
 
 	@Override
 	protected boolean isChanged() {
-		return mFilterLayoutUtils.getFilterType() != BeautyFilterType.NONE;
+		return mFilterLayoutUtil.getFilterType() != BeautyFilterType.NONE;
 	}
 
 }

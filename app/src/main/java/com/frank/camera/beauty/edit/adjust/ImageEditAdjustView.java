@@ -109,7 +109,7 @@ public class ImageEditAdjustView extends ImageEditFragment {
         mSeekBar = view.findViewById(R.id.item_seek_bar);
         mSeekBar.setOnSeekChangeListener(mOnSeekChangeListener);
         mLinearLayout = view.findViewById(R.id.seek_bar_item_menu);
-        mMagicDisplay.setFilter(BeautyFilterType.IMAGE_ADJUST);
+        mBeautyDisplay.setFilter(BeautyFilterType.IMAGE_ADJUST);
     }
 
     @Override
@@ -123,11 +123,11 @@ public class ImageEditAdjustView extends ImageEditFragment {
             brightness = 0.0f;
             hue = 0.0f;
             mRadioGroup.clearCheck();
-            mMagicDisplay.setFilter(BeautyFilterType.NONE);
+            mBeautyDisplay.setFilter(BeautyFilterType.NONE);
             mLinearLayout.setVisibility(View.INVISIBLE);
             type = BeautyFilterType.NONE;
         } else {
-            mMagicDisplay.setFilter(BeautyFilterType.IMAGE_ADJUST);
+            mBeautyDisplay.setFilter(BeautyFilterType.IMAGE_ADJUST);
         }
     }
 
@@ -172,7 +172,7 @@ public class ImageEditAdjustView extends ImageEditFragment {
         public void onSeekChanged(float value, float step) {
             mVal.setText("" + value);
             mLabel.setPressed(value != 0.0f);
-            mMagicDisplay.adjustFilter(convertToProgress(value), type.ordinal());
+            mBeautyDisplay.adjustFilter(convertToProgress(value), type.ordinal());
         }
     };
 }
