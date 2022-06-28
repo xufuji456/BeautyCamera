@@ -14,7 +14,7 @@ public class GPUImageSaturationFilter extends GPUImageFilter {
             "uniform sampler2D inputImageTexture;\n" +
             "uniform lowp float saturation;\n" +
             "const mediump vec3 lumaWeight = vec3(0.2125, 0.7154, 0.0721);\n" +
-            "void main() {" +
+            "void main() {\n" +
                 "lowp vec4 textureColor = texture2D(inputImageTexture, textureCoordinate);\n" +
                 "lowp float luma = dot(textureColor.rgb, lumaWeight);\n" +
                 "lowp vec3 scaleColor = vec3(luma);\n" +

@@ -13,7 +13,7 @@ public class GPUImageBrightnessFilter extends GPUImageFilter {
             "varying highp vec2 textureCoordinate;\n" +
             "uniform sampler2D inputImageTexture;\n" +
             "uniform lowp float brightness;\n" +
-            "void main() {" +
+            "void main() {\n" +
                 "lowp vec4 textureColor = texture2D(inputImageTexture, textureCoordinate);\n" +
                 "gl_FragColor = vec4((textureColor.rgb + vec3(brightness)), textureColor.w);\n" +
             "}";

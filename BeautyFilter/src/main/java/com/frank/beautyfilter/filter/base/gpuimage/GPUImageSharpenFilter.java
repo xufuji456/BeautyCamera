@@ -22,7 +22,7 @@ public class GPUImageSharpenFilter extends GPUImageFilter {
             "uniform float imageWidthFactor;\n" +
             "uniform float imageHeightFactor;\n" +
             "uniform float sharpness;\n" +
-            "void main() {" +
+            "void main() {\n" +
                 "gl_Position = position;\n" +
                 "mediump vec2 width = vec2(imageWidthFactor, 0.0);\n" +
                 "mediump vec2 height = vec2(0.0, imageHeightFactor);\n" +
@@ -47,11 +47,11 @@ public class GPUImageSharpenFilter extends GPUImageFilter {
             "varying highp float edgeMultiplier;\n" +
             "uniform sampler2D inputImageTexture;\n" +
             "void main() {" +
-                "vec3 textureColor = texture2D(inputImageTexture, textureCoordinate).rgb;\n" +
-                "vec3 leftTextureColor = texture2D(inputImageTexture, leftTextureCoordinate).rgb;\n" +
-                "vec3 rightTextureColor = texture2D(inputImageTexture, rightTextureCoordinate).rgb;\n" +
-                "vec3 topTextureColor = texture2D(inputImageTexture, topTextureCoordinate).rgb;\n" +
-                "vec3 bottomTextureColor = texture2D(inputImageTexture, bottomTextureCoordinate).rgb;\n" +
+                "mediump vec3 textureColor = texture2D(inputImageTexture, textureCoordinate).rgb;\n" +
+                "mediump vec3 leftTextureColor = texture2D(inputImageTexture, leftTextureCoordinate).rgb;\n" +
+                "mediump vec3 rightTextureColor = texture2D(inputImageTexture, rightTextureCoordinate).rgb;\n" +
+                "mediump vec3 topTextureColor = texture2D(inputImageTexture, topTextureCoordinate).rgb;\n" +
+                "mediump vec3 bottomTextureColor = texture2D(inputImageTexture, bottomTextureCoordinate).rgb;\n" +
                 "gl_FragColor = vec4((textureColor * centerMultiplier - " +
                     "((leftTextureColor+rightTextureColor+topTextureColor+bottomTextureColor)* edgeMultiplier)), " +
                     "texture2D(inputImageTexture, bottomTextureCoordinate).w);\n" +

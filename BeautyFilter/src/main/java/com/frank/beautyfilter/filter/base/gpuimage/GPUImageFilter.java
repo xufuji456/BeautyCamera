@@ -2,6 +2,7 @@ package com.frank.beautyfilter.filter.base.gpuimage;
 
 import android.graphics.PointF;
 import android.opengl.GLES20;
+import android.util.Log;
 
 import com.frank.beautyfilter.util.OpenGLUtil;
 import com.frank.beautyfilter.util.Rotation;
@@ -31,7 +32,7 @@ public class GPUImageFilter {
     public final static String NORMAL_FRAGMENT_SHADER =
             "varying highp vec2 textureCoordinate;\n" +
             "uniform sampler2D inputImageTexture;\n" +
-            "void main() {" +
+            "void main() {\n" +
                 "gl_FragColor = texture2D(inputImageTexture, textureCoordinate);\n" +
             "}";
 

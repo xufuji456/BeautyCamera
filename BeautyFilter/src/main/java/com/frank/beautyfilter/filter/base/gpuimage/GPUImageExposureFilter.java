@@ -13,7 +13,7 @@ public class GPUImageExposureFilter extends GPUImageFilter {
             "varying highp vec2 textureCoordinate;\n" +
                     "uniform sampler2D inputImageTexture;\n" +
                     "uniform highp float exposure;\n" +
-                    "void main() {" +
+                    "void main() {\n" +
                         "highp vec4 textureColor = texture2D(inputImageTexture, textureCoordinate);\n" +
                         "gl_FragColor = vec4(textureColor.rgb * pow(2.0, exposure), textureColor.w);\n" +
                     "}";

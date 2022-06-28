@@ -20,7 +20,7 @@ public class GPUImageHueFilter extends GPUImageFilter {
             "const highp vec4 kRGBToR = vec4(1.0, 0.9563, 0.6210, 0.0);\n" +
             "const highp vec4 kRGBToG = vec4(1.0, -0.2721, -0.6474, 0.0);\n" +
             "const highp vec4 kRGBToB = vec4(1.0, -1.1070, 1.7046, 0.0);\n" +
-            "void main() {" +
+            "void main() {\n" +
                 "highp vec4 textureColor = texture2D(inputImageTexture, textureCoordinate);\n" +
                 "highp float Y = dot(textureColor, kRGBToY);\n" +
                 "highp float I = dot(textureColor, kRGBToI);\n" +

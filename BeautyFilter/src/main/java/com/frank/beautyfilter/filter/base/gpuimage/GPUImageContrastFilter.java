@@ -13,7 +13,7 @@ public class GPUImageContrastFilter extends GPUImageFilter {
             "varying highp vec2 textureCoordinate;\n" +
                     "uniform sampler2D inputImageTexture;\n" +
                     "uniform lowp float contrast;\n" +
-                    "void main() {" +
+                    "void main() {\n" +
                         "lowp vec4 textureColor = texture2D(inputImageTexture, textureCoordinate);\n" +
                         "gl_FragColor = vec4(((textureColor.rgb - vec3(0.5)) * contrast + vec3(0.5)), textureColor.w);\n" +
                     "}";
