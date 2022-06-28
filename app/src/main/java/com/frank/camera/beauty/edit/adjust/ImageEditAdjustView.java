@@ -13,6 +13,7 @@ import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.widget.TextView;
 
 import com.frank.beautyfilter.display.BeautyImageDisplay;
+import com.frank.beautyfilter.filter.factory.BeautyFilterFactory;
 import com.frank.beautyfilter.filter.helper.BeautyFilterType;
 import com.frank.camera.R;
 import com.frank.camera.beauty.edit.ImageEditFragment;
@@ -23,11 +24,11 @@ public class ImageEditAdjustView extends ImageEditFragment {
 
     private TextView mVal;
     private ImageView mLabel;
-    private float hue = 0.0f;
     private RadioGroup mRadioGroup;
     private TwoLineSeekBar mSeekBar;
     private LinearLayout mLinearLayout;
 
+    private float hue        = 0.0f;
     private float exposure   = 0.0f;
     private float contrast   = -50.0f;
     private float sharpness  = 0.0f;
@@ -52,11 +53,15 @@ public class ImageEditAdjustView extends ImageEditFragment {
         mRadioGroup = getView().findViewById(R.id.fragment_adjust_radiogroup);
         mRadioGroup.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 
+            @SuppressLint("NonConstantResourceId")
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
 
                 if (checkedId != -1)
                     mLinearLayout.setVisibility(View.VISIBLE);
+                if (BeautyFilterFactory.getFilterType() != BeautyFilterType.IMAGE_ADJUST) {
+                    mBeautyDisplay.setFilter(BeautyFilterType.IMAGE_ADJUST);
+                }
                 switch (checkedId) {
                     case R.id.fragment_radio_contrast:
                         type = BeautyFilterType.CONTRAST;
@@ -109,7 +114,7 @@ public class ImageEditAdjustView extends ImageEditFragment {
         mSeekBar = view.findViewById(R.id.item_seek_bar);
         mSeekBar.setOnSeekChangeListener(mOnSeekChangeListener);
         mLinearLayout = view.findViewById(R.id.seek_bar_item_menu);
-        mBeautyDisplay.setFilter(BeautyFilterType.IMAGE_ADJUST);
+        mBeautyDisplay.setFilter(BeautyFilterType.CONTRAST);
     }
 
     @Override
@@ -136,6 +141,7 @@ public class ImageEditAdjustView extends ImageEditFragment {
                 || sharpness != 0.0f || brightness != 0.0f || hue != 0.0f;
     }
 
+    @SuppressLint("NonConstantResourceId")
     private int convertToProgress(float value) {
         switch (mRadioGroup.getCheckedRadioButtonId()) {
             case R.id.fragment_radio_contrast:
@@ -172,7 +178,7 @@ public class ImageEditAdjustView extends ImageEditFragment {
         public void onSeekChanged(float value, float step) {
             mVal.setText("" + value);
             mLabel.setPressed(value != 0.0f);
-            mBeautyDisplay.adjustFilter(convertToProgress(value), type.ordinal());
+            mBeautyDisplay.adjustFilter(convertToProgress(value), type);
         }
     };
 }

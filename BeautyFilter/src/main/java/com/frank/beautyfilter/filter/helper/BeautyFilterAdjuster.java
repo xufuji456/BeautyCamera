@@ -1,7 +1,6 @@
 package com.frank.beautyfilter.filter.helper;
 
 import com.frank.beautyfilter.filter.advance.BeautyImageAdjustFilter;
-import com.frank.beautyfilter.filter.base.BeautyAdjustFilter;
 import com.frank.beautyfilter.filter.base.gpuimage.GPUImageBrightnessFilter;
 import com.frank.beautyfilter.filter.base.gpuimage.GPUImageContrastFilter;
 import com.frank.beautyfilter.filter.base.gpuimage.GPUImageExposureFilter;
@@ -32,6 +31,8 @@ public class BeautyFilterAdjuster {
             adjuster = new SaturationAdjuster().filter(filter);
         } else if (filter instanceof GPUImageSharpenFilter) {
             adjuster = new SharpenAdjuster().filter(filter);
+        }  else if (filter instanceof BeautyImageAdjustFilter) {
+            adjuster = new ImageAdjustAdjuster().filter(filter);
         } else {
             adjuster = null;
         }
@@ -47,9 +48,9 @@ public class BeautyFilterAdjuster {
         }
     }
 
-    public void adjust(int percent, int type) {
-        if (adjuster != null) {
-            adjuster.adjust(percent, type);
+    public void adjust(int percent, BeautyFilterType type) {
+        if (adjuster instanceof ImageAdjustAdjuster) {
+            ((ImageAdjustAdjuster) adjuster).adjust(percent, type);
         }
     }
 
@@ -67,10 +68,6 @@ public class BeautyFilterAdjuster {
         }
 
         public abstract void adjust(int percent);
-
-        public void adjust(int percent,  int type) {
-            adjust(percent);
-        }
 
         protected float range(int percent, float start, float end) {
             return (end - start) * percent / 100.0f + start;
@@ -119,7 +116,7 @@ public class BeautyFilterAdjuster {
         }
     }
 
-    private class ImageAdjustAdjuster extends Adjuster<BeautyImageAdjustFilter> {
+    private static class ImageAdjustAdjuster extends Adjuster<BeautyImageAdjustFilter> {
         @Override
         public void adjust(int percent) {
 

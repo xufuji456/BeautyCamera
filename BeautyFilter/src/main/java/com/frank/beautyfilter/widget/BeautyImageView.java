@@ -182,7 +182,7 @@ public class BeautyImageView extends BeautyBaseView {
         }
     }
 
-    public void adjustFilter(int percent, int type) {
+    public void adjustFilter(int percent, BeautyFilterType type) {
         if (mFilterAdjust != null && mFilterAdjust.canAdjust()) {
             mFilterAdjust.adjust(percent, type);
             this.requestRender();
