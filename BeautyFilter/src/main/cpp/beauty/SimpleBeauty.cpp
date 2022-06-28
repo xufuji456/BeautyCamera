@@ -1,7 +1,7 @@
 #include "SimpleBeauty.h"
 #include <cmath>
-#include "bitmap/BitmapOperation.h"
-#include "bitmap/Conversion.h"
+#include "../bitmap/BitmapOperation.h"
+#include "../bitmap/Conversion.h"
 
 #define  LOG_TAG    "SimpleBeauty"
 #define  LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG,LOG_TAG,__VA_ARGS__)

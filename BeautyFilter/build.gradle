@@ -26,13 +26,13 @@ android {
     sourceSets {
         main {
             jniLibs.srcDir 'src/main/libs'
-            jni.srcDirs 'src/main/jni'
+            jni.srcDirs 'src/main/cpp'
         }
     }
 
     externalNativeBuild {
-        ndkBuild {
-            path "src/main/jni/Android.mk"
+        cmake {
+            path "src/main/cpp/CMakeLists.txt"
         }
     }
 
