@@ -58,6 +58,10 @@ public class BeautyImageDisplay extends BeautyBaseDisplay {
     @Override
     public void onSurfaceChanged(GL10 gl10, int width, int height) {
         GLES20.glViewport(0, 0, width, height);
+        mSurfaceWidth = width;
+        mSurfaceHeight = height;
+        adjustImageDisplaySize();
+        onFilterChanged();
     }
 
     @Override

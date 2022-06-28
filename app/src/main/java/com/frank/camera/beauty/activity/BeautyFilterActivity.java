@@ -78,7 +78,7 @@ public class BeautyFilterActivity extends AppCompatActivity implements View.OnCl
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_beauty_camera);
-        mBeautyEngine = new BeautyEngine((BeautyCameraView)findViewById(R.id.glsurfaceview_camera));
+        mBeautyEngine = new BeautyEngine(findViewById(R.id.glsurfaceview_camera));
         initView();
     }
 

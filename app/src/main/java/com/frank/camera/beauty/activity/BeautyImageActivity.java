@@ -17,6 +17,7 @@ import android.view.View;
 import android.widget.RadioGroup;
 import android.widget.RadioGroup.OnCheckedChangeListener;
 
+import com.frank.beautyfilter.BeautyEngine;
 import com.frank.beautyfilter.display.BeautyImageDisplay;
 import com.frank.camera.R;
 import com.frank.camera.beauty.edit.ImageEditFragment;
@@ -37,6 +38,7 @@ public class BeautyImageActivity extends Activity {
     private Fragment[] mFragments;
     private int mFragmentTag = -1;
 
+    private BeautyEngine mBeautyEngine;
     private BeautyImageDisplay mImageDisplay;
 
     private final int REQUEST_PICK_IMAGE = 1;
@@ -94,10 +96,9 @@ public class BeautyImageActivity extends Activity {
                         else
                             getFragmentManager().beginTransaction().show(mFragments[i]).commit();
                         mFragmentTag = 2;
-//					if (mMagicEngine == null) {
-//						MagicEngine.Builder builder = new MagicEngine.Builder();
-//						mMagicEngine = builder.build((MagicImageView)findViewById(R.id.glsurfaceview_image));
-//					}
+//                        if (mBeautyEngine == null) {
+//                            mBeautyEngine = new BeautyEngine(findViewById(R.id.glsurfaceview_image));
+//                        }
                         break;
                     case R.id.image_edit_beauty:
                         i = 0;
@@ -167,7 +168,6 @@ public class BeautyImageActivity extends Activity {
 
     @Override
     protected void onDestroy() {
-        // TODO Auto-generated method stub
         super.onDestroy();
         if (mImageDisplay != null) {
             mImageDisplay.onDestroy();
