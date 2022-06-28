@@ -2,6 +2,7 @@ package com.frank.camera.activity;
 
 import android.Manifest;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.widget.Button;
 
@@ -9,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.frank.camera.R;
 import com.frank.camera.beauty.activity.BeautyFilterActivity;
+import com.frank.camera.beauty.activity.BeautyImageActivity;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -19,7 +21,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        requestPermissions(PERMISSIONS, 54321);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            requestPermissions(PERMISSIONS, 54321);
+        }
         initView();
     }
 
@@ -31,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
         btnFilter.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, BeautyFilterActivity.class)));
 
         Button btnPhoto = findViewById(R.id.btn_photo);
+        btnPhoto.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, BeautyImageActivity.class)));
     }
 
 }

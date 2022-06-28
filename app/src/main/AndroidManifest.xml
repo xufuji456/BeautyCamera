@@ -30,6 +30,10 @@
             android:name=".beauty.activity.BeautyFilterActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".beauty.activity.BeautyImageActivity"
+            android:exported="false" />
+
         <provider
             android:name="androidx.startup.InitializationProvider"
             android:authorities="${applicationId}.androidx-startup"

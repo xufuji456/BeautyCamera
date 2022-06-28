@@ -67,8 +67,8 @@ public class BeautyBaseDisplay implements Renderer {
                 .asFloatBuffer();
         mTextureBuffer.put(TextureRotateUtil.TEXTURE_ROTATE_0).position(0);
 
-        mGLSurfaceView.setRenderer(this);
         mGLSurfaceView.setEGLContextClientVersion(EGL_CONTEXT_VERSION);
+        mGLSurfaceView.setRenderer(this);
         mGLSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
     }
 

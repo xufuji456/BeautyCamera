@@ -19,6 +19,10 @@ import android.widget.RadioGroup.OnCheckedChangeListener;
 
 import com.frank.beautyfilter.display.BeautyImageDisplay;
 import com.frank.camera.R;
+import com.frank.camera.beauty.edit.ImageEditFragment;
+import com.frank.camera.beauty.edit.adjust.ImageEditAdjustView;
+import com.frank.camera.beauty.edit.beauty.ImageEditBeautyView;
+import com.frank.camera.beauty.edit.filter.ImageEditFilterView;
 
 import java.io.File;
 import java.io.InputStream;
@@ -200,7 +204,7 @@ public class BeautyImageActivity extends Activity {
         }
     }
 
-    private final OnHideListener mOnHideListener = new OnHideListener() {
+    private final ImageEditFragment.OnHideListener mOnHideListener = new ImageEditFragment.OnHideListener() {
 
         @Override
         public void onHide() {
