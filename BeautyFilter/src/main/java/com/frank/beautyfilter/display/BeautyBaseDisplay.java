@@ -88,6 +88,7 @@ public class BeautyBaseDisplay implements Renderer {
                 mFilterAdjust = new BeautyFilterAdjuster(mFilter);
             }
         });
+        mGLSurfaceView.requestRender();
     }
 
     protected void onFilterChanged() {
