@@ -1,6 +1,6 @@
 package com.frank.beautyfilter.filter.base.gpuimage;
 
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 
 /**
  * @author xufulong
@@ -33,7 +33,7 @@ public class GPUImageBrightnessFilter extends GPUImageFilter {
     @Override
     protected void onInit() {
         super.onInit();
-        mBrightnessLocation = GLES20.glGetUniformLocation(getProgramId(), "brightness");
+        mBrightnessLocation = GLES30.glGetUniformLocation(getProgramId(), "brightness");
     }
 
     @Override

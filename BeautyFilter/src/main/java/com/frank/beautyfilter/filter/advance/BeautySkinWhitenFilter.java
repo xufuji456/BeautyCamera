@@ -1,6 +1,6 @@
 package com.frank.beautyfilter.filter.advance;
 
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 
 import com.frank.beautyfilter.R;
 import com.frank.beautyfilter.filter.base.gpuimage.GPUImageFilter;
@@ -26,9 +26,9 @@ public class BeautySkinWhitenFilter extends GPUImageFilter {
 
     public void onInit() {
         super.onInit();
-        toneCurveUniformLocation = GLES20.glGetUniformLocation(getProgramId(), "curve");
-        widthUniformLocation = GLES20.glGetUniformLocation(getProgramId(), "texelWidthOffset");
-        heightUniformLocation = GLES20.glGetUniformLocation(getProgramId(), "texelHeightOffset");
+        toneCurveUniformLocation = GLES30.glGetUniformLocation(getProgramId(), "curve");
+        widthUniformLocation = GLES30.glGetUniformLocation(getProgramId(), "texelWidthOffset");
+        heightUniformLocation = GLES30.glGetUniformLocation(getProgramId(), "texelHeightOffset");
     }
 
     public void onInitialized() {
@@ -36,17 +36,17 @@ public class BeautySkinWhitenFilter extends GPUImageFilter {
         runOnDraw(new Runnable() {
 
             public void run() {
-                GLES20.glActiveTexture(GLES20.GL_TEXTURE3);
-                GLES20.glGenTextures(1, toneCurveTexture, 0);
-                GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, toneCurveTexture[0]);
-                GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
-                        GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-                GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
-                        GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-                GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
-                        GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-                GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
-                        GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+                GLES30.glActiveTexture(GLES30.GL_TEXTURE3);
+                GLES30.glGenTextures(1, toneCurveTexture, 0);
+                GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, toneCurveTexture[0]);
+                GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D,
+                        GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+                GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D,
+                        GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+                GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D,
+                        GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+                GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D,
+                        GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
                 byte[] arrayOfByte = new byte[1024];
                 int[] arrayOfInt1 = {95, 95, 96, 97, 97, 98, 99, 99, 100, 101, 101, 102, 103, 104,
                         104, 105, 106, 106, 107, 108, 108, 109, 110, 111, 111, 112, 113, 113, 114,
@@ -86,25 +86,25 @@ public class BeautySkinWhitenFilter extends GPUImageFilter {
                     arrayOfByte[(2 + i * 4)] = ((byte) arrayOfInt2[i]);
                     arrayOfByte[(3 + i * 4)] = -1;
                 }
-                GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, 256, 1, 0,
-                        GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, ByteBuffer.wrap(arrayOfByte));
+                GLES30.glTexImage2D(GLES30.GL_TEXTURE_2D, 0, GLES30.GL_RGBA, 256, 1, 0,
+                        GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE, ByteBuffer.wrap(arrayOfByte));
             }
         });
     }
 
     public void onInputSizeChanged(int width, int height) {
         super.onInputSizeChanged(width, height);
-        GLES20.glUniform1f(widthUniformLocation, 1.0f / width);
-        GLES20.glUniform1f(heightUniformLocation, 1.f / height);
+        GLES30.glUniform1f(widthUniformLocation, 1.0f / width);
+        GLES30.glUniform1f(heightUniformLocation, 1.f / height);
     }
 
     @Override
     protected void onDrawArrayAfter() {
         super.onDrawArrayAfter();
         if (toneCurveTexture[0] != OpenGLUtil.NO_TEXTURE) {
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE3);
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+            GLES30.glActiveTexture(GLES30.GL_TEXTURE3);
+            GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, 0);
+            GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
         }
     }
 
@@ -112,15 +112,15 @@ public class BeautySkinWhitenFilter extends GPUImageFilter {
     protected void onDrawArrayBefore() {
         super.onDrawArrayBefore();
         if (toneCurveTexture[0] != OpenGLUtil.NO_TEXTURE) {
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE3);
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, toneCurveTexture[0]);
-            GLES20.glUniform1i(toneCurveUniformLocation, 3);
+            GLES30.glActiveTexture(GLES30.GL_TEXTURE3);
+            GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, toneCurveTexture[0]);
+            GLES30.glUniform1i(toneCurveUniformLocation, 3);
         }
     }
 
     public void onDestroy() {
         super.onDestroy();
-        GLES20.glDeleteTextures(1, toneCurveTexture, 0);
+        GLES30.glDeleteTextures(1, toneCurveTexture, 0);
         toneCurveTexture[0] = OpenGLUtil.NO_TEXTURE;
     }
 

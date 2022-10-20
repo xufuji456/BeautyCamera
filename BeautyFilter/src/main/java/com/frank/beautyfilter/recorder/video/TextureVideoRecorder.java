@@ -314,7 +314,7 @@ public class TextureVideoRecorder implements Runnable {
         this.glTextureBuffer = glTextureBuffer;
     }
 
-    public void setCubeBuffer(FloatBuffer gLVertexBuffer) {
+    public void setVertexBuffer(FloatBuffer gLVertexBuffer) {
         this.glVertexBuffer = gLVertexBuffer;
     }
 

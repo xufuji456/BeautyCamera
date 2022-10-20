@@ -1,6 +1,6 @@
 package com.frank.beautyfilter.filter.base;
 
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 
 import com.frank.beautyfilter.filter.base.gpuimage.GPUImageFilter;
 import com.frank.beautyfilter.util.BeautyParams;
@@ -60,7 +60,7 @@ public class BeautyLookupFilter extends GPUImageFilter {
 
     protected void onInit() {
         super.onInit();
-        mLookupTextureUniform = GLES20.glGetUniformLocation(getProgramId(), "inputImageTexture2");
+        mLookupTextureUniform = GLES30.glGetUniformLocation(getProgramId(), "inputImageTexture2");
     }
 
     protected void onInitialized() {
@@ -75,25 +75,25 @@ public class BeautyLookupFilter extends GPUImageFilter {
     protected void onDestroy() {
         super.onDestroy();
         int[] texture = new int[]{mLookupSourceTexture};
-        GLES20.glDeleteTextures(1, texture, 0);
+        GLES30.glDeleteTextures(1, texture, 0);
         mLookupSourceTexture = -1;
     }
 
     @Override
     protected void onDrawArrayBefore() {
         if (mLookupSourceTexture != -1) {
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE3);
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mLookupSourceTexture);
-            GLES20.glUniform1i(mLookupTextureUniform, 3);
+            GLES30.glActiveTexture(GLES30.GL_TEXTURE3);
+            GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mLookupSourceTexture);
+            GLES30.glUniform1i(mLookupTextureUniform, 3);
         }
     }
 
     @Override
     protected void onDrawArrayAfter() {
         if (mLookupSourceTexture != -1) {
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE3);
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+            GLES30.glActiveTexture(GLES30.GL_TEXTURE3);
+            GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, 0);
+            GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
         }
     }
 

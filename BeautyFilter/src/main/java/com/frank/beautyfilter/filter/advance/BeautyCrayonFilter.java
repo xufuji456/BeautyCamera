@@ -1,6 +1,6 @@
 package com.frank.beautyfilter.filter.advance;
 
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 
 import com.frank.beautyfilter.R;
 import com.frank.beautyfilter.filter.base.gpuimage.GPUImageFilter;
@@ -24,8 +24,8 @@ public class BeautyCrayonFilter extends GPUImageFilter {
 
     protected void onInit() {
         super.onInit();
-        mStrengthLocation = GLES20.glGetUniformLocation(getProgramId(), "strength");
-        mStepOffsetLocation = GLES20.glGetUniformLocation(getProgramId(), "singleStepOffset");
+        mStrengthLocation = GLES30.glGetUniformLocation(getProgramId(), "strength");
+        mStepOffsetLocation = GLES30.glGetUniformLocation(getProgramId(), "singleStepOffset");
     }
 
     protected void onInitialized() {

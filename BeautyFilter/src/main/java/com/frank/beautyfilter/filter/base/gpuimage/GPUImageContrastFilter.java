@@ -1,6 +1,6 @@
 package com.frank.beautyfilter.filter.base.gpuimage;
 
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 
 /**
  * @author xufulong
@@ -33,7 +33,7 @@ public class GPUImageContrastFilter extends GPUImageFilter {
     @Override
     protected void onInit() {
         super.onInit();
-        mContrastLocation = GLES20.glGetUniformLocation(getProgramId(), "contrast");
+        mContrastLocation = GLES30.glGetUniformLocation(getProgramId(), "contrast");
     }
 
     @Override

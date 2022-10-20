@@ -1,7 +1,7 @@
 package com.frank.beautyfilter.widget.base;
 
 import android.content.Context;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 
@@ -56,22 +56,22 @@ public abstract class BeautyBaseView extends GLSurfaceView implements GLSurfaceV
                 .asFloatBuffer();
         mTextureBuffer.put(TextureRotateUtil.TEXTURE_ROTATE_0).position(0);
 
-        setEGLContextClientVersion(2);
+        setEGLContextClientVersion(3);
         setRenderer(this);
         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
     }
 
     @Override
     public void onSurfaceCreated(GL10 gl10, EGLConfig eglConfig) {
-        GLES20.glDisable(GL10.GL_DITHER);
-        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-        GLES20.glEnable(GL10.GL_CULL_FACE);
-        GLES20.glEnable(GL10.GL_DEPTH_TEST);
+        GLES30.glDisable(GL10.GL_DITHER);
+        GLES30.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        GLES30.glEnable(GL10.GL_CULL_FACE);
+        GLES30.glEnable(GL10.GL_DEPTH_TEST);
     }
 
     @Override
     public void onSurfaceChanged(GL10 gl10, int width, int height) {
-        GLES20.glViewport(0, 0, width, height);
+        GLES30.glViewport(0, 0, width, height);
         mSurfaceWidth = width;
         mSurfaceHeight = height;
         onFilterChanged(null);
@@ -86,8 +86,8 @@ public abstract class BeautyBaseView extends GLSurfaceView implements GLSurfaceV
 
     @Override
     public void onDrawFrame(GL10 gl10) {
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
+        GLES30.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     }
 
     public abstract void savePicture(SavePictureTask task);
@@ -139,7 +139,7 @@ public abstract class BeautyBaseView extends GLSurfaceView implements GLSurfaceV
             queueEvent(new Runnable() {
                 @Override
                 public void run() {
-                    GLES20.glDeleteTextures(1, new int[] {mTextureId}, 0);
+                    GLES30.glDeleteTextures(1, new int[] {mTextureId}, 0);
                     mTextureId = OpenGLUtil.NO_TEXTURE;
                 }
             });

@@ -1,6 +1,6 @@
 package com.frank.beautyfilter.filter.base.gpuimage;
 
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 
 /**
  * @author xufulong
@@ -54,7 +54,7 @@ public class GPUImageHueFilter extends GPUImageFilter {
     @Override
     protected void onInit() {
         super.onInit();
-        mHueLocation = GLES20.glGetUniformLocation(getProgramId(), "hueAdjust");
+        mHueLocation = GLES30.glGetUniformLocation(getProgramId(), "hueAdjust");
     }
 
     @Override

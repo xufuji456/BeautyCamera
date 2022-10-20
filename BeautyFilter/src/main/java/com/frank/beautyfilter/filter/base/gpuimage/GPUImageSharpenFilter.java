@@ -1,6 +1,6 @@
 package com.frank.beautyfilter.filter.base.gpuimage;
 
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 
 /**
  * @author xufulong
@@ -74,9 +74,9 @@ public class GPUImageSharpenFilter extends GPUImageFilter {
     @Override
     protected void onInit() {
         super.onInit();
-        mSharpenLocation = GLES20.glGetUniformLocation(getProgramId(), "sharpen");
-        mImageWidthLocation = GLES20.glGetUniformLocation(getProgramId(), "imageWidthFactor");
-        mImageHeightLocation = GLES20.glGetUniformLocation(getProgramId(), "imageHeightFactor");
+        mSharpenLocation = GLES30.glGetUniformLocation(getProgramId(), "sharpen");
+        mImageWidthLocation = GLES30.glGetUniformLocation(getProgramId(), "imageWidthFactor");
+        mImageHeightLocation = GLES30.glGetUniformLocation(getProgramId(), "imageHeightFactor");
     }
 
     @Override

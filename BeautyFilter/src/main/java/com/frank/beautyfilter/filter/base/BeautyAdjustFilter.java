@@ -1,6 +1,6 @@
 package com.frank.beautyfilter.filter.base;
 
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 
 import com.frank.beautyfilter.filter.base.gpuimage.GPUImageFilter;
 import com.frank.beautyfilter.util.OpenGLUtil;
@@ -51,23 +51,23 @@ public class BeautyAdjustFilter extends GPUImageFilter {
             frameBufferTexture = new int[size-1];
 
             for (int i=0; i<size-1; i++) {
-                GLES20.glGenFramebuffers(1, frameBuffer, i);
-                GLES20.glGenTextures(1, frameBufferTexture, i);
-                GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, frameBufferTexture[i]);
+                GLES30.glGenFramebuffers(1, frameBuffer, i);
+                GLES30.glGenTextures(1, frameBufferTexture, i);
+                GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, frameBufferTexture[i]);
 
-                GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-                GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-                GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-                GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
-                GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, width, height,
-                        0, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, null);
+                GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+                GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+                GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+                GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
+                GLES30.glTexImage2D(GLES30.GL_TEXTURE_2D, 0, GLES30.GL_RGBA, width, height,
+                        0, GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE, null);
 
-                GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBuffer[i]);
-                GLES20.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0,
-                        GLES20.GL_TEXTURE_2D, frameBufferTexture[i], 0);
+                GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, frameBuffer[i]);
+                GLES30.glFramebufferTexture2D(GLES30.GL_FRAMEBUFFER, GLES30.GL_COLOR_ATTACHMENT0,
+                        GLES30.GL_TEXTURE_2D, frameBufferTexture[i], 0);
 
-                GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
-                GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
+                GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, 0);
+                GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0);
             }
         }
     }
@@ -82,14 +82,14 @@ public class BeautyAdjustFilter extends GPUImageFilter {
             GPUImageFilter filter = filters.get(i);
             boolean isLast = (i == filters.size() - 1);
             if (isLast) {
-                GLES20.glViewport(0, 0, mOutputWidth, mOutputHeight);
+                GLES30.glViewport(0, 0, mOutputWidth, mOutputHeight);
                 filter.onDrawFrame(prevTextureId, vertexBuffer, textureBuffer);
             } else {
-                GLES20.glViewport(0, 0, mInputWidth, mInputHeight);
-                GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBuffer[i]);
-                GLES20.glClearColor(0, 0, 0, 0);
+                GLES30.glViewport(0, 0, mInputWidth, mInputHeight);
+                GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, frameBuffer[i]);
+                GLES30.glClearColor(0, 0, 0, 0);
                 filter.onDrawFrame(prevTextureId, mVertexBuffer, mTextureBuffer);
-                GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
+                GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0);
                 prevTextureId = frameBufferTexture[i];
             }
         }
@@ -116,11 +116,11 @@ public class BeautyAdjustFilter extends GPUImageFilter {
 
     private void destroyFrameBuffer() {
         if (frameBufferTexture != null) {
-            GLES20.glDeleteTextures(frameBufferTexture.length, frameBufferTexture, 0);
+            GLES30.glDeleteTextures(frameBufferTexture.length, frameBufferTexture, 0);
             frameBufferTexture = null;
         }
         if (frameBuffer != null) {
-            GLES20.glDeleteFramebuffers(frameBuffer.length, frameBuffer, 0);
+            GLES30.glDeleteFramebuffers(frameBuffer.length, frameBuffer, 0);
             frameBuffer = null;
         }
     }

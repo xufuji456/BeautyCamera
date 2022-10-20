@@ -3,7 +3,7 @@ package com.frank.beautyfilter.display;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.opengl.GLSurfaceView;
 import android.os.Handler;
 import android.os.Message;
@@ -47,17 +47,17 @@ public class BeautyImageDisplay extends BeautyBaseDisplay {
 
     @Override
     public void onSurfaceCreated(GL10 gl10, EGLConfig eglConfig) {
-        GLES20.glDisable(GL10.GL_DITHER);
-        GLES20.glClearColor(0, 0, 0, 0);
-        GLES20.glEnable(GLES20.GL_CULL_FACE);
-        GLES20.glEnable(GLES20.GL_DEPTH_TEST);
+        GLES30.glDisable(GL10.GL_DITHER);
+        GLES30.glClearColor(0, 0, 0, 0);
+        GLES30.glEnable(GLES30.GL_CULL_FACE);
+        GLES30.glEnable(GLES30.GL_DEPTH_TEST);
         BeautyFilterParam.initFilterParam(gl10);
         mGpuImageFilter.init();
     }
 
     @Override
     public void onSurfaceChanged(GL10 gl10, int width, int height) {
-        GLES20.glViewport(0, 0, width, height);
+        GLES30.glViewport(0, 0, width, height);
         mSurfaceWidth = width;
         mSurfaceHeight = height;
         adjustImageDisplaySize();
@@ -66,8 +66,8 @@ public class BeautyImageDisplay extends BeautyBaseDisplay {
 
     @Override
     public void onDrawFrame(GL10 gl10) {
-        GLES20.glClearColor(0, 0, 0, 0);
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+        GLES30.glClearColor(0, 0, 0, 0);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
         if (mTextureId == OpenGLUtil.NO_TEXTURE) {
             mTextureId = OpenGLUtil.loadTexture(mBeautyManager.getBitmap(), OpenGLUtil.NO_TEXTURE);
         }

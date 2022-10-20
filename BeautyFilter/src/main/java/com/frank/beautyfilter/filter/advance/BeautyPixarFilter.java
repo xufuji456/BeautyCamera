@@ -1,6 +1,6 @@
 package com.frank.beautyfilter.filter.advance;
 
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 
 import com.frank.beautyfilter.R;
 import com.frank.beautyfilter.filter.base.gpuimage.GPUImageFilter;
@@ -27,8 +27,8 @@ public class BeautyPixarFilter extends GPUImageFilter {
     public void onInit() {
         super.onInit();
         for (int i=0; i<inputTextureUniformLocation.length; i++) {
-            strengthLocation = GLES20.glGetUniformLocation(getProgramId(), "strength");
-            inputTextureUniformLocation[i] = GLES20.glGetUniformLocation(getProgramId(), "inputImageTexture" + (i+2));
+            strengthLocation = GLES30.glGetUniformLocation(getProgramId(), "strength");
+            inputTextureUniformLocation[i] = GLES30.glGetUniformLocation(getProgramId(), "inputImageTexture" + (i+2));
         }
     }
 
@@ -46,24 +46,24 @@ public class BeautyPixarFilter extends GPUImageFilter {
     @Override
     protected void onDrawArrayBefore() {
         for (int i=0; i<inputTextureHandle.length && inputTextureHandle[i] != OpenGLUtil.NO_TEXTURE; i++) {
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE0 + (i+3));
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, inputTextureHandle[i]);
-            GLES20.glUniform1i(inputTextureUniformLocation[i], i+3);
+            GLES30.glActiveTexture(GLES30.GL_TEXTURE0 + (i+3));
+            GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, inputTextureHandle[i]);
+            GLES30.glUniform1i(inputTextureUniformLocation[i], i+3);
         }
     }
 
     @Override
     protected void onDrawArrayAfter() {
         for (int i=0; i<inputTextureHandle.length && inputTextureHandle[i] != OpenGLUtil.NO_TEXTURE; i++) {
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE0 + (i+3));
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+            GLES30.glActiveTexture(GLES30.GL_TEXTURE0 + (i+3));
+            GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, 0);
+            GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
         }
     }
 
     public void onDestroy() {
         super.onDestroy();
-        GLES20.glDeleteTextures(1, inputTextureHandle, 0);
+        GLES30.glDeleteTextures(1, inputTextureHandle, 0);
         Arrays.fill(inputTextureHandle, OpenGLUtil.NO_TEXTURE);
     }
 

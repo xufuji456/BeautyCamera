@@ -1,6 +1,6 @@
 package com.frank.beautyfilter.filter.advance;
 
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 
 import com.frank.beautyfilter.R;
 import com.frank.beautyfilter.filter.base.gpuimage.GPUImageFilter;
@@ -23,8 +23,8 @@ public class BeautyBeautifulFilter extends GPUImageFilter {
 
     protected void onInit() {
         super.onInit();
-        paramLocation = GLES20.glGetUniformLocation(getProgramId(), "params");
-        stepOffsetLocation = GLES20.glGetUniformLocation(getProgramId(), "singleStepOffset");
+        paramLocation = GLES30.glGetUniformLocation(getProgramId(), "params");
+        stepOffsetLocation = GLES30.glGetUniformLocation(getProgramId(), "singleStepOffset");
         setBeautyLevel(BeautyParams.beautyLevel);
     }
 

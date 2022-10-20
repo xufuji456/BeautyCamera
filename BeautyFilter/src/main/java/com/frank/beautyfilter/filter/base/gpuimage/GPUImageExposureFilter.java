@@ -1,6 +1,6 @@
 package com.frank.beautyfilter.filter.base.gpuimage;
 
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 
 /**
  * @author xufulong
@@ -33,7 +33,7 @@ public class GPUImageExposureFilter extends GPUImageFilter {
     @Override
     protected void onInit() {
         super.onInit();
-        mExposureLocation = GLES20.glGetUniformLocation(getProgramId(), "exposure");
+        mExposureLocation = GLES30.glGetUniformLocation(getProgramId(), "exposure");
     }
 
     @Override

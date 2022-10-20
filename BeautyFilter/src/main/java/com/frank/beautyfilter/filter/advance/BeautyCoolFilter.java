@@ -1,6 +1,6 @@
 package com.frank.beautyfilter.filter.advance;
 
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 
 import com.frank.beautyfilter.R;
 import com.frank.beautyfilter.filter.base.gpuimage.GPUImageFilter;
@@ -24,47 +24,47 @@ public class BeautyCoolFilter extends GPUImageFilter {
 
     public void onDestroy() {
         super.onDestroy();
-        GLES20.glDeleteTextures(1, mToneCurveTexture, 0);
+        GLES30.glDeleteTextures(1, mToneCurveTexture, 0);
         this.mToneCurveTexture[0] = -1;
     }
 
     @Override
     protected void onDrawArrayBefore() {
         if (this.mToneCurveTexture[0] != -1) {
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE3);
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mToneCurveTexture[0]);
-            GLES20.glUniform1i(this.mToneCurveTextureUniformLocation, 3);
+            GLES30.glActiveTexture(GLES30.GL_TEXTURE3);
+            GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mToneCurveTexture[0]);
+            GLES30.glUniform1i(this.mToneCurveTextureUniformLocation, 3);
         }
     }
 
     @Override
     protected void onDrawArrayAfter() {
         if (this.mToneCurveTexture[0] != -1) {
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE3);
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+            GLES30.glActiveTexture(GLES30.GL_TEXTURE3);
+            GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, 0);
+            GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
         }
     }
 
     public void onInit() {
         super.onInit();
-        mToneCurveTextureUniformLocation = GLES20.glGetUniformLocation(getProgramId(), "curve");
+        mToneCurveTextureUniformLocation = GLES30.glGetUniformLocation(getProgramId(), "curve");
     }
 
     public void onInitialized() {
         super.onInitialized();
         runOnDraw(new Runnable() {
             public void run() {
-                GLES20.glGenTextures(1, mToneCurveTexture, 0);
-                GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mToneCurveTexture[0]);
-                GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
-                        GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-                GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
-                        GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-                GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
-                        GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-                GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
-                        GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+                GLES30.glGenTextures(1, mToneCurveTexture, 0);
+                GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mToneCurveTexture[0]);
+                GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D,
+                        GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+                GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D,
+                        GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+                GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D,
+                        GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+                GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D,
+                        GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
                 byte[] arrayOfByte = new byte[2048];
                 int[] arrayOfInt1 = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -157,8 +157,8 @@ public class BeautyCoolFilter extends GPUImageFilter {
                     arrayOfByte[(2 + (1024 + j * 4))] = ((byte) arrayOfInt5[j]);
                     arrayOfByte[(3 + (1024 + j * 4))] = -1;
                 }
-                GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, 256, 2, 0,
-                        GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, ByteBuffer.wrap(arrayOfByte));
+                GLES30.glTexImage2D(GLES30.GL_TEXTURE_2D, 0, GLES30.GL_RGBA, 256, 2, 0,
+                        GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE, ByteBuffer.wrap(arrayOfByte));
             }
         });
     }

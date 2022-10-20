@@ -6,7 +6,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.opengl.EGL14;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.util.AttributeSet;
 import android.view.SurfaceHolder;
 
@@ -81,7 +81,7 @@ public class BeautyCameraView extends BeautyBaseView {
                     @Override
                     public void run() {
                         final Bitmap photo = drawPhoto(bitmap, cameraEngine.getCameraInfo().isFront);
-                        GLES20.glViewport(0, 0, mSurfaceWidth, mSurfaceHeight);
+                        GLES30.glViewport(0, 0, mSurfaceWidth, mSurfaceHeight);
                         task.execute(photo);
                     }
                 });
@@ -153,7 +153,7 @@ public class BeautyCameraView extends BeautyBaseView {
                     CameraPrivateInfo info = cameraEngine.getCameraInfo();
                     videoRecorder.setPreviewSize(info.previewWidth, info.pictureHeight);
                     videoRecorder.setTextureBuffer(mTextureBuffer);
-                    videoRecorder.setCubeBuffer(mVertexBuffer);
+                    videoRecorder.setVertexBuffer(mVertexBuffer);
                     videoRecorder.startRecording(new TextureVideoRecorder.RecorderConfig(
                             info.previewWidth,
                             info.pictureHeight,
@@ -239,24 +239,24 @@ public class BeautyCameraView extends BeautyBaseView {
             mFilter.onInputSizeChanged(width, height);
             mFilter.onOutputSizeChanged(width, height);
         }
-        GLES20.glGenFramebuffers(1, mFrameBuffers, 0);
-        GLES20.glGenTextures(1, mFrameBufferTextures, 0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mFrameBufferTextures[0]);
-        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, width, height, 0,
-                GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, null);
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
-                GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
-                GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
-                GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
-                GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, mFrameBuffers[0]);
-        GLES20.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0,
-                GLES20.GL_TEXTURE_2D, mFrameBufferTextures[0], 0);
+        GLES30.glGenFramebuffers(1, mFrameBuffers, 0);
+        GLES30.glGenTextures(1, mFrameBufferTextures, 0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mFrameBufferTextures[0]);
+        GLES30.glTexImage2D(GLES30.GL_TEXTURE_2D, 0, GLES30.GL_RGBA, width, height, 0,
+                GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE, null);
+        GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D,
+                GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D,
+                GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D,
+                GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D,
+                GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, mFrameBuffers[0]);
+        GLES30.glFramebufferTexture2D(GLES30.GL_FRAMEBUFFER, GLES30.GL_COLOR_ATTACHMENT0,
+                GLES30.GL_TEXTURE_2D, mFrameBufferTextures[0], 0);
 
-        GLES20.glViewport(0, 0, width, height);
+        GLES30.glViewport(0, 0, width, height);
         int textureId = OpenGLUtil.loadTexture(bitmap, OpenGLUtil.NO_TEXTURE, true);
 
         FloatBuffer glVertexBuffer = ByteBuffer.allocateDirect(TextureRotateUtil.VERTEX.length * 4)
@@ -279,14 +279,14 @@ public class BeautyCameraView extends BeautyBaseView {
             mFilter.onDrawFrame(mFrameBufferTextures[0], glVertexBuffer, glTextureBuffer);
         }
         IntBuffer ib = IntBuffer.allocate(width * height);
-        GLES20.glReadPixels(0, 0, width, height, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, ib);
+        GLES30.glReadPixels(0, 0, width, height, GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE, ib);
         Bitmap result = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         result.copyPixelsFromBuffer(ib);
 
-        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
-        GLES20.glDeleteTextures(1, new int[]{textureId}, 0);
-        GLES20.glDeleteFramebuffers(mFrameBuffers.length, mFrameBuffers, 0);
-        GLES20.glDeleteTextures(mFrameBufferTextures.length, mFrameBufferTextures, 0);
+        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0);
+        GLES30.glDeleteTextures(1, new int[]{textureId}, 0);
+        GLES30.glDeleteFramebuffers(mFrameBuffers.length, mFrameBuffers, 0);
+        GLES30.glDeleteTextures(mFrameBufferTextures.length, mFrameBufferTextures, 0);
 
         beautyFilter.destroy();
         beautyFilter = null;

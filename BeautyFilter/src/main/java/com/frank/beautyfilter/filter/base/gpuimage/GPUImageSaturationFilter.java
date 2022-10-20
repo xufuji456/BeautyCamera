@@ -1,6 +1,6 @@
 package com.frank.beautyfilter.filter.base.gpuimage;
 
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 
 /**
  * @author xufulong
@@ -36,7 +36,7 @@ public class GPUImageSaturationFilter extends GPUImageFilter {
     @Override
     protected void onInit() {
         super.onInit();
-        mSaturationLocation = GLES20.glGetUniformLocation(getProgramId(), "saturation");
+        mSaturationLocation = GLES30.glGetUniformLocation(getProgramId(), "saturation");
     }
 
     @Override
