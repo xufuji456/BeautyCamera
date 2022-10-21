@@ -2,23 +2,20 @@
 // Created by cain on 2018/12/28.
 //
 
-#ifndef VIDEODEVICE_H
-#define VIDEODEVICE_H
+#ifndef VIDEORENDER_H
+#define VIDEORENDER_H
 
-#include <player/PlayerState.h>
+#include <stdint.h>
 
 class VideoRender {
 public:
-    VideoRender();
 
-    virtual ~VideoRender();
+    virtual void onInit(int width, int height) = 0;
 
-    virtual void onInit(int width, int height);
+    virtual int onRender(uint8_t *data, int stride, int height) = 0;
 
-    virtual int onRender(uint8_t *data, int stride, int height);
-
-    virtual void onDestroy();
+    virtual void onDestroy() = 0;
 
 };
 
-#endif //VIDEODEVICE_H
+#endif //VIDEORENDER_H

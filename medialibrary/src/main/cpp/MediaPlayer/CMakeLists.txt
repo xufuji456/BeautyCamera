@@ -40,9 +40,8 @@ add_library( media_player
              source/render/NativeWindowVideoRender.cpp
              source/render/OpenSLAudioRender.cpp
              source/render/AudioRender.cpp
-             source/render/VideoRender.cpp
 
-             source/queue/FrameQueue.cpp
+        source/queue/FrameQueue.cpp
              source/queue/PacketQueue.cpp
 
              source/sync/MediaClock.cpp

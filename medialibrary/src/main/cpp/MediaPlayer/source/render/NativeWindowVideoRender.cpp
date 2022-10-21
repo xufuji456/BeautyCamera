@@ -18,15 +18,13 @@ void NativeWindowVideoRender::surfaceCreated(ANativeWindow *window) {
         mWindow = nullptr;
     }
     mWindow = window;
-    av_log(nullptr, AV_LOG_ERROR, "surface created...");
 }
 
 void NativeWindowVideoRender::onInit(int width, int height) {
-    av_log(nullptr, AV_LOG_ERROR, "before width=%d,height=%d", width, height);
-    if (mWindow != nullptr) {
-        av_log(nullptr, AV_LOG_ERROR, "width=%d,height=%d", width, height);
-        ANativeWindow_setBuffersGeometry(mWindow, width, height, WINDOW_FORMAT_RGBA_8888);
+    if (mWindow == nullptr) {
+        return;
     }
+    ANativeWindow_setBuffersGeometry(mWindow, width, height, WINDOW_FORMAT_RGBA_8888);
 }
 
 int NativeWindowVideoRender::onRender(uint8_t *data, int stride, int height) {

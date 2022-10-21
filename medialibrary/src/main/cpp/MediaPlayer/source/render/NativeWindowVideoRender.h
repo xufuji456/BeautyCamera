@@ -8,6 +8,9 @@
 #include <render/VideoRender.h>
 #include <android/native_window.h>
 #include <android/native_window_jni.h>
+#include <string.h>
+#include <Mutex.h>
+#include <Condition.h>
 
 class NativeWindowVideoRender : public VideoRender {
 public:

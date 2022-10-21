@@ -68,8 +68,6 @@ public:
 
     int isLooping();
 
-    int getMetadata(AVDictionary **metadata);
-
     AVMessageQueue *getMessageQueue();
 
     void pcmQueueCallback(uint8_t *stream, int len);
