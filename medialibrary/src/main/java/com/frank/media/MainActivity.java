@@ -11,13 +11,14 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
-import com.cgfay.media.R;
+import com.frank.media.R;
 
 import java.io.IOException;
 
@@ -27,10 +28,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     private FFMediaPlayer videoPlayer;
 
-    private SeekBar  playBar;
-    private TextView txtDuration;
-    private TextView txtCurPosition;
+    private SeekBar   playBar;
+    private Button    btnSpeed;
+    private TextView  txtDuration;
+    private TextView  txtCurPosition;
     private ImageView btnPlayControl;
+
+    private float currentSpeed = 1.0f;
 
     private final String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE};
 
@@ -67,6 +71,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     private void initView() {
         playBar        = findViewById(R.id.play_bar);
+        btnSpeed       = findViewById(R.id.btn_speed);
         txtDuration    = findViewById(R.id.txt_duration);
         txtCurPosition = findViewById(R.id.txt_cur_position);
         btnPlayControl = findViewById(R.id.btn_play_pause);
@@ -119,6 +124,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
             }
         });
 
+        btnSpeed.setOnClickListener(this);
         btnPlayControl.setOnClickListener(this);
     }
 
@@ -132,6 +138,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 videoPlayer.start();
                 btnPlayControl.setImageResource(R.drawable.ic_pause);
             }
+        } else if (view.getId() == R.id.btn_speed) {
+            currentSpeed += 0.5f;
+            if (currentSpeed > 2.0f) {
+                currentSpeed = 0.5f;
+            }
+            videoPlayer.setRate(currentSpeed);
+            btnSpeed.setText(String.format("%s", currentSpeed));
         }
     }
 
