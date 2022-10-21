@@ -2,12 +2,16 @@
 // Created by cain on 2018/12/28.
 //
 
-#ifndef AUDIODEVICE_H
-#define AUDIODEVICE_H
+#ifndef AUDIORENDER_H
+#define AUDIORENDER_H
 
-#include <player/PlayerState.h>
+#include <Mutex.h>
+#include <Condition.h>
+#include <Thread.h>
+extern "C" {
+#include <libavformat/avformat.h>
+}
 
-// 音频PCM填充回调
 typedef void (*AudioPCMCallback) (void *userdata, uint8_t *stream, int len);
 
 typedef struct AudioDeviceSpec {
@@ -22,26 +26,23 @@ typedef struct AudioDeviceSpec {
 
 class AudioRender : public Runnable {
 public:
-    AudioRender();
 
-    virtual ~AudioRender();
+    virtual int open(const AudioDeviceSpec *desired, AudioDeviceSpec *obtained) = 0;
 
-    virtual int open(const AudioDeviceSpec *desired, AudioDeviceSpec *obtained);
+    virtual void start() = 0;
 
-    virtual void start();
+    virtual void stop() = 0;
 
-    virtual void stop();
+    virtual void pause() = 0;
 
-    virtual void pause();
+    virtual void resume() = 0;
 
-    virtual void resume();
+    virtual void flush() = 0;
 
-    virtual void flush();
+    virtual void setVolume(float volume) = 0;
 
-    virtual void setVolume(float volume);
-
-    virtual void run();
+    virtual void run() = 0;
 };
 
 
-#endif //AUDIODEVICE_H
+#endif //AUDIORENDER_H

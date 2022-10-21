@@ -39,14 +39,12 @@ add_library( media_player
 
              source/render/NativeWindowVideoRender.cpp
              source/render/OpenSLAudioRender.cpp
-             source/render/AudioRender.cpp
 
-        source/queue/FrameQueue.cpp
+             source/queue/FrameQueue.cpp
              source/queue/PacketQueue.cpp
 
              source/sync/MediaClock.cpp
              source/sync/MediaSync.cpp
-
 
              source/player/AVMessageQueue.cpp
              source/player/MediaPlayer.cpp

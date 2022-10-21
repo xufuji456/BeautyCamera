@@ -20,7 +20,7 @@ extern "C" {
 #include <libswscale/swscale.h>
 #include <libavutil/imgutils.h>
 #include <libavutil/avstring.h>
-};
+}
 #include <player/AVMessageQueue.h>
 
 #define VIDEO_QUEUE_SIZE 3
@@ -58,13 +58,6 @@ extern "C" {
 
 #define SAMPLE_CORRECTION_PERCENT_MAX 10
 
-// Options 定义
-#define OPT_CATEGORY_FORMAT 1
-#define OPT_CATEGORY_CODEC 2
-#define OPT_CATEGORY_SWS 3
-#define OPT_CATEGORY_PLAYER 4
-#define OPT_CATEGORY_SWR 5
-
 typedef enum {
     AV_SYNC_AUDIO,      // 同步到音频时钟
     AV_SYNC_VIDEO,      // 同步到视频时钟
@@ -87,10 +80,6 @@ public:
 
 private:
     void init();
-
-    void parse_string(const char *type, const char *option);
-
-    void parse_int(const char *type, int64_t option);
 
 public:
     Mutex mMutex;                   // 操作互斥锁，主要是给seek操作、音视频解码以及清空解码上下文缓冲使用，不加锁会导致ffmpeg内部崩溃现象
