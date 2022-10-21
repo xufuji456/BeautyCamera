@@ -22,7 +22,7 @@ MediaSync::MediaSync(PlayerState *playerState) {
     frameTimer = 0;
 
 
-    videoDevice = nullptr;
+    videoRender = nullptr;
     swsContext = nullptr;
     mBuffer = nullptr;
     pFrameARGB = nullptr;
@@ -37,7 +37,7 @@ void MediaSync::reset() {
     playerState = nullptr;
     videoDecoder = nullptr;
     audioDecoder = nullptr;
-    videoDevice = nullptr;
+    videoRender = nullptr;
 
     if (pFrameARGB) {
         av_frame_free(&pFrameARGB);
@@ -86,9 +86,9 @@ void MediaSync::stop() {
     }
 }
 
-void MediaSync::setVideoDevice(VideoDevice *device) {
+void MediaSync::setVideoRender(VideoRender *render) {
     Mutex::Autolock lock(mMutex);
-    this->videoDevice = device;
+    this->videoRender = render;
 }
 
 void MediaSync::setMaxDuration(double maxDuration) {
@@ -151,8 +151,8 @@ void MediaSync::run() {
     while (true) {
 
         if (abortRequest || playerState->abortRequest) {
-            if (videoDevice != nullptr) {
-                videoDevice->onDestroy();
+            if (videoRender != nullptr) {
+                videoRender->onDestroy();
             }
             break;
         }
@@ -354,7 +354,7 @@ double MediaSync::calculateDuration(Frame *vp, Frame *nextvp) {
 
 void MediaSync::renderVideo() {
     mMutex.lock();
-    if (!videoDecoder || !videoDevice) {
+    if (!videoDecoder || !videoRender) {
         mMutex.unlock();
         return;
     }
@@ -368,7 +368,7 @@ void MediaSync::renderVideo() {
                                           vp->frame->width, vp->frame->height,
                                           AV_PIX_FMT_RGBA, SWS_BILINEAR, nullptr, nullptr, nullptr);
         if (!mBuffer) {
-            videoDevice->onInit(vp->width, vp->height);
+            videoRender->onInit(vp->width, vp->height);
             int numBytes = av_image_get_buffer_size(AV_PIX_FMT_RGBA, vp->frame->width, vp->frame->height, 1);
             mBuffer = (uint8_t *)av_malloc(numBytes * sizeof(uint8_t));
             pFrameARGB = av_frame_alloc();
@@ -380,7 +380,7 @@ void MediaSync::renderVideo() {
                       vp->frame->linesize, 0, vp->frame->height,
                       pFrameARGB->data, pFrameARGB->linesize);
         }
-        ret = videoDevice->onRender(pFrameARGB->data[0], pFrameARGB->linesize[0], vp->frame->height);
+        ret = videoRender->onRender(pFrameARGB->data[0], pFrameARGB->linesize[0], vp->frame->height);
         if (ret < 0) {
             return;
         }

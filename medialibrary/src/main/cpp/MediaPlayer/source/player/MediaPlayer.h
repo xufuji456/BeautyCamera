@@ -11,13 +11,9 @@
 #include <decoder/AudioDecoder.h>
 #include <decoder/VideoDecoder.h>
 
-#if defined(__ANDROID__)
-#include <device/android/SLESDevice.h>
-#include <device/NativeWindowVideoRender.h>
-#else
-#include <device/AudioDevice.h>
-#include <device/VideoDevice.h>
-#endif
+#include <render/OpenSLAudioRender.h>
+#include <render/NativeWindowVideoRender.h>
+
 #include <android/native_window.h>
 #include <android/native_window_jni.h>
 #include <sync/MediaSync.h>
@@ -34,7 +30,7 @@ public:
 
     void setDataSource(const char *url, int64_t offset = 0, const char *headers = NULL);
 
-    void setVideoDevice(VideoDevice *videoDevice);
+    void setVideoRender(VideoRender *render);
 
     status_t prepare();
 
@@ -108,7 +104,7 @@ private:
     int eof;
     int attachmentRequest;
 
-    AudioDevice *audioDevice;
+    AudioRender *audioRender;
     AudioResampler *audioResampler;
 
     MediaSync *mediaSync;

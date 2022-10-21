@@ -3,12 +3,12 @@
 //
 
 #include <AndroidLog.h>
-#include "SLESDevice.h"
+#include "OpenSLAudioRender.h"
 
 #define OPENSLES_BUFFERS 4 // 最大缓冲区数量
 #define OPENSLES_BUFLEN  10 // 缓冲区长度(毫秒)
 
-SLESDevice::SLESDevice() {
+OpenSLAudioRender::OpenSLAudioRender() {
     slObject = nullptr;
     slEngine = nullptr;
     slOutputMixObject = nullptr;
@@ -24,7 +24,7 @@ SLESDevice::SLESDevice() {
     updateVolume = false;
 }
 
-SLESDevice::~SLESDevice() {
+OpenSLAudioRender::~OpenSLAudioRender() {
     mMutex.lock();
     memset(&audioDeviceSpec, 0, sizeof(AudioDeviceSpec));
     if (slPlayerObject != nullptr) {
@@ -48,7 +48,7 @@ SLESDevice::~SLESDevice() {
     mMutex.unlock();
 }
 
-void SLESDevice::start() {
+void OpenSLAudioRender::start() {
     if (audioDeviceSpec.callback != nullptr) {
         abortRequest = 0;
         pauseRequest = 0;
@@ -61,7 +61,7 @@ void SLESDevice::start() {
     }
 }
 
-void SLESDevice::stop() {
+void OpenSLAudioRender::stop() {
 
     mMutex.lock();
     abortRequest = 1;
@@ -75,14 +75,14 @@ void SLESDevice::stop() {
     }
 }
 
-void SLESDevice::pause() {
+void OpenSLAudioRender::pause() {
     mMutex.lock();
     pauseRequest = 1;
     mCondition.signal();
     mMutex.unlock();
 }
 
-void SLESDevice::resume() {
+void OpenSLAudioRender::resume() {
     mMutex.lock();
     pauseRequest = 0;
     mCondition.signal();
@@ -92,14 +92,14 @@ void SLESDevice::resume() {
 /**
  * 清空SL缓冲队列
  */
-void SLESDevice::flush() {
+void OpenSLAudioRender::flush() {
     mMutex.lock();
     flushRequest = 1;
     mCondition.signal();
     mMutex.unlock();
 }
 
-void SLESDevice::setVolume(float volume) {
+void OpenSLAudioRender::setVolume(float volume) {
     Mutex::Autolock lock(mMutex);
     if (!updateVolume) {
         leftVolume = volume;
@@ -109,7 +109,7 @@ void SLESDevice::setVolume(float volume) {
     mCondition.signal();
 }
 
-void SLESDevice::run() {
+void OpenSLAudioRender::run() {
     uint8_t *next_buffer = nullptr;
     int next_buffer_index = 0;
 
@@ -229,7 +229,7 @@ void slBufferPCMCallBack(SLAndroidSimpleBufferQueueItf bf, void *context) {
  * @param obtained
  * @return
  */
-int SLESDevice::open(const AudioDeviceSpec *desired, AudioDeviceSpec *obtained) {
+int OpenSLAudioRender::open(const AudioDeviceSpec *desired, AudioDeviceSpec *obtained) {
     SLresult result;
     result = slCreateEngine(&slObject, 0, nullptr, 0, nullptr, nullptr);
     if ((result) != SL_RESULT_SUCCESS) {
@@ -384,7 +384,7 @@ int SLESDevice::open(const AudioDeviceSpec *desired, AudioDeviceSpec *obtained) 
  * @param sampleRate
  * @return
  */
-SLuint32 SLESDevice::getSLSampleRate(int sampleRate) {
+SLuint32 OpenSLAudioRender::getSLSampleRate(int sampleRate) {
     switch (sampleRate) {
         case 8000: {
             return SL_SAMPLINGRATE_8;
@@ -436,7 +436,7 @@ SLuint32 SLESDevice::getSLSampleRate(int sampleRate) {
  * @param volumeLevel
  * @return
  */
-SLmillibel SLESDevice::getAmplificationLevel(float volumeLevel) {
+SLmillibel OpenSLAudioRender::getAmplificationLevel(float volumeLevel) {
     if (volumeLevel < 0.00000001) {
         return SL_MILLIBEL_MIN;
     }

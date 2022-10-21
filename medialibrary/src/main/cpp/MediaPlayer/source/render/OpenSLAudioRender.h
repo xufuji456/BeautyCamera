@@ -5,17 +5,17 @@
 #ifndef SLESDEVICE_H
 #define SLESDEVICE_H
 
-#include <device/AudioDevice.h>
+#include <render/AudioRender.h>
 
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
 #include <pthread.h>
 
-class SLESDevice : public AudioDevice {
+class OpenSLAudioRender : public AudioRender {
 public:
-    SLESDevice();
+    OpenSLAudioRender();
 
-    virtual ~SLESDevice();
+    virtual ~OpenSLAudioRender();
 
     int open(const AudioDeviceSpec *desired, AudioDeviceSpec *obtained) override;
 

@@ -20,11 +20,11 @@ typedef struct AudioDeviceSpec {
     void *userdata;             // 音频上下文
 } AudioDeviceSpec;
 
-class AudioDevice : public Runnable {
+class AudioRender : public Runnable {
 public:
-    AudioDevice();
+    AudioRender();
 
-    virtual ~AudioDevice();
+    virtual ~AudioRender();
 
     virtual int open(const AudioDeviceSpec *desired, AudioDeviceSpec *obtained);
 

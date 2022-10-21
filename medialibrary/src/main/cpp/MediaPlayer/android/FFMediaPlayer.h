@@ -135,10 +135,6 @@ public:
 
     void setRate(float speed);
 
-    void setOption(int category, const char *type, const char *option);
-
-    void setOption(int category, const char *type, int64_t option);
-
     void notify(int msg, int ext1, int ext2, void *obj = NULL, int len = 0);
 
 protected:
@@ -152,7 +148,7 @@ private:
     Condition mCondition;
     Thread *msgThread;
     bool abortRequest;
-    NativeWindowVideoRender *videoDevice;
+    NativeWindowVideoRender *videoRender;
     MediaPlayer *mediaPlayer;
     MediaPlayerListener *mListener;
 
@@ -160,7 +156,6 @@ private:
     long mSeekingPosition;
     bool mPrepareSync;
     status_t mPrepareStatus;
-    int mAudioSessionId;
 };
 
 #endif //CAINMEDIAPLAYER_H

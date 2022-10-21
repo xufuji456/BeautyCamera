@@ -10,7 +10,7 @@
 #include <decoder/VideoDecoder.h>
 #include <decoder/AudioDecoder.h>
 
-#include <device/VideoDevice.h>
+#include <render/VideoRender.h>
 
 /**
  * 视频同步器
@@ -28,8 +28,7 @@ public:
 
     void stop();
 
-    // 设置视频输出设备
-    void setVideoDevice(VideoDevice *device);
+    void setVideoRender(VideoRender *videoRender);
 
     // 设置帧最大间隔
     void setMaxDuration(double maxDuration);
@@ -88,7 +87,7 @@ private:
     int frameTimerRefresh;                  // 刷新时钟
     double frameTimer;                      // 视频时钟
 
-    VideoDevice *videoDevice;               // 视频输出设备
+    VideoRender *videoRender;
 
     AVFrame *pFrameARGB;
     uint8_t *mBuffer;

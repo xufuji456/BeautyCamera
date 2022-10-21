@@ -5,11 +5,11 @@
 #ifndef GLESDEVICE_H
 #define GLESDEVICE_H
 
-#include <device/VideoDevice.h>
+#include <render/VideoRender.h>
 #include <android/native_window.h>
 #include <android/native_window_jni.h>
 
-class NativeWindowVideoRender : public VideoDevice {
+class NativeWindowVideoRender : public VideoRender {
 public:
     NativeWindowVideoRender();
 

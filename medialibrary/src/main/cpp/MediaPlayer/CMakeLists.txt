@@ -37,10 +37,10 @@ add_library( media_player
              source/decoder/MediaDecoder.cpp
              source/decoder/VideoDecoder.cpp
 
-             source/device/NativeWindowVideoRender.cpp
-             source/device/android/SLESDevice.cpp
-             source/device/AudioDevice.cpp
-             source/device/VideoDevice.cpp
+             source/render/NativeWindowVideoRender.cpp
+             source/render/OpenSLAudioRender.cpp
+             source/render/AudioRender.cpp
+             source/render/VideoRender.cpp
 
              source/queue/FrameQueue.cpp
              source/queue/PacketQueue.cpp

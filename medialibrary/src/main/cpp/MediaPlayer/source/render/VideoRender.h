@@ -7,11 +7,11 @@
 
 #include <player/PlayerState.h>
 
-class VideoDevice {
+class VideoRender {
 public:
-    VideoDevice();
+    VideoRender();
 
-    virtual ~VideoDevice();
+    virtual ~VideoRender();
 
     virtual void onInit(int width, int height);
 

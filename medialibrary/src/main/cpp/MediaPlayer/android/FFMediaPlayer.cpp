@@ -8,12 +8,11 @@
 FFMediaPlayer::FFMediaPlayer() {
     msgThread = nullptr;
     abortRequest = true;
-    videoDevice = nullptr;
+    videoRender = nullptr;
     mediaPlayer = nullptr;
     mListener = nullptr;
     mPrepareSync = false;
     mPrepareStatus = NO_ERROR;
-    mAudioSessionId = 0;
     mSeeking = false;
     mSeekingPosition = 0;
 }
@@ -30,8 +29,8 @@ void FFMediaPlayer::init() {
     mMutex.unlock();
 
     mMutex.lock();
-    if (videoDevice == nullptr) {
-        videoDevice = new NativeWindowVideoRender();
+    if (videoRender == nullptr) {
+        videoRender = new NativeWindowVideoRender();
     }
     if (msgThread == nullptr) {
         msgThread = new Thread(this);
@@ -55,9 +54,9 @@ void FFMediaPlayer::disconnect() {
         msgThread = nullptr;
     }
 
-    if (videoDevice != nullptr) {
-        delete videoDevice;
-        videoDevice = nullptr;
+    if (videoRender != nullptr) {
+        delete videoRender;
+        videoRender = nullptr;
     }
     if (mListener != nullptr) {
         delete mListener;
@@ -74,7 +73,7 @@ status_t FFMediaPlayer::setDataSource(const char *url, int64_t offset, const cha
         mediaPlayer = new MediaPlayer();
     }
     mediaPlayer->setDataSource(url, offset, headers);
-    mediaPlayer->setVideoDevice(videoDevice);
+    mediaPlayer->setVideoRender(videoRender);
     return NO_ERROR;
 }
 
@@ -83,7 +82,7 @@ status_t FFMediaPlayer::setVideoSurface(ANativeWindow *native_window) {
         return NO_INIT;
     }
     if (native_window != nullptr) {
-        videoDevice->surfaceCreated(native_window);
+        videoRender->surfaceCreated(native_window);
         return NO_ERROR;
     }
     return NO_ERROR;
