@@ -152,7 +152,7 @@ private:
     Condition mCondition;
     Thread *msgThread;
     bool abortRequest;
-    GLESDevice *videoDevice;
+    NativeWindowVideoRender *videoDevice;
     MediaPlayer *mediaPlayer;
     MediaPlayerListener *mListener;
 

@@ -2,17 +2,17 @@
 // Created by cain on 2018/12/30.
 //
 
-#include "GLESDevice.h"
+#include "NativeWindowVideoRender.h"
 
-GLESDevice::GLESDevice() {
+NativeWindowVideoRender::NativeWindowVideoRender() {
     mWindow = nullptr;
 }
 
-GLESDevice::~GLESDevice() {
+NativeWindowVideoRender::~NativeWindowVideoRender() {
 
 }
 
-void GLESDevice::surfaceCreated(ANativeWindow *window) {
+void NativeWindowVideoRender::surfaceCreated(ANativeWindow *window) {
     if (mWindow != nullptr) {
         ANativeWindow_release(mWindow);
         mWindow = nullptr;
@@ -21,7 +21,7 @@ void GLESDevice::surfaceCreated(ANativeWindow *window) {
     av_log(nullptr, AV_LOG_ERROR, "surface created...");
 }
 
-void GLESDevice::onInit(int width, int height) {
+void NativeWindowVideoRender::onInit(int width, int height) {
     av_log(nullptr, AV_LOG_ERROR, "before width=%d,height=%d", width, height);
     if (mWindow != nullptr) {
         av_log(nullptr, AV_LOG_ERROR, "width=%d,height=%d", width, height);
@@ -29,7 +29,7 @@ void GLESDevice::onInit(int width, int height) {
     }
 }
 
-int GLESDevice::onRender(uint8_t *data, int stride, int height) {
+int NativeWindowVideoRender::onRender(uint8_t *data, int stride, int height) {
     // lock native window
     ANativeWindow_Buffer windowBuffer;
     int ret = ANativeWindow_lock(mWindow, &windowBuffer, nullptr);
@@ -46,7 +46,7 @@ int GLESDevice::onRender(uint8_t *data, int stride, int height) {
     return 0;
 }
 
-void GLESDevice::onDestroy() {
+void NativeWindowVideoRender::onDestroy() {
     if (mWindow) {
         ANativeWindow_release(mWindow);
         mWindow = nullptr;

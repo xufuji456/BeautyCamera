@@ -31,7 +31,7 @@ void FFMediaPlayer::init() {
 
     mMutex.lock();
     if (videoDevice == nullptr) {
-        videoDevice = new GLESDevice();
+        videoDevice = new NativeWindowVideoRender();
     }
     if (msgThread == nullptr) {
         msgThread = new Thread(this);

@@ -9,11 +9,11 @@
 #include <android/native_window.h>
 #include <android/native_window_jni.h>
 
-class GLESDevice : public VideoDevice {
+class NativeWindowVideoRender : public VideoDevice {
 public:
-    GLESDevice();
+    NativeWindowVideoRender();
 
-    virtual ~GLESDevice();
+    virtual ~NativeWindowVideoRender();
 
     void surfaceCreated(ANativeWindow *window);
 
@@ -28,9 +28,6 @@ private:
     Condition mCondition;
 
     ANativeWindow *mWindow;
-    int mSurfaceWidth;
-    int mSurfaceHeight;
-
 };
 
 #endif //GLESDEVICE_H

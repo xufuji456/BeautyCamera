@@ -37,7 +37,7 @@ add_library( media_player
              source/decoder/MediaDecoder.cpp
              source/decoder/VideoDecoder.cpp
 
-             source/device/android/GLESDevice.cpp
+             source/device/NativeWindowVideoRender.cpp
              source/device/android/SLESDevice.cpp
              source/device/AudioDevice.cpp
              source/device/VideoDevice.cpp
@@ -54,9 +54,9 @@ add_library( media_player
              source/player/PlayerState.cpp
 
              # controller
-        android/FFMediaPlayer.cpp
+             android/FFMediaPlayer.cpp
              ../nativehelp/JNIHelp.cpp
-        android/com_frank_media_FFMediaPlayer.cpp)
+             android/com_frank_media_FFMediaPlayer.cpp)
 
 # 链接静态库
 target_link_libraries( media_player
