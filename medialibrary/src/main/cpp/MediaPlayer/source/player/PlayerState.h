@@ -82,11 +82,7 @@ private:
     void init();
 
 public:
-    Mutex mMutex;                   // 操作互斥锁，主要是给seek操作、音视频解码以及清空解码上下文缓冲使用，不加锁会导致ffmpeg内部崩溃现象
-    AVDictionary *sws_dict;         // 视频转码option参数
-    AVDictionary *swr_opts;         // 音频重采样option参数
-    AVDictionary *format_opts;      // 解复用option参数
-    AVDictionary *codec_opts;       // 解码option参数
+    Mutex mMutex;                   // 操作互斥锁
 
     AVMessageQueue *messageQueue;   // 播放器消息队列
     int64_t videoDuration;          // 视频时长
@@ -94,7 +90,6 @@ public:
     AVInputFormat *iformat;         // 指定文件封装格式，也就是解复用器
     const char *url;                // 文件路径
     int64_t offset;                 // 文件偏移量
-    const char *headers;            // 文件头信息
 
     const char *audioCodecName;     // 指定音频解码器名称
     const char *videoCodecName;     // 指定视频解码器名称
@@ -105,23 +100,18 @@ public:
     int64_t startTime;              // 播放起始位置
     int64_t duration;               // 播放时长
     int realTime;                   // 判断是否实时流
-    int infiniteBuffer;             // 是否无限缓冲区，默认为-1
     int audioDisable;               // 是否禁止音频流
     int videoDisable;               // 是否禁止视频流
     int displayDisable;             // 是否禁止显示
 
     int fast;                       // 解码上下文的AV_CODEC_FLAG2_FAST标志
-    int genpts;                     // 解码上下文的AVFMT_FLAG_GENPTS标志
-    int lowres;                     // 解码上下文的lowres标志
 
     float playbackRate;             // 播放速度
 
     int seekRequest;                // 定位请求
     int seekFlags;                  // 定位标志
     int64_t seekPos;                // 定位位置
-    int64_t seekRel;                // 定位偏移
 
-    int autoExit;                   // 是否自动退出
     int loop;                       // 循环播放
     int mute;                       // 静音播放
     int frameDrop;                  // 舍帧操作

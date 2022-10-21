@@ -28,7 +28,7 @@ public:
 
     status_t reset();
 
-    void setDataSource(const char *url, int64_t offset = 0, const char *headers = NULL);
+    void setDataSource(const char *url, int64_t offset = 0);
 
     void setVideoRender(VideoRender *render);
 

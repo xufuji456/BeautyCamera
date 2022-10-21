@@ -135,8 +135,7 @@ static void process_media_player_call(JNIEnv *env, jobject thiz, int opStatus,
     }
 }
 
-void CainMediaPlayer_setDataSourceAndHeaders(JNIEnv *env, jobject thiz, jstring path_,
-        jobjectArray keys, jobjectArray values) {
+void CainMediaPlayer_setDataSource(JNIEnv *env, jobject thiz, jstring path_) {
 
     FFMediaPlayer *mp = getMediaPlayer(env, thiz);
     if (mp == nullptr) {
@@ -154,54 +153,11 @@ void CainMediaPlayer_setDataSourceAndHeaders(JNIEnv *env, jobject thiz, jstring 
         return;
     }
 
-    const char *restrict = strstr(path, "mms://");
-    char *restrict_to = restrict ? strdup(restrict) : nullptr;
-    if (restrict_to != nullptr) {
-        strncpy(restrict_to, "mmsh://", 6);
-        puts(path);
-    }
-
-    char *headers = nullptr;
-    if (keys && values != nullptr) {
-        int keysCount = env->GetArrayLength(keys);
-        int valuesCount = env->GetArrayLength(values);
-
-        if (keysCount != valuesCount) {
-            ALOGE("keys and values arrays have different length");
-            jniThrowException(env, "java/lang/IllegalArgumentException");
-            return;
-        }
-
-        int i = 0;
-        const char *rawString = nullptr;
-        char hdrs[2048];
-
-        for (i = 0; i < keysCount; i++) {
-            jstring key = (jstring) env->GetObjectArrayElement(keys, i);
-            rawString = env->GetStringUTFChars(key, JNI_FALSE);
-            strcat(hdrs, rawString);
-            strcat(hdrs, ": ");
-            env->ReleaseStringUTFChars(key, rawString);
-
-            jstring value = (jstring) env->GetObjectArrayElement(values, i);
-            rawString = env->GetStringUTFChars(value, JNI_FALSE);
-            strcat(hdrs, rawString);
-            strcat(hdrs, "\r\n");
-            env->ReleaseStringUTFChars(value, rawString);
-        }
-
-        headers = &hdrs[0];
-    }
-
-    status_t opStatus = mp->setDataSource(path, 0, headers);
+    status_t opStatus = mp->setDataSource(path, 0);
     process_media_player_call(env, thiz, opStatus, "java/io/IOException",
             "setDataSource failed." );
 
     env->ReleaseStringUTFChars(path_, path);
-}
-
-void CainMediaPlayer_setDataSource(JNIEnv *env, jobject thiz, jstring path_) {
-    CainMediaPlayer_setDataSourceAndHeaders(env, thiz, path_, nullptr, nullptr);
 }
 
 void CainMediaPlayer_setDataSourceFD(JNIEnv *env, jobject thiz, jobject fileDescriptor,
@@ -238,7 +194,7 @@ void CainMediaPlayer_setDataSourceFD(JNIEnv *env, jobject thiz, jobject fileDesc
     sprintf(str, "pipe:%d", myfd);
     strcat(path, str);
 
-    status_t opStatus = mp->setDataSource(path, offset, nullptr);
+    status_t opStatus = mp->setDataSource(path, offset);
     process_media_player_call( env, thiz, opStatus, "java/io/IOException",
             "setDataSourceFD failed.");
 
@@ -331,24 +287,6 @@ void CainMediaPlayer_setVideoSurface(JNIEnv *env, jobject thiz, jobject surface)
         window = ANativeWindow_fromSurface(env, surface);
     }
     mp->setVideoSurface(window);
-}
-
-void CainMediaPlayer_setLooping(JNIEnv *env, jobject thiz, jboolean looping) {
-    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
-    if (mp == nullptr) {
-        jniThrowException(env, "java/lang/IllegalStateException");
-        return;
-    }
-    mp->setLooping(looping);
-}
-
-jboolean CainMediaPlayer_isLooping(JNIEnv *env, jobject thiz) {
-    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
-    if (mp == nullptr) {
-        jniThrowException(env, "java/lang/IllegalStateException");
-        return JNI_FALSE;
-    }
-    return (jboolean)(mp->isLooping() ? JNI_TRUE : JNI_FALSE);
 }
 
 void CainMediaPlayer_prepare(JNIEnv *env, jobject thiz) {

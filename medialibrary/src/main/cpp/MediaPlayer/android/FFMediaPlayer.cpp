@@ -65,14 +65,14 @@ void FFMediaPlayer::disconnect() {
 
 }
 
-status_t FFMediaPlayer::setDataSource(const char *url, int64_t offset, const char *headers) {
+status_t FFMediaPlayer::setDataSource(const char *url, int64_t offset) {
     if (url == nullptr) {
         return BAD_VALUE;
     }
     if (mediaPlayer == nullptr) {
         mediaPlayer = new MediaPlayer();
     }
-    mediaPlayer->setDataSource(url, offset, headers);
+    mediaPlayer->setDataSource(url, offset);
     mediaPlayer->setVideoRender(videoRender);
     return NO_ERROR;
 }

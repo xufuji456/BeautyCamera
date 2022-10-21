@@ -111,13 +111,10 @@ status_t MediaPlayer::reset() {
     return NO_ERROR;
 }
 
-void MediaPlayer::setDataSource(const char *url, int64_t offset, const char *headers) {
+void MediaPlayer::setDataSource(const char *url, int64_t offset) {
     Mutex::Autolock lock(mMutex);
     playerState->url = av_strdup(url);
     playerState->offset = offset;
-    if (headers) {
-        playerState->headers = av_strdup(headers);
-    }
 }
 
 void MediaPlayer::setVideoRender(VideoRender *render) {
@@ -206,7 +203,6 @@ void MediaPlayer::seekTo(float timeMs) {
             seek_pos += start_time;
         }
         playerState->seekPos = seek_pos;
-        playerState->seekRel = 0;
         playerState->seekFlags &= ~AVSEEK_FLAG_BYTE;
         playerState->seekRequest = 1;
         mCondition.signal();
@@ -329,9 +325,6 @@ void MediaPlayer::run() {
 
 int MediaPlayer::readPackets() {
     int ret = 0;
-    AVDictionaryEntry *t;
-    AVDictionary **opts;
-    int scan_all_pmts_set = 0;
 
     // 准备解码器
     mMutex.lock();
@@ -347,29 +340,14 @@ int MediaPlayer::readPackets() {
         // 设置解复用中断回调
         pFormatCtx->interrupt_callback.callback = avformat_interrupt_cb;
         pFormatCtx->interrupt_callback.opaque = playerState;
-        if (!av_dict_get(playerState->format_opts, "scan_all_pmts", nullptr, AV_DICT_MATCH_CASE)) {
-            av_dict_set(&playerState->format_opts, "scan_all_pmts", "1", AV_DICT_DONT_OVERWRITE);
-            scan_all_pmts_set = 1;
-        }
 
-        // 处理文件头
-        if (playerState->headers) {
-            av_dict_set(&playerState->format_opts, "headers", playerState->headers, 0);
-        }
         // 处理文件偏移量
         if (playerState->offset > 0) {
             pFormatCtx->skip_initial_bytes = playerState->offset;
         }
 
-        // 设置rtmp/rtsp的超时值
-        if (av_stristart(playerState->url, "rtmp", nullptr) || av_stristart(playerState->url, "rtsp", nullptr)) {
-            // There is total different meaning for 'timeout' option in rtmp
-            av_log(nullptr, AV_LOG_WARNING, "remove 'timeout' option for rtmp.\n");
-            av_dict_set(&playerState->format_opts, "timeout", nullptr, 0);
-        }
-
         // 打开文件
-        ret = avformat_open_input(&pFormatCtx, playerState->url, playerState->iformat, &playerState->format_opts);
+        ret = avformat_open_input(&pFormatCtx, playerState->url, playerState->iformat, nullptr);
         if (ret < 0) {
             printError(playerState->url, ret);
             ret = -1;
@@ -381,33 +359,10 @@ int MediaPlayer::readPackets() {
             playerState->messageQueue->postMessage(MSG_OPEN_INPUT);
         }
 
-        if (scan_all_pmts_set) {
-            av_dict_set(&playerState->format_opts, "scan_all_pmts", nullptr, AV_DICT_MATCH_CASE);
-        }
-
-        if ((t = av_dict_get(playerState->format_opts, "", nullptr, AV_DICT_IGNORE_SUFFIX))) {
-            av_log(nullptr, AV_LOG_ERROR, "Option %s not found.\n", t->key);
-            ret = AVERROR_OPTION_NOT_FOUND;
-            break;
-        }
-
-        if (playerState->genpts) {
-            pFormatCtx->flags |= AVFMT_FLAG_GENPTS;
-        }
         av_format_inject_global_side_data(pFormatCtx);
 
-        opts = setupStreamInfoOptions(pFormatCtx, playerState->codec_opts);
-
         // 查找媒体流信息
-        ret = avformat_find_stream_info(pFormatCtx, opts);
-        if (opts != nullptr) {
-            for (int i = 0; i < pFormatCtx->nb_streams; i++) {
-                if (opts[i] != nullptr) {
-                    av_dict_free(&opts[i]);
-                }
-            }
-            av_freep(&opts);
-        }
+        ret = avformat_find_stream_info(pFormatCtx, nullptr);
 
         if (ret < 0) {
             av_log(nullptr, AV_LOG_WARNING,
@@ -419,12 +374,6 @@ int MediaPlayer::readPackets() {
         // 查找媒体流信息回调
         if (playerState->messageQueue) {
             playerState->messageQueue->postMessage(MSG_FIND_STREAM_INFO);
-        }
-
-        // 判断是否实时流，判断是否需要设置无限缓冲区
-        playerState->realTime = isRealTime(pFormatCtx);
-        if (playerState->infiniteBuffer < 0 && playerState->realTime) {
-            playerState->infiniteBuffer = 1;
         }
 
         // Gets the duration of the file, -1 if no duration available.
@@ -655,8 +604,8 @@ int MediaPlayer::readPackets() {
         // 定位处理
         if (playerState->seekRequest) {
             int64_t seek_target = playerState->seekPos;
-            int64_t seek_min = playerState->seekRel > 0 ? seek_target - playerState->seekRel + 2: INT64_MIN;
-            int64_t seek_max = playerState->seekRel < 0 ? seek_target - playerState->seekRel - 2: INT64_MAX;
+            int64_t seek_min = INT64_MIN;
+            int64_t seek_max = INT64_MAX;
             // 定位
             playerState->mMutex.lock();
             ret = avformat_seek_file(pFormatCtx, -1, seek_min, seek_target, seek_max, playerState->seekFlags);
@@ -705,8 +654,7 @@ int MediaPlayer::readPackets() {
 
         // 如果队列中存在足够的数据包，则等待消耗
         // 备注：这里要等待一定时长的缓冲队列，要不然会导致OpenSLES播放音频出现卡顿等现象
-        if (playerState->infiniteBuffer < 1 &&
-            ((audioDecoder ? audioDecoder->getMemorySize() : 0) + (videoDecoder ? videoDecoder->getMemorySize() : 0) > MAX_QUEUE_SIZE
+        if (((audioDecoder ? audioDecoder->getMemorySize() : 0) + (videoDecoder ? videoDecoder->getMemorySize() : 0) > MAX_QUEUE_SIZE
              || (!audioDecoder || audioDecoder->hasEnoughPackets()) && (!videoDecoder || videoDecoder->hasEnoughPackets()))) {
             continue;
         }
@@ -734,7 +682,7 @@ int MediaPlayer::readPackets() {
                                       && videoDecoder->getFrameSize() == 0))) {
                 if (playerState->loop) {
                     seekTo(playerState->startTime != AV_NOPTS_VALUE ? playerState->startTime : 0);
-                } else if (playerState->autoExit) {
+                } else {
                     ret = AVERROR_EOF;
                     break;
                 }
@@ -864,19 +812,6 @@ int MediaPlayer::prepareDecoder(int streamIndex) {
         }
         avctx->codec_id = codec->id;
 
-        // 设置一些播放参数
-        int stream_lowres = playerState->lowres;
-        if (stream_lowres > av_codec_get_max_lowres(codec)) {
-            av_log(avctx, AV_LOG_WARNING, "The maximum value for lowres supported by the decoder is %d\n",
-                   av_codec_get_max_lowres(codec));
-            stream_lowres = av_codec_get_max_lowres(codec);
-        }
-        av_codec_set_lowres(avctx, stream_lowres);
-#if FF_API_EMU_EDGE
-        if (stream_lowres) {
-            avctx->flags |= CODEC_FLAG_EMU_EDGE;
-        }
-#endif
         if (playerState->fast) {
             avctx->flags2 |= AV_CODEC_FLAG2_FAST;
         }
@@ -885,14 +820,6 @@ int MediaPlayer::prepareDecoder(int streamIndex) {
             avctx->flags |= CODEC_FLAG_EMU_EDGE;
         }
 #endif
-        opts = filterCodecOptions(playerState->codec_opts, avctx->codec_id, pFormatCtx, pFormatCtx->streams[streamIndex], codec);
-        if (!av_dict_get(opts, "threads", nullptr, 0)) {
-            av_dict_set(&opts, "threads", "auto", 0);
-        }
-
-        if (stream_lowres) {
-            av_dict_set_int(&opts, "lowres", stream_lowres, 0);
-        }
 
         if (avctx->codec_type == AVMEDIA_TYPE_VIDEO || avctx->codec_type == AVMEDIA_TYPE_AUDIO) {
             av_dict_set(&opts, "refcounted_frames", "1", 0);

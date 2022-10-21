@@ -91,7 +91,7 @@ public:
 
     void disconnect();
 
-    status_t setDataSource(const char *url, int64_t offset = 0, const char *headers = NULL);
+    status_t setDataSource(const char *url, int64_t offset = 0);
 
     status_t setVideoSurface(ANativeWindow* native_window);
 
