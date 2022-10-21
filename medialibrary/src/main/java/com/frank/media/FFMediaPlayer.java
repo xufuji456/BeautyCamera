@@ -18,7 +18,6 @@ public class FFMediaPlayer implements IMediaPlayer {
 
     static {
         System.loadLibrary("ffmpeg");
-        System.loadLibrary("soundtouch");
         System.loadLibrary("media_player");
         native_init();
     }

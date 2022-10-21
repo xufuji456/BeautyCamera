@@ -7,8 +7,7 @@
 
 #include <player/PlayerState.h>
 #include <sync/MediaSync.h>
-#include <SoundTouchWrapper.h>
-#include <render//AudioRender.h>
+#include <render/AudioRender.h>
 
 /**
  * 音频参数
@@ -71,7 +70,6 @@ private:
     AVFrame *frame;
     AudioDecoder *audioDecoder;             // 音频解码器
     AudioState *audioState;                 // 音频重采样状态
-    SoundTouchWrapper *soundTouchWrapper;   // 变速变调处理
 };
 
 
