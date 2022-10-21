@@ -349,7 +349,7 @@ int MediaPlayer::readPackets() {
         // 打开文件
         ret = avformat_open_input(&pFormatCtx, playerState->url, playerState->iformat, nullptr);
         if (ret < 0) {
-            printError(playerState->url, ret);
+            av_log(nullptr, AV_LOG_ERROR, "open input err:url=%s, msg=%s", playerState->url, strerror(ret));
             ret = -1;
             break;
         }

@@ -28,9 +28,6 @@ add_library( media_player
 
              SHARED
 
-             # library
-             source/common/FFmpegUtils.cpp
-
              source/convertor/AudioResampler.cpp
 
              source/decoder/AudioDecoder.cpp
