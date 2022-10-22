@@ -9,7 +9,7 @@ public:
 
     virtual void onInit(int width, int height) = 0;
 
-    void setSurface(void *surface);
+    virtual void setSurface(void *surface) = 0;
 
     virtual int onRender(uint8_t *data, int stride, int height) = 0;
 

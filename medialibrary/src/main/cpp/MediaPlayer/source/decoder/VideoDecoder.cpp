@@ -1,6 +1,3 @@
-//
-// Created by cain on 2018/12/26.
-//
 
 #include "VideoDecoder.h"
 
@@ -9,11 +6,10 @@ VideoDecoder::VideoDecoder(AVFormatContext *pFormatCtx, AVCodecContext *avctx,
         : MediaDecoder(avctx, stream, streamIndex, playerState) {
     this->pFormatCtx = pFormatCtx;
     frameQueue = new FrameQueue(VIDEO_QUEUE_SIZE, 1);
-    mExit = true;
-    decodeThread = NULL;
-    masterClock = NULL;
-    // 旋转角度
-    AVDictionaryEntry *entry = av_dict_get(stream->metadata, "rotate", NULL, AV_DICT_MATCH_CASE);
+    decodeThread = nullptr;
+    masterClock  = nullptr;
+
+    AVDictionaryEntry *entry = av_dict_get(stream->metadata, "rotate", nullptr, AV_DICT_MATCH_CASE);
     if (entry && entry->value) {
         mRotate = atoi(entry->value);
     } else {
@@ -23,19 +19,19 @@ VideoDecoder::VideoDecoder(AVFormatContext *pFormatCtx, AVCodecContext *avctx,
 
 VideoDecoder::~VideoDecoder() {
     mMutex.lock();
-    pFormatCtx = NULL;
+    pFormatCtx = nullptr;
     if (frameQueue) {
         frameQueue->flush();
         delete frameQueue;
-        frameQueue = NULL;
+        frameQueue = nullptr;
     }
-    masterClock = NULL;
+    masterClock = nullptr;
     mMutex.unlock();
 }
 
-void VideoDecoder::setMasterClock(MediaClock *masterClock) {
+void VideoDecoder::setMasterClock(MediaClock *clock) {
     Mutex::Autolock lock(mMutex);
-    this->masterClock = masterClock;
+    this->masterClock = clock;
 }
 
 void VideoDecoder::start() {
@@ -63,7 +59,7 @@ void VideoDecoder::stop() {
     if (decodeThread) {
         decodeThread->join();
         delete decodeThread;
-        decodeThread = NULL;
+        decodeThread = nullptr;
     }
 }
 
@@ -101,18 +97,14 @@ void VideoDecoder::run() {
     decodeVideo();
 }
 
-/**
- * 解码视频数据包并放入帧队列
- * @return
- */
 int VideoDecoder::decodeVideo() {
-    AVFrame *frame = av_frame_alloc();
+    int ret;
     Frame *vp;
     int got_picture;
-    int ret = 0;
+    AVFrame *frame = av_frame_alloc();
 
-    AVRational tb = pStream->time_base;
-    AVRational frame_rate = av_guess_frame_rate(pFormatCtx, pStream, NULL);
+    AVRational timebase = avStream->time_base;
+    AVRational frame_rate = av_guess_frame_rate(pFormatCtx, avStream, nullptr);
 
     if (!frame) {
         mExit = true;
@@ -133,17 +125,14 @@ int VideoDecoder::decodeVideo() {
             ret = -1;
             break;
         }
-
         if (playerState->seekRequest) {
             continue;
         }
-
         if (packetQueue->getPacket(packet) < 0) {
             ret = -1;
             break;
         }
 
-        // 送去解码
         playerState->mMutex.lock();
         ret = avcodec_send_packet(pCodecCtx, packet);
         if (ret < 0 && ret != AVERROR(EAGAIN) && ret != AVERROR_EOF) {
@@ -152,7 +141,6 @@ int VideoDecoder::decodeVideo() {
             continue;
         }
 
-        // 得到解码帧
         ret = avcodec_receive_frame(pCodecCtx, frame);
         playerState->mMutex.unlock();
         if (ret < 0 && ret != AVERROR_EOF) {
@@ -162,24 +150,21 @@ int VideoDecoder::decodeVideo() {
         } else {
             got_picture = 1;
 
-            // 是否重排pts，默认情况下需要重排pts的
             if (playerState->reorderVideoPts == -1) {
                 frame->pts = av_frame_get_best_effort_timestamp(frame);
             } else if (!playerState->reorderVideoPts) {
                 frame->pts = frame->pkt_dts;
             }
 
-            // 丢帧处理
-            if (masterClock != NULL) {
+            if (masterClock != nullptr) {
                 double dpts = NAN;
 
                 if (frame->pts != AV_NOPTS_VALUE) {
-                    dpts = av_q2d(pStream->time_base) * frame->pts;
+                    dpts = av_q2d(avStream->time_base) * frame->pts;
                 }
-                // 计算视频帧的长宽比
-                frame->sample_aspect_ratio = av_guess_sample_aspect_ratio(pFormatCtx, pStream,
-                                                                          frame);
-                // 是否需要做舍帧操作
+
+                frame->sample_aspect_ratio = av_guess_sample_aspect_ratio(pFormatCtx, avStream, frame);
+                // drop frame
                 if (playerState->frameDrop > 0 ||
                     (playerState->frameDrop > 0 && playerState->syncType != AV_SYNC_VIDEO)) {
                     if (frame->pts != AV_NOPTS_VALUE) {
@@ -195,39 +180,34 @@ int VideoDecoder::decodeVideo() {
         }
 
         if (got_picture) {
-
-            // 取出帧
             if (!(vp = frameQueue->peekWritable())) {
                 ret = -1;
                 break;
             }
 
-            // 复制参数
             vp->uploaded = 0;
-            vp->width = frame->width;
-            vp->height = frame->height;
-            vp->format = frame->format;
-            vp->pts = (frame->pts == AV_NOPTS_VALUE) ? NAN : frame->pts * av_q2d(tb);
+            vp->width    = frame->width;
+            vp->height   = frame->height;
+            vp->format   = frame->format;
+            vp->pts      = (frame->pts == AV_NOPTS_VALUE) ? NAN : frame->pts * av_q2d(timebase);
             vp->duration = frame_rate.num && frame_rate.den
                            ? av_q2d((AVRational){frame_rate.den, frame_rate.num}) : 0;
             av_frame_move_ref(vp->frame, frame);
 
-            // 入队帧
             frameQueue->pushFrame();
         }
 
-        // 释放数据包和缓冲帧的引用，防止内存泄漏
         av_frame_unref(frame);
         av_packet_unref(packet);
     }
 
     av_frame_free(&frame);
     av_free(frame);
-    frame = NULL;
+    frame = nullptr;
 
     av_packet_free(&packet);
     av_free(packet);
-    packet = NULL;
+    packet = nullptr;
 
     mExit = true;
     mCondition.signal();

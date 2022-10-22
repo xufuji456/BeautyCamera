@@ -1,6 +1,3 @@
-//
-// Created by cain on 2018/12/27.
-//
 
 #ifndef MEDIADECODER_H
 #define MEDIADECODER_H
@@ -11,6 +8,18 @@
 #include <queue/FrameQueue.h>
 
 class MediaDecoder : public Runnable {
+
+protected:
+    Mutex mMutex;
+    Condition mCondition;
+
+    int streamIndex;
+    bool abortRequest{};
+    AVStream *avStream;
+    PlayerState *playerState;
+    PacketQueue *packetQueue;
+    AVCodecContext *pCodecCtx;
+
 public:
     MediaDecoder(AVCodecContext *avctx, AVStream *stream, int streamIndex, PlayerState *playerState);
 
@@ -26,7 +35,7 @@ public:
 
     int getPacketSize();
 
-    int getStreamIndex();
+    int getStreamIndex() const;
 
     AVStream *getStream();
 
@@ -38,15 +47,6 @@ public:
 
     virtual void run();
 
-protected:
-    Mutex mMutex;
-    Condition mCondition;
-    bool abortRequest;
-    PlayerState *playerState;
-    PacketQueue *packetQueue;       // 数据包队列
-    AVCodecContext *pCodecCtx;
-    AVStream *pStream;
-    int streamIndex;
 };
 
 
