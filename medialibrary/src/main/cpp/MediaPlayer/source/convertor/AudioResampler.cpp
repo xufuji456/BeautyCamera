@@ -10,24 +10,29 @@ AudioResampler::AudioResampler(PlayerState *playerState, AudioDecoder *audioDeco
     this->mediaSync = mediaSync;
     audioState = (AudioState *) av_mallocz(sizeof(AudioState));
     memset(audioState, 0, sizeof(AudioState));
+    soundTouchWrapper = new SoundTouchWrapper();
     frame = av_frame_alloc();
 }
 
 AudioResampler::~AudioResampler() {
-    playerState = nullptr;
-    audioDecoder = nullptr;
-    mediaSync = nullptr;
+    playerState = NULL;
+    audioDecoder = NULL;
+    mediaSync = NULL;
+    if (soundTouchWrapper) {
+        delete soundTouchWrapper;
+        soundTouchWrapper = NULL;
+    }
     if (audioState) {
         swr_free(&audioState->swr_ctx);
         av_freep(&audioState->resampleBuffer);
         memset(audioState, 0, sizeof(AudioState));
         av_free(audioState);
-        audioState = nullptr;
+        audioState = NULL;
     }
     if (frame) {
         av_frame_unref(frame);
         av_frame_free(&frame);
-        frame = nullptr;
+        frame = NULL;
     }
 }
 
@@ -45,14 +50,14 @@ int AudioResampler::setResampleParams(AudioDeviceSpec *spec, int64_t wanted_chan
     audioState->audioParamsTarget.freq = spec->freq;
     audioState->audioParamsTarget.channel_layout = wanted_channel_layout;
     audioState->audioParamsTarget.channels = spec->channels;
-    audioState->audioParamsTarget.frame_size = av_samples_get_buffer_size(nullptr, audioState->audioParamsTarget.channels, 1,
+    audioState->audioParamsTarget.frame_size = av_samples_get_buffer_size(NULL, audioState->audioParamsTarget.channels, 1,
                                                                           audioState->audioParamsTarget.fmt, 1);
-    audioState->audioParamsTarget.bytes_per_sec = av_samples_get_buffer_size(nullptr, audioState->audioParamsTarget.channels,
+    audioState->audioParamsTarget.bytes_per_sec = av_samples_get_buffer_size(NULL, audioState->audioParamsTarget.channels,
                                                                              audioState->audioParamsTarget.freq,
                                                                              audioState->audioParamsTarget.fmt, 1);
 
     if (audioState->audioParamsTarget.bytes_per_sec <= 0 || audioState->audioParamsTarget.frame_size <= 0) {
-        av_log(nullptr, AV_LOG_ERROR, "av_samples_get_buffer_size failed\n");
+        av_log(NULL, AV_LOG_ERROR, "av_samples_get_buffer_size failed\n");
         return -1;
     }
     return 0;
@@ -72,7 +77,7 @@ void AudioResampler::pcmQueueCallback(uint8_t *stream, int len) {
         if (audioState->bufferIndex >= audioState->bufferSize) {
             bufferSize = audioFrameResample();
             if (bufferSize < 0) {
-                audioState->outputBuffer = nullptr;
+                audioState->outputBuffer = NULL;
                 audioState->bufferSize = (unsigned int) (AUDIO_MIN_BUFFER_SIZE / audioState->audioParamsTarget.frame_size
                                                          * audioState->audioParamsTarget.frame_size);
             } else {
@@ -86,7 +91,7 @@ void AudioResampler::pcmQueueCallback(uint8_t *stream, int len) {
             length = len;
         }
         // 复制经过转码输出的PCM数据到缓冲区中
-        if (audioState->outputBuffer != nullptr && !playerState->mute) {
+        if (audioState->outputBuffer != NULL && !playerState->mute) {
             memcpy(stream, audioState->outputBuffer + audioState->bufferIndex, length);
         } else {
             memset(stream, 0, length);
@@ -158,7 +163,7 @@ int AudioResampler::audioFrameResample() {
             continue;
         }
 
-        data_size = av_samples_get_buffer_size(nullptr, av_frame_get_channels(frame),
+        data_size = av_samples_get_buffer_size(NULL, av_frame_get_channels(frame),
                                                frame->nb_samples,
                                                (AVSampleFormat)frame->format, 1);
 
@@ -174,13 +179,13 @@ int AudioResampler::audioFrameResample() {
             || (wanted_nb_samples != frame->nb_samples && !audioState->swr_ctx)) {
 
             swr_free(&audioState->swr_ctx);
-            audioState->swr_ctx = swr_alloc_set_opts(nullptr, audioState->audioParamsTarget.channel_layout,
+            audioState->swr_ctx = swr_alloc_set_opts(NULL, audioState->audioParamsTarget.channel_layout,
                                                      audioState->audioParamsTarget.fmt, audioState->audioParamsTarget.freq,
                                                      dec_channel_layout, (AVSampleFormat)frame->format,
-                                                     frame->sample_rate, 0, nullptr);
+                                                     frame->sample_rate, 0, NULL);
 
             if (!audioState->swr_ctx || swr_init(audioState->swr_ctx) < 0) {
-                av_log(nullptr, AV_LOG_ERROR, "Cannot create resampler of %d Hz %s %d channels to %d Hz %s %d channels!\n",
+                av_log(NULL, AV_LOG_ERROR, "Cannot create sample rate converter for conversion of %d Hz %s %d channels to %d Hz %s %d channels!\n",
                        frame->sample_rate,
                        av_get_sample_fmt_name((AVSampleFormat)frame->format),
                        av_frame_get_channels(frame),
@@ -204,13 +209,13 @@ int AudioResampler::audioFrameResample() {
             int out_size  = av_samples_get_buffer_size(NULL, audioState->audioParamsTarget.channels, out_count, audioState->audioParamsTarget.fmt, 0);
             int len2;
             if (out_size < 0) {
-                av_log(nullptr, AV_LOG_ERROR, "av_samples_get_buffer_size() failed\n");
+                av_log(NULL, AV_LOG_ERROR, "av_samples_get_buffer_size() failed\n");
                 return -1;
             }
             if (wanted_nb_samples != frame->nb_samples) {
                 if (swr_set_compensation(audioState->swr_ctx, (wanted_nb_samples - frame->nb_samples) * audioState->audioParamsTarget.freq / frame->sample_rate,
                                          wanted_nb_samples * audioState->audioParamsTarget.freq / frame->sample_rate) < 0) {
-                    av_log(nullptr, AV_LOG_ERROR, "swr_set_compensation() failed\n");
+                    av_log(NULL, AV_LOG_ERROR, "swr_set_compensation() failed\n");
                     return -1;
                 }
             }
@@ -220,11 +225,11 @@ int AudioResampler::audioFrameResample() {
             }
             len2 = swr_convert(audioState->swr_ctx, out, out_count, in, frame->nb_samples);
             if (len2 < 0) {
-                av_log(nullptr, AV_LOG_ERROR, "swr_convert() failed\n");
+                av_log(NULL, AV_LOG_ERROR, "swr_convert() failed\n");
                 return -1;
             }
             if (len2 == out_count) {
-                av_log(nullptr, AV_LOG_WARNING, "audio buffer is probably too small\n");
+                av_log(NULL, AV_LOG_WARNING, "audio buffer is probably too small\n");
                 if (swr_init(audioState->swr_ctx) < 0) {
                     swr_free(&audioState->swr_ctx);
                 }
@@ -233,25 +238,28 @@ int AudioResampler::audioFrameResample() {
             resampled_data_size = len2 * audioState->audioParamsTarget.channels * av_get_bytes_per_sample(audioState->audioParamsTarget.fmt);
 
             // 变速变调处理
-//            if (playerState->playbackRate != 1.0f && !playerState->abortRequest) {
-//                int bytes_per_sample = av_get_bytes_per_sample(audioState->audioParamsTarget.fmt);
-//                av_fast_malloc(&audioState->soundTouchBuffer, &audioState->soundTouchBufferSize, out_size * translate_time);
-//                for (int i = 0; i < (resampled_data_size / 2); i++) {
-//                    audioState->soundTouchBuffer[i] = (audioState->resampleBuffer[i * 2] | (audioState->resampleBuffer[i * 2 + 1] << 8));
-//                }
-//                int ret_len = soundTouchWrapper->translate(audioState->soundTouchBuffer, (float)(playerState->playbackRate),
-//                                                           (float)(1.0f / playerState->playbackRate),
-//                                                           resampled_data_size / 2, bytes_per_sample,
-//                                                           audioState->audioParamsTarget.channels, frame->sample_rate);
-//                if (ret_len > 0) {
-//                    audioState->outputBuffer = (uint8_t*)audioState->soundTouchBuffer;
-//                    resampled_data_size = ret_len;
-//                } else {
-//                    translate_time++;
-//                    av_frame_unref(frame);
-//                    continue;
-//                }
-//            }
+            if (playerState->playbackRate != 1.0f && !playerState->abortRequest) {
+                int bytes_per_sample = av_get_bytes_per_sample(audioState->audioParamsTarget.fmt);
+                av_fast_malloc(&audioState->soundTouchBuffer, &audioState->soundTouchBufferSize, out_size * translate_time);
+                for (int i = 0; i < (resampled_data_size / 2); i++) {
+                    audioState->soundTouchBuffer[i] = (audioState->resampleBuffer[i * 2] | (audioState->resampleBuffer[i * 2 + 1] << 8));
+                }
+                if (!soundTouchWrapper) {
+                    soundTouchWrapper = new SoundTouchWrapper();
+                }
+                int ret_len = soundTouchWrapper->translate(audioState->soundTouchBuffer, (float)(playerState->playbackRate),
+                                                           (float)(1.0f / playerState->playbackRate),
+                                                           resampled_data_size / 2, bytes_per_sample,
+                                                           audioState->audioParamsTarget.channels, frame->sample_rate);
+                if (ret_len > 0) {
+                    audioState->outputBuffer = (uint8_t*)audioState->soundTouchBuffer;
+                    resampled_data_size = ret_len;
+                } else {
+                    translate_time++;
+                    av_frame_unref(frame);
+                    continue;
+                }
+            }
         } else {
             audioState->outputBuffer = frame->data[0];
             resampled_data_size = data_size;

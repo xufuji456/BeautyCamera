@@ -10,9 +10,18 @@ else ()
   set(GLES-lib GLESv3)
 endif (${ANDROID_PLATFORM_LEVEL} LESS 11)
 
+# 添加 soundtouch 动态库
+set(soundtouch_dir ../SoundTouch)
+
+# 添加通用类目录
+set(common_dir ../Common)
+
 # 添加头文件路径
 include_directories( source
-                     android)
+                     android
+                     ${soundtouch_dir}
+                     ${filter_dir}
+                     ${common_dir} )
 
 # 添加源文件
 add_library( media_player
@@ -47,6 +56,7 @@ add_library( media_player
 target_link_libraries( media_player
 
                        ffmpeg
+                       soundtouch
 
                        -landroid
                        -llog
