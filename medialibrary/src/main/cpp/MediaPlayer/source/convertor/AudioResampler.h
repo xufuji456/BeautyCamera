@@ -8,7 +8,7 @@
 #include <player/PlayerState.h>
 #include <sync/MediaSync.h>
 #include <SoundTouchHelper.h>
-#include <render//AudioRender.h>
+#include <render/AudioRender.h>
 
 /**
  * 音频参数

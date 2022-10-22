@@ -3,9 +3,7 @@
 #define SOUNDTOUCHHELPER_H
 
 #include <stdint.h>
-#include "include/SoundTouch.h"
-
-using namespace std;
+#include "SoundTouch.h"
 
 using namespace soundtouch;
 

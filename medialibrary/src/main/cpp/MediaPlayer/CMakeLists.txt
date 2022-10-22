@@ -10,11 +10,7 @@ else ()
   set(GLES-lib GLESv3)
 endif (${ANDROID_PLATFORM_LEVEL} LESS 11)
 
-# 添加 soundtouch 动态库
-set(soundtouch_dir ../SoundTouch)
-
-# 添加通用类目录
-set(common_dir ../Common)
+set(soundtouch_dir ../include/soundtouch)
 
 # 添加头文件路径
 include_directories( source

@@ -12,16 +12,19 @@ if(CMAKE_COMPILER_IS_CLANG)
 endif(CMAKE_COMPILER_IS_CLANG)
 
 # 添加include目录路径
-include_directories( include )
+include_directories(include)
 
 # 添加ffmpeg库
-add_library( ffmpeg SHARED IMPORTED )
-set_target_properties( ffmpeg
-                       PROPERTIES IMPORTED_LOCATION
-                       ${CMAKE_SOURCE_DIR}/../libs/${ANDROID_ABI}/libffmpeg.so )
+add_library(ffmpeg SHARED IMPORTED)
+set_target_properties(ffmpeg
+        PROPERTIES IMPORTED_LOCATION
+        ${CMAKE_SOURCE_DIR}/../libs/${ANDROID_ABI}/libffmpeg.so)
 
 # SoundTouch库
-add_subdirectory(${CMAKE_SOURCE_DIR}/SoundTouch)
+add_library(soundtouch SHARED IMPORTED)
+set_target_properties(soundtouch
+        PROPERTIES IMPORTED_LOCATION
+        ${CMAKE_SOURCE_DIR}/../libs/${ANDROID_ABI}/libsoundtouch.so)
 
 # 媒体播放器
 add_subdirectory(${CMAKE_SOURCE_DIR}/MediaPlayer)
