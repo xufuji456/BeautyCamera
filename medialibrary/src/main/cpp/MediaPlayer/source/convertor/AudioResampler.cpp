@@ -4,7 +4,7 @@
 
 #include "AudioResampler.h"
 
-AudioResampler::AudioResampler(PlayerState *playerState, AudioDecoder *audioDecoder, MediaSync *mediaSync) {
+AudioResampler::AudioResampler(PlayerParam *playerState, AudioDecoder *audioDecoder, MediaSync *mediaSync) {
     this->playerState = playerState;
     this->audioDecoder = audioDecoder;
     this->mediaSync = mediaSync;

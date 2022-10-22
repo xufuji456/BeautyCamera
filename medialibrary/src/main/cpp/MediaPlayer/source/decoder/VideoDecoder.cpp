@@ -2,7 +2,7 @@
 #include "VideoDecoder.h"
 
 VideoDecoder::VideoDecoder(AVFormatContext *formatCtx, AVCodecContext *codecCtx,
-                           AVStream *stream, PlayerState *playerState)
+                           AVStream *stream, PlayerParam *playerState)
         : MediaDecoder(codecCtx, stream, playerState) {
     this->pFormatCtx = formatCtx;
     decodeThread = nullptr;

@@ -6,7 +6,7 @@
 #define MEDIASYNC_H
 
 #include <sync/MediaClock.h>
-#include <player/PlayerState.h>
+#include <player/PlayerParam.h>
 #include <decoder/VideoDecoder.h>
 #include <decoder/AudioDecoder.h>
 
@@ -18,7 +18,7 @@
 class MediaSync : public Runnable {
 
 public:
-    MediaSync(PlayerState *playerState);
+    MediaSync(PlayerParam *playerState);
 
     virtual ~MediaSync();
 
@@ -67,7 +67,7 @@ private:
     void renderVideo();
 
 private:
-    PlayerState *playerState;               // 播放器状态
+    PlayerParam *playerState;               // 播放器状态
     bool abortRequest;                      // 停止
     bool mExit;
 

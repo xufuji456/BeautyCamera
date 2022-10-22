@@ -3,14 +3,14 @@
 //
 
 #include <AndroidLog.h>
-#include "PlayerState.h"
+#include "PlayerParam.h"
 
-PlayerState::PlayerState() {
+PlayerParam::PlayerParam() {
     init();
     reset();
 }
 
-PlayerState::~PlayerState() {
+PlayerParam::~PlayerParam() {
     reset();
     if (messageQueue) {
         messageQueue->release();
@@ -19,7 +19,7 @@ PlayerState::~PlayerState() {
     }
 }
 
-void PlayerState::init() {
+void PlayerParam::init() {
     url            = nullptr;
     iformat        = nullptr;
     audioCodecName = nullptr;
@@ -27,7 +27,7 @@ void PlayerState::init() {
     messageQueue   = new AVMessageQueue();
 }
 
-void PlayerState::reset() {
+void PlayerParam::reset() {
     if (url) {
         av_freep(&url);
         url = nullptr;

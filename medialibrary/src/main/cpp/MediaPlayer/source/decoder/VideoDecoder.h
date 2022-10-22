@@ -3,7 +3,7 @@
 #define VIDEODECODER_H
 
 #include <decoder/MediaDecoder.h>
-#include <player/PlayerState.h>
+#include <player/PlayerParam.h>
 #include <sync/MediaClock.h>
 
 class VideoDecoder : public MediaDecoder {
@@ -21,7 +21,7 @@ private:
 
 public:
     VideoDecoder(AVFormatContext *formatCtx, AVCodecContext *codecCtx,
-                 AVStream *stream, PlayerState *playerState);
+                 AVStream *stream, PlayerParam *playerState);
 
     virtual ~VideoDecoder();
 

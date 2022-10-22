@@ -17,8 +17,8 @@ add_library( media_player
              source/decoder/MediaDecoder.cpp
              source/decoder/VideoDecoder.cpp
 
-        source/render/android/NativeWindowVideoRender.cpp
-        source/render/android/OpenSLAudioRender.cpp
+             source/render/android/NativeWindowVideoRender.cpp
+             source/render/android/OpenSLAudioRender.cpp
 
              source/queue/FrameQueue.cpp
              source/queue/PacketQueue.cpp
@@ -28,7 +28,7 @@ add_library( media_player
 
              source/player/AVMessageQueue.cpp
              source/player/MediaPlayer.cpp
-             source/player/PlayerState.cpp
+             source/player/PlayerParam.cpp
 
              # controller
              android/FFMediaPlayer.cpp

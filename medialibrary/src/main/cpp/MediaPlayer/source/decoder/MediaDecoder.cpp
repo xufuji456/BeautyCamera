@@ -1,7 +1,7 @@
 
 #include "MediaDecoder.h"
 
-MediaDecoder::MediaDecoder(AVCodecContext *codecCtx, AVStream *stream, PlayerState *playerState) {
+MediaDecoder::MediaDecoder(AVCodecContext *codecCtx, AVStream *stream, PlayerParam *playerState) {
     packetQueue = new PacketQueue();
     this->codecContext = codecCtx;
     this->avStream     = stream;

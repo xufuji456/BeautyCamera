@@ -3,7 +3,7 @@
 #define AUDIODECODER_H
 
 #include <decoder/MediaDecoder.h>
-#include <player/PlayerState.h>
+#include <player/PlayerParam.h>
 
 class AudioDecoder : public MediaDecoder {
 
@@ -14,7 +14,7 @@ private:
     AVRational next_pts_tb{};
 
 public:
-    AudioDecoder(AVCodecContext *codecCtx, AVStream *stream, PlayerState *playerState);
+    AudioDecoder(AVCodecContext *codecCtx, AVStream *stream, PlayerParam *playerState);
 
     virtual ~AudioDecoder();
 

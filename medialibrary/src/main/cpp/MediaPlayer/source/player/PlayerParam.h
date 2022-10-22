@@ -2,8 +2,8 @@
 // Created by cain on 2019/1/26.
 //
 
-#ifndef PLAYERSTATE_H
-#define PLAYERSTATE_H
+#ifndef PLAYERPARAM_H
+#define PLAYERPARAM_H
 
 #include <Mutex.h>
 #include <Condition.h>
@@ -68,12 +68,12 @@ struct AVDictionary {
     AVDictionaryEntry *elements;
 };
 
-class PlayerState {
+class PlayerParam {
 
 public:
-    PlayerState();
+    PlayerParam();
 
-    virtual ~PlayerState();
+    virtual ~PlayerParam();
 
     void reset();
 
@@ -120,4 +120,4 @@ public:
 };
 
 
-#endif //PLAYERSTATE_H
+#endif //PLAYERPARAM_H

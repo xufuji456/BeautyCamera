@@ -7,7 +7,7 @@
 
 #include <sync/MediaClock.h>
 #include <SoundTouchHelper.h>
-#include <player/PlayerState.h>
+#include <player/PlayerParam.h>
 #include <decoder/AudioDecoder.h>
 #include <decoder/VideoDecoder.h>
 
@@ -86,7 +86,7 @@ private:
     Condition mCondition;
     Thread *readThread;
 
-    PlayerState *playerState;
+    PlayerParam *playerState;
 
     AudioDecoder *audioDecoder;
     VideoDecoder *videoDecoder;

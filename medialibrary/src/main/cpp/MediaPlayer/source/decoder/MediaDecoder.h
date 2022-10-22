@@ -3,7 +3,7 @@
 #define MEDIADECODER_H
 
 #include <AndroidLog.h>
-#include <player/PlayerState.h>
+#include <player/PlayerParam.h>
 #include <queue/PacketQueue.h>
 #include <queue/FrameQueue.h>
 
@@ -15,12 +15,12 @@ protected:
 
     bool abortRequest{};
     AVStream *avStream;
-    PlayerState *playerState;
+    PlayerParam *playerState;
     PacketQueue *packetQueue;
     AVCodecContext *codecContext;
 
 public:
-    MediaDecoder(AVCodecContext *codecCtx, AVStream *stream, PlayerState *playerState);
+    MediaDecoder(AVCodecContext *codecCtx, AVStream *stream, PlayerParam *playerState);
 
     virtual ~MediaDecoder();
 

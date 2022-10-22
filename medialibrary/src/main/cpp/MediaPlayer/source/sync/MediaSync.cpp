@@ -4,7 +4,7 @@
 
 #include "MediaSync.h"
 
-MediaSync::MediaSync(PlayerState *playerState) {
+MediaSync::MediaSync(PlayerParam *playerState) {
     this->playerState = playerState;
     audioDecoder = nullptr;
     videoDecoder = nullptr;

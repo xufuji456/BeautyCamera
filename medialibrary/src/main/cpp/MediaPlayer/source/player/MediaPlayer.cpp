@@ -49,7 +49,7 @@ static int lockmgrCallback(void **mtx, enum AVLockOp op) {
 MediaPlayer::MediaPlayer() {
     av_register_all();
     avformat_network_init();
-    playerState = new PlayerState();
+    playerState = new PlayerParam();
     mDuration = -1;
     audioDecoder = nullptr;
     videoDecoder = nullptr;
@@ -294,7 +294,7 @@ int MediaPlayer::isPlaying() {
 }
 
 static int avformat_interrupt_cb(void *ctx) {
-    PlayerState *playerState = (PlayerState *) ctx;
+    PlayerParam *playerState = (PlayerParam *) ctx;
     if (playerState->abortRequest) {
         return AVERROR_EOF;
     }
