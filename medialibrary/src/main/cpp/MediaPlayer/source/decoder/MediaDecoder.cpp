@@ -1,9 +1,8 @@
 
 #include "MediaDecoder.h"
 
-MediaDecoder::MediaDecoder(AVCodecContext *codecCtx, PlayerParam *playerState) {
+MediaDecoder::MediaDecoder(PlayerParam *playerState) {
     packetQueue = new PacketQueue();
-    this->codecContext = codecCtx;
     this->playerState  = playerState;
 }
 
@@ -14,11 +13,12 @@ MediaDecoder::~MediaDecoder() {
         delete packetQueue;
         packetQueue = nullptr;
     }
-    if (codecContext) {
-        avcodec_close(codecContext);
-        avcodec_free_context(&codecContext);
-        codecContext = nullptr;
-    }
+    // TODO
+//    if (codecContext) {
+//        avcodec_close(codecContext);
+//        avcodec_free_context(&codecContext);
+//        codecContext = nullptr;
+//    }
     playerState = nullptr;
     mMutex.unlock();
 }
@@ -64,7 +64,7 @@ int MediaDecoder::getPacketSize() {
 }
 
 AVCodecContext *MediaDecoder::getCodecContext() {
-    return codecContext;
+    return nullptr;
 }
 
 int MediaDecoder::getMemorySize() {

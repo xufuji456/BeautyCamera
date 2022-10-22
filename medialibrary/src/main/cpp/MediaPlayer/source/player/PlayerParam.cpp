@@ -20,14 +20,17 @@ PlayerParam::~PlayerParam() {
 }
 
 void PlayerParam::init() {
-    url              = nullptr;
-    iformat          = nullptr;
-    audioCodecName   = nullptr;
-    videoCodecName   = nullptr;
-    m_videoStream    = nullptr;
-    m_audioStream    = nullptr;
-    m_subtitleStream = nullptr;
-    messageQueue     = new AVMessageQueue();
+    url                = nullptr;
+    iformat            = nullptr;
+    audioCodecName     = nullptr;
+    videoCodecName     = nullptr;
+    m_videoStream      = nullptr;
+    m_audioStream      = nullptr;
+    m_subtitleStream   = nullptr;
+    m_audioCodecCtx    = nullptr;
+    m_videoCodecCtx    = nullptr;
+    m_subtitleCodecCtx = nullptr;
+    messageQueue       = new AVMessageQueue();
 }
 
 void PlayerParam::reset() {

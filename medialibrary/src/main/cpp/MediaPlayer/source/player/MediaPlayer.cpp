@@ -822,16 +822,18 @@ int MediaPlayer::prepareDecoder(int streamIndex) {
         pFormatCtx->streams[streamIndex]->discard = AVDISCARD_DEFAULT;
         switch (avctx->codec_type) {
             case AVMEDIA_TYPE_AUDIO: {
-                playerState->m_audioIndex  = streamIndex;
-                playerState->m_audioStream = pFormatCtx->streams[streamIndex];
-                audioDecoder = new AudioDecoder(avctx, playerState);
+                playerState->m_audioIndex    = streamIndex;
+                playerState->m_audioStream   = pFormatCtx->streams[streamIndex];
+                playerState->m_audioCodecCtx = avctx;
+                audioDecoder = new AudioDecoder(playerState);
                 break;
             }
 
             case AVMEDIA_TYPE_VIDEO: {
-                playerState->m_videoIndex = streamIndex;
-                playerState->m_videoStream = pFormatCtx->streams[streamIndex];
-                videoDecoder = new VideoDecoder(pFormatCtx, avctx, playerState);
+                playerState->m_videoIndex    = streamIndex;
+                playerState->m_videoStream   = pFormatCtx->streams[streamIndex];
+                playerState->m_videoCodecCtx = avctx;
+                videoDecoder = new VideoDecoder(pFormatCtx, playerState);
                 attachmentRequest = 1;
                 break;
             }

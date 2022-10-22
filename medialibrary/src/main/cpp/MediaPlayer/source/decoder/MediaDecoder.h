@@ -16,10 +16,9 @@ protected:
     bool abortRequest{};
     PlayerParam *playerState;
     PacketQueue *packetQueue;
-    AVCodecContext *codecContext;
 
 public:
-    MediaDecoder(AVCodecContext *codecCtx, PlayerParam *playerState);
+    MediaDecoder(PlayerParam *playerState);
 
     virtual ~MediaDecoder();
 
@@ -29,17 +28,17 @@ public:
 
     virtual void flush();
 
+    virtual void run();
+
+    virtual AVCodecContext *getCodecContext();
+
     int pushPacket(AVPacket *pkt);
 
     int getPacketSize();
 
-    AVCodecContext *getCodecContext();
-
     int getMemorySize();
 
     int hasEnoughPackets(AVStream *stream);
-
-    virtual void run();
 
 };
 

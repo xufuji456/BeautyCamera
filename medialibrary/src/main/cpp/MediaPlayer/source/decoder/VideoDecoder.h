@@ -20,7 +20,7 @@ private:
     int decodeVideo();
 
 public:
-    VideoDecoder(AVFormatContext *formatCtx, AVCodecContext *codecCtx, PlayerParam *playerState);
+    VideoDecoder(AVFormatContext *formatCtx, PlayerParam *playerState);
 
     virtual ~VideoDecoder();
 
@@ -32,6 +32,10 @@ public:
 
     void flush() override;
 
+    void run() override;
+
+    AVCodecContext *getCodecContext() override;
+
     int getFrameSize();
 
     int getRotate();
@@ -39,8 +43,6 @@ public:
     FrameQueue *getFrameQueue();
 
     AVFormatContext *getFormatContext();
-
-    void run() override;
 
 };
 

@@ -1,8 +1,8 @@
 
 #include "VideoDecoder.h"
 
-VideoDecoder::VideoDecoder(AVFormatContext *formatCtx, AVCodecContext *codecCtx, PlayerParam *playerState)
-        : MediaDecoder(codecCtx, playerState) {
+VideoDecoder::VideoDecoder(AVFormatContext *formatCtx, PlayerParam *playerState)
+        : MediaDecoder(playerState) {
     this->pFormatCtx = formatCtx;
     decodeThread = nullptr;
     masterClock  = nullptr;
@@ -93,6 +93,10 @@ AVFormatContext *VideoDecoder::getFormatContext() {
     return pFormatCtx;
 }
 
+AVCodecContext *VideoDecoder::getCodecContext() {
+    return playerState->m_videoCodecCtx;
+}
+
 void VideoDecoder::run() {
     decodeVideo();
 }
@@ -134,14 +138,14 @@ int VideoDecoder::decodeVideo() {
         }
 
         playerState->mMutex.lock();
-        ret = avcodec_send_packet(codecContext, packet);
+        ret = avcodec_send_packet(getCodecContext(), packet);
         if (ret < 0 && ret != AVERROR(EAGAIN) && ret != AVERROR_EOF) {
             av_packet_unref(packet);
             playerState->mMutex.unlock();
             continue;
         }
 
-        ret = avcodec_receive_frame(codecContext, frame);
+        ret = avcodec_receive_frame(getCodecContext(), frame);
         playerState->mMutex.unlock();
         if (ret < 0 && ret != AVERROR_EOF) {
             av_frame_unref(frame);

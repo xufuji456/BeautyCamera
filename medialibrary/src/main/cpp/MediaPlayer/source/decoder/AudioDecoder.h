@@ -14,9 +14,11 @@ private:
     AVRational next_pts_tb{};
 
 public:
-    AudioDecoder(AVCodecContext *codecCtx, PlayerParam *playerState);
+    AudioDecoder(PlayerParam *playerState);
 
     virtual ~AudioDecoder();
+
+    AVCodecContext *getCodecContext() override;
 
     int getAudioFrame(AVFrame *frame);
 

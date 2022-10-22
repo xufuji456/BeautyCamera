@@ -87,6 +87,10 @@ public:
     AVStream *m_videoStream;
     AVStream *m_subtitleStream;
 
+    AVCodecContext *m_audioCodecCtx;
+    AVCodecContext *m_videoCodecCtx;
+    AVCodecContext *m_subtitleCodecCtx;
+
     AVMessageQueue *messageQueue;   // 播放器消息队列
     int64_t videoDuration;          // 视频时长
 
