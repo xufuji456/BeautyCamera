@@ -44,9 +44,7 @@ public:
 
     void stop();
 
-    void seekTo(float timeMs);
-
-    void setLooping(int looping);
+    void seekTo(long timeMs);
 
     void setVolume(float volume);
 
@@ -65,8 +63,6 @@ public:
     long getDuration();
 
     int isPlaying();
-
-    int isLooping();
 
     AVMessageQueue *getMessageQueue();
 

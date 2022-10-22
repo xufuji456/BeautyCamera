@@ -179,7 +179,7 @@ void MediaSync::refreshVideo(double *remaining_time) {
     double time;
 
     // 检查外部时钟
-    if (!playerState->pauseRequest && playerState->realTime &&
+    if (!playerState->pauseRequest &&
         playerState->syncType == AV_SYNC_EXTERNAL) {
         checkExternalClockSpeed();
     }

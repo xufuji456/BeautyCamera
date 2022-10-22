@@ -184,8 +184,8 @@ void MediaPlayer::stop() {
     }
 }
 
-void MediaPlayer::seekTo(float timeMs) {
-    if (!playerState->realTime && mDuration < 0) {
+void MediaPlayer::seekTo(long timeMs) {
+    if (mDuration <= 0) {
         return;
     }
 
@@ -196,9 +196,8 @@ void MediaPlayer::seekTo(float timeMs) {
     mMutex.unlock();
 
     if (!playerState->seekRequest) {
-        int64_t start_time = 0;
         int64_t seek_pos = av_rescale(timeMs, AV_TIME_BASE, 1000);
-        start_time = pFormatCtx ? pFormatCtx->start_time : 0;
+        int64_t start_time = pFormatCtx ? pFormatCtx->start_time : 0;
         if (start_time > 0 && start_time != AV_NOPTS_VALUE) {
             seek_pos += start_time;
         }
@@ -364,15 +363,10 @@ int MediaPlayer::readPackets() {
             playerState->messageQueue->postMessage(MSG_FIND_STREAM_INFO);
         }
 
-        // Gets the duration of the file, -1 if no duration available.
-        if (playerState->realTime) {
-            mDuration = -1;
-        } else {
-            mDuration = -1;
-            if (pFormatCtx->duration != AV_NOPTS_VALUE) {
-                mDuration = av_rescale(pFormatCtx->duration, 1000, AV_TIME_BASE);
-            }
+        if (pFormatCtx->duration != AV_NOPTS_VALUE) {
+            mDuration = av_rescale(pFormatCtx->duration, 1000, AV_TIME_BASE);
         }
+
         playerState->videoDuration = mDuration;
 
         if (pFormatCtx->pb) {

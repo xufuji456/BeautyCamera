@@ -98,7 +98,6 @@ public:
     SyncType syncType;              // 同步类型
     int64_t startTime;              // 播放起始位置
     int64_t duration;               // 播放时长
-    int realTime;                   // 判断是否实时流
     int audioDisable;               // 是否禁止音频流
     int videoDisable;               // 是否禁止视频流
     int displayDisable;             // 是否禁止显示
