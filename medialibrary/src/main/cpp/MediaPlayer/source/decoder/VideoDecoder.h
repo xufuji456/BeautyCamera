@@ -21,7 +21,7 @@ private:
 
 public:
     VideoDecoder(AVFormatContext *pFormatCtx, AVCodecContext *avctx,
-                 AVStream *stream, int streamIndex, PlayerState *playerState);
+                 AVStream *stream, PlayerState *playerState);
 
     virtual ~VideoDecoder();
 

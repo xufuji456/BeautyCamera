@@ -2,8 +2,8 @@
 #include "VideoDecoder.h"
 
 VideoDecoder::VideoDecoder(AVFormatContext *pFormatCtx, AVCodecContext *avctx,
-                           AVStream *stream, int streamIndex, PlayerState *playerState)
-        : MediaDecoder(avctx, stream, streamIndex, playerState) {
+                           AVStream *stream, PlayerState *playerState)
+        : MediaDecoder(avctx, stream, playerState) {
     this->pFormatCtx = pFormatCtx;
     frameQueue = new FrameQueue(VIDEO_QUEUE_SIZE, 1);
     decodeThread = nullptr;
@@ -160,7 +160,7 @@ int VideoDecoder::decodeVideo() {
                 double dpts = NAN;
 
                 if (frame->pts != AV_NOPTS_VALUE) {
-                    dpts = av_q2d(avStream->time_base) * frame->pts;
+                    dpts = av_q2d(avStream->time_base) * (double)frame->pts;
                 }
 
                 frame->sample_aspect_ratio = av_guess_sample_aspect_ratio(pFormatCtx, avStream, frame);
@@ -189,7 +189,7 @@ int VideoDecoder::decodeVideo() {
             vp->width    = frame->width;
             vp->height   = frame->height;
             vp->format   = frame->format;
-            vp->pts      = (frame->pts == AV_NOPTS_VALUE) ? NAN : frame->pts * av_q2d(timebase);
+            vp->pts      = (frame->pts == AV_NOPTS_VALUE) ? NAN : (double)frame->pts * av_q2d(timebase);
             vp->duration = frame_rate.num && frame_rate.den
                            ? av_q2d((AVRational){frame_rate.den, frame_rate.num}) : 0;
             av_frame_move_ref(vp->frame, frame);

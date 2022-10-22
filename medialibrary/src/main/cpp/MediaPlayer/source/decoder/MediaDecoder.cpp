@@ -1,11 +1,10 @@
 
 #include "MediaDecoder.h"
 
-MediaDecoder::MediaDecoder(AVCodecContext *avctx, AVStream *stream, int streamIndex, PlayerState *playerState) {
+MediaDecoder::MediaDecoder(AVCodecContext *avctx, AVStream *stream, PlayerState *playerState) {
     packetQueue = new PacketQueue();
     this->pCodecCtx   = avctx;
     this->avStream    = stream;
-    this->streamIndex = streamIndex;
     this->playerState = playerState;
 }
 
@@ -63,10 +62,6 @@ int MediaDecoder::pushPacket(AVPacket *pkt) {
 
 int MediaDecoder::getPacketSize() {
     return packetQueue ? packetQueue->getPacketSize() : 0;
-}
-
-int MediaDecoder::getStreamIndex() const {
-    return streamIndex;
 }
 
 AVStream *MediaDecoder::getStream() {

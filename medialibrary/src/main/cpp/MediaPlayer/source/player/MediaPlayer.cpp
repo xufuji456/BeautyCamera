@@ -691,9 +691,9 @@ int MediaPlayer::readPackets() {
                          av_q2d(pFormatCtx->streams[pkt->stream_index]->time_base)
                          - (double)(playerState->startTime != AV_NOPTS_VALUE ? playerState->startTime : 0) / 1000000
                          <= ((double)playerState->duration / 1000000);
-        if (playInRange && audioDecoder && pkt->stream_index == audioDecoder->getStreamIndex()) {
+        if (playInRange && audioDecoder && pkt->stream_index == playerState->m_audioIndex) {
             audioDecoder->pushPacket(pkt);
-        } else if (playInRange && videoDecoder && pkt->stream_index == videoDecoder->getStreamIndex()) {
+        } else if (playInRange && videoDecoder && pkt->stream_index == playerState->m_videoIndex) {
             videoDecoder->pushPacket(pkt);
         } else {
             av_packet_unref(pkt);
@@ -827,14 +827,14 @@ int MediaPlayer::prepareDecoder(int streamIndex) {
         pFormatCtx->streams[streamIndex]->discard = AVDISCARD_DEFAULT;
         switch (avctx->codec_type) {
             case AVMEDIA_TYPE_AUDIO: {
-                audioDecoder = new AudioDecoder(avctx, pFormatCtx->streams[streamIndex],
-                                                streamIndex, playerState);
+                playerState->m_audioIndex = streamIndex;
+                audioDecoder = new AudioDecoder(avctx, pFormatCtx->streams[streamIndex], playerState);
                 break;
             }
 
             case AVMEDIA_TYPE_VIDEO: {
-                videoDecoder = new VideoDecoder(pFormatCtx, avctx, pFormatCtx->streams[streamIndex],
-                                                streamIndex, playerState);
+                playerState->m_videoIndex = streamIndex;
+                videoDecoder = new VideoDecoder(pFormatCtx, avctx, pFormatCtx->streams[streamIndex], playerState);
                 attachmentRequest = 1;
                 break;
             }

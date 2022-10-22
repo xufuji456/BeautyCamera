@@ -13,7 +13,6 @@ protected:
     Mutex mMutex;
     Condition mCondition;
 
-    int streamIndex;
     bool abortRequest{};
     AVStream *avStream;
     PlayerState *playerState;
@@ -21,7 +20,7 @@ protected:
     AVCodecContext *pCodecCtx;
 
 public:
-    MediaDecoder(AVCodecContext *avctx, AVStream *stream, int streamIndex, PlayerState *playerState);
+    MediaDecoder(AVCodecContext *avctx, AVStream *stream, PlayerState *playerState);
 
     virtual ~MediaDecoder();
 
@@ -34,8 +33,6 @@ public:
     int pushPacket(AVPacket *pkt);
 
     int getPacketSize();
-
-    int getStreamIndex() const;
 
     AVStream *getStream();
 
