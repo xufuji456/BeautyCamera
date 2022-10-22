@@ -1,8 +1,8 @@
 
 #include "AudioDecoder.h"
 
-AudioDecoder::AudioDecoder(AVCodecContext *avctx, AVStream *stream, PlayerState *playerState)
-        : MediaDecoder(avctx, stream, playerState) {
+AudioDecoder::AudioDecoder(AVCodecContext *codecCtx, AVStream *stream, PlayerState *playerState)
+        : MediaDecoder(codecCtx, stream, playerState) {
     packet = av_packet_alloc();
     packetPending = false;
 }
@@ -48,7 +48,7 @@ int AudioDecoder::getAudioFrame(AVFrame *frame) {
         }
 
         playerState->mMutex.lock();
-        ret = avcodec_send_packet(pCodecCtx, &pkt);
+        ret = avcodec_send_packet(codecContext, &pkt);
         if (ret < 0) {
             if (ret == AVERROR(EAGAIN)) {
                 av_packet_move_ref(packet, &pkt);
@@ -61,7 +61,7 @@ int AudioDecoder::getAudioFrame(AVFrame *frame) {
             continue;
         }
 
-        ret = avcodec_receive_frame(pCodecCtx, frame);
+        ret = avcodec_receive_frame(codecContext, frame);
         playerState->mMutex.unlock();
         av_packet_unref(packet);
         if (ret < 0) {
@@ -73,7 +73,7 @@ int AudioDecoder::getAudioFrame(AVFrame *frame) {
             // rescale pts using timebase
             AVRational tb = (AVRational){1, frame->sample_rate};
             if (frame->pts != AV_NOPTS_VALUE) {
-                frame->pts = av_rescale_q(frame->pts, av_codec_get_pkt_timebase(pCodecCtx), tb);
+                frame->pts = av_rescale_q(frame->pts, av_codec_get_pkt_timebase(codecContext), tb);
             } else if (next_pts != AV_NOPTS_VALUE) {
                 frame->pts = av_rescale_q(next_pts, next_pts_tb, tb);
             }

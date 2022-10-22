@@ -1,13 +1,13 @@
 
 #include "VideoDecoder.h"
 
-VideoDecoder::VideoDecoder(AVFormatContext *pFormatCtx, AVCodecContext *avctx,
+VideoDecoder::VideoDecoder(AVFormatContext *formatCtx, AVCodecContext *codecCtx,
                            AVStream *stream, PlayerState *playerState)
-        : MediaDecoder(avctx, stream, playerState) {
-    this->pFormatCtx = pFormatCtx;
-    frameQueue = new FrameQueue(VIDEO_QUEUE_SIZE, 1);
+        : MediaDecoder(codecCtx, stream, playerState) {
+    this->pFormatCtx = formatCtx;
     decodeThread = nullptr;
     masterClock  = nullptr;
+    frameQueue   = new FrameQueue(VIDEO_QUEUE_SIZE, 1);
 
     AVDictionaryEntry *entry = av_dict_get(stream->metadata, "rotate", nullptr, AV_DICT_MATCH_CASE);
     if (entry && entry->value) {
@@ -134,14 +134,14 @@ int VideoDecoder::decodeVideo() {
         }
 
         playerState->mMutex.lock();
-        ret = avcodec_send_packet(pCodecCtx, packet);
+        ret = avcodec_send_packet(codecContext, packet);
         if (ret < 0 && ret != AVERROR(EAGAIN) && ret != AVERROR_EOF) {
             av_packet_unref(packet);
             playerState->mMutex.unlock();
             continue;
         }
 
-        ret = avcodec_receive_frame(pCodecCtx, frame);
+        ret = avcodec_receive_frame(codecContext, frame);
         playerState->mMutex.unlock();
         if (ret < 0 && ret != AVERROR_EOF) {
             av_frame_unref(frame);

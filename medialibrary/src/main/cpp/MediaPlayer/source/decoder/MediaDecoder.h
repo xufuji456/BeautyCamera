@@ -17,10 +17,10 @@ protected:
     AVStream *avStream;
     PlayerState *playerState;
     PacketQueue *packetQueue;
-    AVCodecContext *pCodecCtx;
+    AVCodecContext *codecContext;
 
 public:
-    MediaDecoder(AVCodecContext *avctx, AVStream *stream, PlayerState *playerState);
+    MediaDecoder(AVCodecContext *codecCtx, AVStream *stream, PlayerState *playerState);
 
     virtual ~MediaDecoder();
 
