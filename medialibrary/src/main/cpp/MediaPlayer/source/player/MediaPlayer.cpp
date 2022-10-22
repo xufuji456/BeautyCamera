@@ -467,7 +467,7 @@ int MediaPlayer::readPackets() {
     }
 
     if (videoDecoder) {
-        AVCodecParameters *codecpar = videoDecoder->getStream()->codecpar;
+        AVCodecParameters *codecpar = playerState->m_videoStream->codecpar;
         if (playerState->messageQueue) {
             playerState->messageQueue->postMessage(MSG_VIDEO_SIZE_CHANGED,
                     codecpar->width, codecpar->height);
@@ -623,10 +623,10 @@ int MediaPlayer::readPackets() {
 
         // 取得封面数据包
         if (attachmentRequest) {
-            if (videoDecoder && (videoDecoder->getStream()->disposition
+            if (videoDecoder && (playerState->m_videoStream->disposition
                                  & AV_DISPOSITION_ATTACHED_PIC)) {
                 AVPacket copy;
-                if ((ret = av_copy_packet(&copy, &videoDecoder->getStream()->attached_pic)) < 0) {
+                if ((ret = av_copy_packet(&copy, &playerState->m_videoStream->attached_pic)) < 0) {
                     break;
                 }
                 videoDecoder->pushPacket(&copy);
@@ -637,7 +637,8 @@ int MediaPlayer::readPackets() {
         // 如果队列中存在足够的数据包，则等待消耗
         // 备注：这里要等待一定时长的缓冲队列，要不然会导致OpenSLES播放音频出现卡顿等现象
         if (((audioDecoder ? audioDecoder->getMemorySize() : 0) + (videoDecoder ? videoDecoder->getMemorySize() : 0) > MAX_QUEUE_SIZE
-             || (!audioDecoder || audioDecoder->hasEnoughPackets()) && (!videoDecoder || videoDecoder->hasEnoughPackets()))) {
+             || (!audioDecoder || audioDecoder->hasEnoughPackets(playerState->m_audioStream))
+             && (!videoDecoder || videoDecoder->hasEnoughPackets(playerState->m_videoStream)))) {
             continue;
         }
 
@@ -821,14 +822,16 @@ int MediaPlayer::prepareDecoder(int streamIndex) {
         pFormatCtx->streams[streamIndex]->discard = AVDISCARD_DEFAULT;
         switch (avctx->codec_type) {
             case AVMEDIA_TYPE_AUDIO: {
-                playerState->m_audioIndex = streamIndex;
-                audioDecoder = new AudioDecoder(avctx, pFormatCtx->streams[streamIndex], playerState);
+                playerState->m_audioIndex  = streamIndex;
+                playerState->m_audioStream = pFormatCtx->streams[streamIndex];
+                audioDecoder = new AudioDecoder(avctx, playerState);
                 break;
             }
 
             case AVMEDIA_TYPE_VIDEO: {
                 playerState->m_videoIndex = streamIndex;
-                videoDecoder = new VideoDecoder(pFormatCtx, avctx, pFormatCtx->streams[streamIndex], playerState);
+                playerState->m_videoStream = pFormatCtx->streams[streamIndex];
+                videoDecoder = new VideoDecoder(pFormatCtx, avctx, playerState);
                 attachmentRequest = 1;
                 break;
             }

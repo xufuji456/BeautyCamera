@@ -1,15 +1,15 @@
 
 #include "VideoDecoder.h"
 
-VideoDecoder::VideoDecoder(AVFormatContext *formatCtx, AVCodecContext *codecCtx,
-                           AVStream *stream, PlayerParam *playerState)
-        : MediaDecoder(codecCtx, stream, playerState) {
+VideoDecoder::VideoDecoder(AVFormatContext *formatCtx, AVCodecContext *codecCtx, PlayerParam *playerState)
+        : MediaDecoder(codecCtx, playerState) {
     this->pFormatCtx = formatCtx;
     decodeThread = nullptr;
     masterClock  = nullptr;
     frameQueue   = new FrameQueue(VIDEO_QUEUE_SIZE, 1);
 
-    AVDictionaryEntry *entry = av_dict_get(stream->metadata, "rotate", nullptr, AV_DICT_MATCH_CASE);
+    AVDictionaryEntry *entry = av_dict_get(playerState->m_videoStream->metadata,
+                                           "rotate", nullptr, AV_DICT_MATCH_CASE);
     if (entry && entry->value) {
         mRotate = atoi(entry->value);
     } else {
@@ -103,8 +103,8 @@ int VideoDecoder::decodeVideo() {
     int got_picture;
     AVFrame *frame = av_frame_alloc();
 
-    AVRational timebase = avStream->time_base;
-    AVRational frame_rate = av_guess_frame_rate(pFormatCtx, avStream, nullptr);
+    AVRational timebase = playerState->m_videoStream->time_base;
+    AVRational frame_rate = av_guess_frame_rate(pFormatCtx, playerState->m_videoStream, nullptr);
 
     if (!frame) {
         mExit = true;
@@ -157,18 +157,16 @@ int VideoDecoder::decodeVideo() {
             }
 
             if (masterClock != nullptr) {
-                double dpts = NAN;
-
+                double pts = NAN;
                 if (frame->pts != AV_NOPTS_VALUE) {
-                    dpts = av_q2d(avStream->time_base) * (double)frame->pts;
+                    pts = av_q2d(playerState->m_videoStream->time_base) * (double)frame->pts;
                 }
-
-                frame->sample_aspect_ratio = av_guess_sample_aspect_ratio(pFormatCtx, avStream, frame);
+                frame->sample_aspect_ratio = av_guess_sample_aspect_ratio(pFormatCtx, playerState->m_videoStream, frame);
                 // drop frame
                 if (playerState->frameDrop > 0 ||
                     (playerState->frameDrop > 0 && playerState->syncType != AV_SYNC_VIDEO)) {
                     if (frame->pts != AV_NOPTS_VALUE) {
-                        double diff = dpts - masterClock->getClock();
+                        double diff = pts - masterClock->getClock();
                         if (!isnan(diff) && fabs(diff) < AV_NOSYNC_THRESHOLD &&
                             diff < 0 && packetQueue->getPacketSize() > 0) {
                             av_frame_unref(frame);

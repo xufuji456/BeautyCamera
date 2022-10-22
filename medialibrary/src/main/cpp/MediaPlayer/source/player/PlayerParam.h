@@ -83,6 +83,10 @@ private:
 public:
     Mutex mMutex;                   // 操作互斥锁
 
+    AVStream *m_audioStream;
+    AVStream *m_videoStream;
+    AVStream *m_subtitleStream;
+
     AVMessageQueue *messageQueue;   // 播放器消息队列
     int64_t videoDuration;          // 视频时长
 
@@ -118,6 +122,5 @@ public:
     int m_subtitleIndex;
     int reorderVideoPts;
 };
-
 
 #endif //PLAYERPARAM_H

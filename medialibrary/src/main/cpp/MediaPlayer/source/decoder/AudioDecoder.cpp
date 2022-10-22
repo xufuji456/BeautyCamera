@@ -1,8 +1,8 @@
 
 #include "AudioDecoder.h"
 
-AudioDecoder::AudioDecoder(AVCodecContext *codecCtx, AVStream *stream, PlayerParam *playerState)
-        : MediaDecoder(codecCtx, stream, playerState) {
+AudioDecoder::AudioDecoder(AVCodecContext *codecCtx, PlayerParam *playerState)
+        : MediaDecoder(codecCtx, playerState) {
     packet = av_packet_alloc();
     packetPending = false;
 }

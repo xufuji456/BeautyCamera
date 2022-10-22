@@ -20,8 +20,7 @@ private:
     int decodeVideo();
 
 public:
-    VideoDecoder(AVFormatContext *formatCtx, AVCodecContext *codecCtx,
-                 AVStream *stream, PlayerParam *playerState);
+    VideoDecoder(AVFormatContext *formatCtx, AVCodecContext *codecCtx, PlayerParam *playerState);
 
     virtual ~VideoDecoder();
 

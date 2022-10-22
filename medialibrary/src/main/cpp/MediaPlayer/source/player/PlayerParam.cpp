@@ -20,11 +20,14 @@ PlayerParam::~PlayerParam() {
 }
 
 void PlayerParam::init() {
-    url            = nullptr;
-    iformat        = nullptr;
-    audioCodecName = nullptr;
-    videoCodecName = nullptr;
-    messageQueue   = new AVMessageQueue();
+    url              = nullptr;
+    iformat          = nullptr;
+    audioCodecName   = nullptr;
+    videoCodecName   = nullptr;
+    m_videoStream    = nullptr;
+    m_audioStream    = nullptr;
+    m_subtitleStream = nullptr;
+    messageQueue     = new AVMessageQueue();
 }
 
 void PlayerParam::reset() {
@@ -42,16 +45,16 @@ void PlayerParam::reset() {
     seekRequest = 0;
     abortRequest = 1;
     pauseRequest = 1;
-    syncType = AV_SYNC_AUDIO;
-    startTime = AV_NOPTS_VALUE;
-    duration = AV_NOPTS_VALUE;
     audioDisable = 0;
     videoDisable = 0;
-    displayDisable = 0;
-    playbackRate = 1.0;
-    reorderVideoPts = -1;
     videoDuration = 0;
     m_videoIndex = -1;
     m_audioIndex = -1;
+    displayDisable = 0;
+    playbackRate = 1.0;
     m_subtitleIndex = -1;
+    reorderVideoPts = -1;
+    syncType = AV_SYNC_AUDIO;
+    duration = AV_NOPTS_VALUE;
+    startTime = AV_NOPTS_VALUE;
 }

@@ -1,10 +1,9 @@
 
 #include "MediaDecoder.h"
 
-MediaDecoder::MediaDecoder(AVCodecContext *codecCtx, AVStream *stream, PlayerParam *playerState) {
+MediaDecoder::MediaDecoder(AVCodecContext *codecCtx, PlayerParam *playerState) {
     packetQueue = new PacketQueue();
     this->codecContext = codecCtx;
-    this->avStream     = stream;
     this->playerState  = playerState;
 }
 
@@ -64,10 +63,6 @@ int MediaDecoder::getPacketSize() {
     return packetQueue ? packetQueue->getPacketSize() : 0;
 }
 
-AVStream *MediaDecoder::getStream() {
-    return avStream;
-}
-
 AVCodecContext *MediaDecoder::getCodecContext() {
     return codecContext;
 }
@@ -76,13 +71,13 @@ int MediaDecoder::getMemorySize() {
     return packetQueue ? packetQueue->getSize() : 0;
 }
 
-int MediaDecoder::hasEnoughPackets() {
+int MediaDecoder::hasEnoughPackets(AVStream *stream) {
     Mutex::Autolock lock(mMutex);
     return (packetQueue == nullptr) || (packetQueue->isAbort())
-           || (avStream->disposition & AV_DISPOSITION_ATTACHED_PIC)
+           || (stream->disposition & AV_DISPOSITION_ATTACHED_PIC)
            || (packetQueue->getPacketSize() > MIN_FRAMES)
               && (!packetQueue->getDuration()
-                  || av_q2d(avStream->time_base) * (double)packetQueue->getDuration() > 1.0);
+                  || av_q2d(stream->time_base) * (double)packetQueue->getDuration() > 1.0);
 }
 
 void MediaDecoder::run() {

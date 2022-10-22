@@ -14,13 +14,12 @@ protected:
     Condition mCondition;
 
     bool abortRequest{};
-    AVStream *avStream;
     PlayerParam *playerState;
     PacketQueue *packetQueue;
     AVCodecContext *codecContext;
 
 public:
-    MediaDecoder(AVCodecContext *codecCtx, AVStream *stream, PlayerParam *playerState);
+    MediaDecoder(AVCodecContext *codecCtx, PlayerParam *playerState);
 
     virtual ~MediaDecoder();
 
@@ -34,17 +33,14 @@ public:
 
     int getPacketSize();
 
-    AVStream *getStream();
-
     AVCodecContext *getCodecContext();
 
     int getMemorySize();
 
-    int hasEnoughPackets();
+    int hasEnoughPackets(AVStream *stream);
 
     virtual void run();
 
 };
-
 
 #endif //MEDIADECODER_H
