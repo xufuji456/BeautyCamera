@@ -19,9 +19,7 @@ set(common_dir ../Common)
 # 添加头文件路径
 include_directories( source
                      android
-                     ${soundtouch_dir}
-                     ${filter_dir}
-                     ${common_dir} )
+                     ${soundtouch_dir})
 
 # 添加源文件
 add_library( media_player

@@ -10,7 +10,7 @@ AudioResampler::AudioResampler(PlayerState *playerState, AudioDecoder *audioDeco
     this->mediaSync = mediaSync;
     audioState = (AudioState *) av_mallocz(sizeof(AudioState));
     memset(audioState, 0, sizeof(AudioState));
-    soundTouchWrapper = new SoundTouchWrapper();
+    soundTouchWrapper = new SoundTouchHelper();
     frame = av_frame_alloc();
 }
 
@@ -245,7 +245,7 @@ int AudioResampler::audioFrameResample() {
                     audioState->soundTouchBuffer[i] = (audioState->resampleBuffer[i * 2] | (audioState->resampleBuffer[i * 2 + 1] << 8));
                 }
                 if (!soundTouchWrapper) {
-                    soundTouchWrapper = new SoundTouchWrapper();
+                    soundTouchWrapper = new SoundTouchHelper();
                 }
                 int ret_len = soundTouchWrapper->translate(audioState->soundTouchBuffer, (float)(playerState->playbackRate),
                                                            (float)(1.0f / playerState->playbackRate),
