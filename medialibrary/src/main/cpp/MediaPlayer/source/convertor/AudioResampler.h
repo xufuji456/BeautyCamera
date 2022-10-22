@@ -52,7 +52,7 @@ public:
 
     virtual ~AudioResampler();
 
-    int setResampleParams(AudioDeviceSpec *spec, int64_t wanted_channel_layout);
+    int setResampleParams(AudioRenderSpec *spec, int64_t wanted_channel_layout);
 
     void pcmQueueCallback(uint8_t *stream, int len);
 

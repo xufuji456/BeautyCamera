@@ -880,7 +880,7 @@ void audioPCMQueueCallback(void *opaque, uint8_t *stream, int len) {
 
 int MediaPlayer::openAudioDevice(int64_t wanted_channel_layout, int wanted_nb_channels,
                                  int wanted_sample_rate) {
-    AudioDeviceSpec wanted_spec, spec;
+    AudioRenderSpec wanted_spec, spec;
     const int next_nb_channels[] = {0, 0, 1, 6, 2, 6, 4, 6};
     const int next_sample_rates[] = {44100, 48000};
     int next_sample_rate_idx = FF_ARRAY_ELEMS(next_sample_rates) - 1;
@@ -904,7 +904,7 @@ int MediaPlayer::openAudioDevice(int64_t wanted_channel_layout, int wanted_nb_ch
     wanted_spec.samples = FFMAX(AUDIO_MIN_BUFFER_SIZE,
                                 2 << av_log2(wanted_spec.freq / AUDIO_MAX_CALLBACKS_PER_SEC));
     wanted_spec.callback = audioPCMQueueCallback;
-    wanted_spec.userdata = this;
+    wanted_spec.opaque = this;
 
     // Audio Render
     while (audioRender->open(&wanted_spec, &spec) < 0) {

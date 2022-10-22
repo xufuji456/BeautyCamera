@@ -10,6 +10,12 @@
 #include <Condition.h>
 
 class NativeWindowVideoRender : public VideoRender {
+private:
+    Mutex mMutex;
+    Condition mCondition;
+
+    ANativeWindow *mWindow;
+
 public:
     NativeWindowVideoRender();
 
@@ -22,12 +28,6 @@ public:
     int onRender(uint8_t *data, int stride, int height) override;
 
     void onDestroy() override;
-
-private:
-    Mutex mMutex;
-    Condition mCondition;
-
-    ANativeWindow *mWindow;
 };
 
 #endif //NATIVEWINDOW_VIDEORENDER_H

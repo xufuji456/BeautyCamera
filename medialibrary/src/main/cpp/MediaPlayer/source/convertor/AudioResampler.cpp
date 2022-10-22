@@ -36,7 +36,7 @@ AudioResampler::~AudioResampler() {
     }
 }
 
-int AudioResampler::setResampleParams(AudioDeviceSpec *spec, int64_t wanted_channel_layout) {
+int AudioResampler::setResampleParams(AudioRenderSpec *spec, int64_t wanted_channel_layout) {
 
     audioState->audioParamsSrc = audioState->audioParamsTarget;
     audioState->audio_hw_buf_size = spec->size;

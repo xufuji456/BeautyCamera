@@ -1,24 +1,21 @@
-//
-// Created by cain on 2018/12/21.
-//
 
-#ifndef MEDIAPLAYER_FRAMEQUEUE_H
-#define MEDIAPLAYER_FRAMEQUEUE_H
+#ifndef FFPLAYER_FRAMEQUEUE_H
+#define FFPLAYER_FRAMEQUEUE_H
 
 #include <Mutex.h>
 #include <Condition.h>
 
 extern "C" {
 #include <libavcodec/avcodec.h>
-};
+}
 
-#define FRAME_QUEUE_SIZE 10
+#define FRAME_QUEUE_SIZE 16
 
 typedef struct Frame {
     AVFrame *frame;
     AVSubtitle sub;
-    double pts;           /* presentation timestamp for the frame */
-    double duration;      /* estimated duration of the frame */
+    double pts;
+    double duration;
     int width;
     int height;
     int format;
@@ -26,6 +23,20 @@ typedef struct Frame {
 } Frame;
 
 class FrameQueue {
+
+private:
+    Mutex mMutex;
+    Condition mCondition;
+    int abort_request;
+    Frame queue[FRAME_QUEUE_SIZE]{};
+    int rindex;
+    int windex;
+    int size;
+    int max_size;
+    int keep_last;
+    int show_index;
+
+    static void unrefFrame(Frame *vp);
 
 public:
     FrameQueue(int max_size, int keep_last);
@@ -50,25 +61,11 @@ public:
 
     void flush();
 
-    int getFrameSize();
+    int getFrameSize() const;
 
     int getShowIndex() const;
 
-private:
-    void unrefFrame(Frame *vp);
-
-private:
-    Mutex mMutex;
-    Condition mCondition;
-    int abort_request;
-    Frame queue[FRAME_QUEUE_SIZE];
-    int rindex;
-    int windex;
-    int size;
-    int max_size;
-    int keep_last;
-    int show_index;
 };
 
 
-#endif //MEDIAPLAYER_FRAMEQUEUE_H
+#endif //FFPLAYER_FRAMEQUEUE_H

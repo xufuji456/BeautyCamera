@@ -1,6 +1,6 @@
 
-#ifndef OpenSL_AUDIORENDER_H
-#define OpenSL_AUDIORENDER_H
+#ifndef OPENSL_AUDIORENDER_H
+#define OPENSL_AUDIORENDER_H
 
 #include <render/AudioRender.h>
 
@@ -9,12 +9,47 @@
 #include <pthread.h>
 
 class OpenSLAudioRender : public AudioRender {
+
+private:
+
+    SLPlayItf slPlayItf;
+    SLObjectItf slObject;
+    SLEngineItf slEngine;
+    SLVolumeItf slVolumeItf;
+    SLObjectItf slPlayerObject;
+    SLObjectItf slOutputMixObject;
+
+    SLAndroidSimpleBufferQueueItf slBufferQueueItf;
+
+    uint8_t *buffer{};
+    int bytes_per_frame{};
+    int milli_per_buffer{};
+    int frames_per_buffer{};
+    int bytes_per_buffer{};
+    size_t buffer_capacity{};
+
+    Mutex mMutex;
+    Condition mCondition;
+    Thread *audioThread;
+
+    float mVolume{};
+    bool updateVolume;
+    int abortRequest;
+    int pauseRequest;
+    int flushRequest;
+
+    AudioRenderSpec audioRenderSpec{};
+
+    static SLuint32 getSLSampleRate(int sampleRate);
+
+    static SLmillibel getAmplificationLevel(float volumeLevel);
+
 public:
     OpenSLAudioRender();
 
     virtual ~OpenSLAudioRender();
 
-    int open(const AudioDeviceSpec *desired, AudioDeviceSpec *obtained) override;
+    int open(const AudioRenderSpec *desired, AudioRenderSpec *obtained) override;
 
     void start() override;
 
@@ -30,43 +65,6 @@ public:
 
     virtual void run() override;
 
-private:
-    // 转换成SL采样率
-    static SLuint32 getSLSampleRate(int sampleRate);
-
-    // 获取SLES音量
-    static SLmillibel getAmplificationLevel(float volumeLevel);
-
-private:
-
-    SLPlayItf slPlayItf;
-    SLObjectItf slObject;
-    SLEngineItf slEngine;
-    SLVolumeItf slVolumeItf;
-    SLObjectItf slPlayerObject;
-    SLObjectItf slOutputMixObject;
-
-    SLAndroidSimpleBufferQueueItf slBufferQueueItf;
-
-    AudioDeviceSpec audioDeviceSpec{};
-    int bytes_per_frame{};
-    int milli_per_buffer{};
-    int frames_per_buffer{};
-    int bytes_per_buffer{};
-    uint8_t *buffer{};
-    size_t buffer_capacity{};
-
-    Mutex mMutex;
-    Condition mCondition;
-    Thread *audioThread;
-    int abortRequest;
-    int pauseRequest;
-    int flushRequest;
-
-    bool updateVolume;
-    float mVolume{};
-
 };
 
-
-#endif //OpenSL_AUDIORENDER_H
+#endif //OPENSL_AUDIORENDER_H

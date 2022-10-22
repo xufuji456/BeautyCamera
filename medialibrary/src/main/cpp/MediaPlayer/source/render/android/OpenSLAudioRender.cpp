@@ -2,28 +2,28 @@
 #include <AndroidLog.h>
 #include "OpenSLAudioRender.h"
 
-#define OPENSLES_BUFFERS 4
+#define OPENSLES_BUF_COUNT 4
 #define OPENSLES_BUF_SIZE  10
 
 OpenSLAudioRender::OpenSLAudioRender() {
     slObject = nullptr;
     slEngine = nullptr;
-    slOutputMixObject = nullptr;
-    slPlayerObject = nullptr;
     slPlayItf = nullptr;
     slVolumeItf = nullptr;
+    slPlayerObject = nullptr;
     slBufferQueueItf = nullptr;
-    memset(&audioDeviceSpec, 0, sizeof(AudioDeviceSpec));
+    slOutputMixObject = nullptr;
+    memset(&audioRenderSpec, 0, sizeof(AudioRenderSpec));
     abortRequest = 1;
     pauseRequest = 0;
     flushRequest = 0;
-    audioThread = nullptr;
+    audioThread  = nullptr;
     updateVolume = false;
 }
 
 OpenSLAudioRender::~OpenSLAudioRender() {
     mMutex.lock();
-    memset(&audioDeviceSpec, 0, sizeof(AudioDeviceSpec));
+    memset(&audioRenderSpec, 0, sizeof(AudioRenderSpec));
     if (slPlayerObject != nullptr) {
         (*slPlayerObject)->Destroy(slPlayerObject);
         slPlayerObject = nullptr;
@@ -47,7 +47,7 @@ OpenSLAudioRender::~OpenSLAudioRender() {
 }
 
 void OpenSLAudioRender::start() {
-    if (audioDeviceSpec.callback != nullptr) {
+    if (audioRenderSpec.callback != nullptr) {
         abortRequest = 0;
         pauseRequest = 0;
         if (!audioThread) {
@@ -126,8 +126,8 @@ void OpenSLAudioRender::run() {
         }
 
         mMutex.lock();
-        if (!abortRequest && (pauseRequest || slState.count >= OPENSLES_BUFFERS)) {
-            while (!abortRequest && (pauseRequest || slState.count >= OPENSLES_BUFFERS)) {
+        if (!abortRequest && (pauseRequest || slState.count >= OPENSLES_BUF_COUNT)) {
+            while (!abortRequest && (pauseRequest || slState.count >= OPENSLES_BUF_COUNT)) {
 
                 if (!pauseRequest) {
                     (*slPlayItf)->SetPlayState(slPlayItf, SL_PLAYSTATE_PLAYING);
@@ -157,10 +157,10 @@ void OpenSLAudioRender::run() {
 
         mMutex.lock();
         // callback data to play
-        if (audioDeviceSpec.callback != nullptr) {
+        if (audioRenderSpec.callback != nullptr) {
             next_buffer = buffer + next_buffer_index * bytes_per_buffer;
-            next_buffer_index = (next_buffer_index + 1) % OPENSLES_BUFFERS;
-            audioDeviceSpec.callback(audioDeviceSpec.userdata, next_buffer, bytes_per_buffer);
+            next_buffer_index = (next_buffer_index + 1) % OPENSLES_BUF_COUNT;
+            audioRenderSpec.callback(audioRenderSpec.opaque, next_buffer, bytes_per_buffer);
         }
         mMutex.unlock();
 
@@ -198,7 +198,7 @@ void OpenSLAudioRender::run() {
     }
 }
 
-int OpenSLAudioRender::open(const AudioDeviceSpec *desired, AudioDeviceSpec *obtained) {
+int OpenSLAudioRender::open(const AudioRenderSpec *desired, AudioRenderSpec *obtained) {
     SLresult result;
     SLuint32 channelMask;
     const SLboolean require[3] = {SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE};
@@ -229,7 +229,7 @@ int OpenSLAudioRender::open(const AudioDeviceSpec *desired, AudioDeviceSpec *obt
 
     SLDataLocator_AndroidSimpleBufferQueue android_queue = {
             SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE,
-            OPENSLES_BUFFERS
+            OPENSLES_BUF_COUNT
     };
 
     switch (desired->channels) {
@@ -281,18 +281,18 @@ int OpenSLAudioRender::open(const AudioDeviceSpec *desired, AudioDeviceSpec *obt
     bytes_per_frame   = (int)(format_pcm.numChannels * format_pcm.bitsPerSample) / 8;
     frames_per_buffer = (int)format_pcm.samplesPerSec * milli_per_buffer / 1000000;
     bytes_per_buffer  = bytes_per_frame * frames_per_buffer;
-    buffer_capacity   = OPENSLES_BUFFERS * bytes_per_buffer;
+    buffer_capacity   = OPENSLES_BUF_COUNT * bytes_per_buffer;
 
     if (obtained != nullptr) {
         *obtained = *desired;
         obtained->size = (uint32_t)buffer_capacity;
         obtained->freq = (int)format_pcm.samplesPerSec / 1000;
     }
-    audioDeviceSpec = *desired;
+    audioRenderSpec = *desired;
 
     buffer = new uint8_t[buffer_capacity];
     memset(buffer, 0, buffer_capacity);
-    for(int i = 0; i < OPENSLES_BUFFERS; i++) {
+    for(int i = 0; i < OPENSLES_BUF_COUNT; i++) {
         result = (*slBufferQueueItf)->Enqueue(slBufferQueueItf, buffer + i * bytes_per_buffer, bytes_per_buffer);
         if (result != SL_RESULT_SUCCESS)  {
             ALOGE("slBufferQueueItf->Enqueue error:%d", result);

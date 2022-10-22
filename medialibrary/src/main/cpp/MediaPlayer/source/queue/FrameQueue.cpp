@@ -1,6 +1,3 @@
-//
-// Created by cain on 2018/12/21.
-//
 
 #include "FrameQueue.h"
 
@@ -60,7 +57,7 @@ Frame *FrameQueue::peekWritable() {
     mMutex.unlock();
 
     if (abort_request) {
-        return NULL;
+        return nullptr;
     }
 
     return &queue[windex];
@@ -97,15 +94,15 @@ void FrameQueue::flush() {
     }
 }
 
-int FrameQueue::getFrameSize() {
+int FrameQueue::getFrameSize() const {
     return size - show_index;
+}
+
+int FrameQueue::getShowIndex() const {
+    return show_index;
 }
 
 void FrameQueue::unrefFrame(Frame *vp) {
     av_frame_unref(vp->frame);
     avsubtitle_free(&vp->sub);
-}
-
-int FrameQueue::getShowIndex() const {
-    return show_index;
 }
