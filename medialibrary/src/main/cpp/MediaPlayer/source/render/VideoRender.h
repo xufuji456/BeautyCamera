@@ -9,6 +9,8 @@ public:
 
     virtual void onInit(int width, int height) = 0;
 
+    void setSurface(void *surface);
+
     virtual int onRender(uint8_t *data, int stride, int height) = 0;
 
     virtual void onDestroy() = 0;

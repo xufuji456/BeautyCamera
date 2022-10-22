@@ -93,7 +93,7 @@ public:
 
     status_t setDataSource(const char *url, int64_t offset = 0);
 
-    status_t setVideoSurface(ANativeWindow* native_window);
+    status_t setVideoSurface(void* surface);
 
     status_t setListener(MediaPlayerListener *listener);
 
@@ -124,10 +124,6 @@ public:
     long getDuration();
 
     status_t reset();
-
-    status_t setLooping(bool looping);
-
-    bool isLooping();
 
     status_t setVolume(float volume);
 

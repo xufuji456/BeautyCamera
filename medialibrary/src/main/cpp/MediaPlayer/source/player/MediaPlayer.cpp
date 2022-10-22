@@ -207,14 +207,6 @@ void MediaPlayer::seekTo(float timeMs) {
         playerState->seekRequest = 1;
         mCondition.signal();
     }
-
-}
-
-void MediaPlayer::setLooping(int looping) {
-    mMutex.lock();
-    playerState->loop = looping;
-    mCondition.signal();
-    mMutex.unlock();
 }
 
 void MediaPlayer::setVolume(float volume) {
@@ -300,10 +292,6 @@ long MediaPlayer::getDuration() {
 int MediaPlayer::isPlaying() {
     Mutex::Autolock lock(mMutex);
     return !playerState->abortRequest && !playerState->pauseRequest;
-}
-
-int MediaPlayer::isLooping() {
-    return playerState->loop;
 }
 
 static int avformat_interrupt_cb(void *ctx) {

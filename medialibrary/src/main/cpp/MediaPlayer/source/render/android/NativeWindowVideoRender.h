@@ -21,7 +21,7 @@ public:
 
     virtual ~NativeWindowVideoRender();
 
-    void surfaceCreated(ANativeWindow *window);
+    void setSurface(void *surface);
 
     void onInit(int width, int height) override;
 

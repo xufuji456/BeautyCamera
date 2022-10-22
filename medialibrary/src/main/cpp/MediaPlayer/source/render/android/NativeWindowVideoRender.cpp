@@ -9,12 +9,12 @@ NativeWindowVideoRender::~NativeWindowVideoRender() {
 
 }
 
-void NativeWindowVideoRender::surfaceCreated(ANativeWindow *window) {
+void NativeWindowVideoRender::setSurface(void *surface) {
     if (mWindow != nullptr) {
         ANativeWindow_release(mWindow);
         mWindow = nullptr;
     }
-    mWindow = window;
+    mWindow = static_cast<ANativeWindow *>(surface);
 }
 
 void NativeWindowVideoRender::onInit(int width, int height) {

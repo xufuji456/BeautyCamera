@@ -1,13 +1,10 @@
-//
-// Created by cain on 2018/12/26.
-//
 
 #include "AudioDecoder.h"
 
 AudioDecoder::AudioDecoder(AVCodecContext *avctx, AVStream *stream, int streamIndex, PlayerState *playerState)
         : MediaDecoder(avctx, stream, streamIndex, playerState) {
     packet = av_packet_alloc();
-    packetPending = 0;
+    packetPending = false;
 }
 
 AudioDecoder::~AudioDecoder() {

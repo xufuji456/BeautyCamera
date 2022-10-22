@@ -77,15 +77,15 @@ status_t FFMediaPlayer::setDataSource(const char *url, int64_t offset) {
     return NO_ERROR;
 }
 
-status_t FFMediaPlayer::setVideoSurface(ANativeWindow *native_window) {
+status_t FFMediaPlayer::setVideoSurface(void *surface) {
     if (mediaPlayer == nullptr) {
         return NO_INIT;
     }
-    if (native_window != nullptr) {
-        videoRender->surfaceCreated(native_window);
+    if (surface != nullptr) {
+        videoRender->setSurface(surface);
         return NO_ERROR;
     }
-    return NO_ERROR;
+    return BAD_VALUE;
 }
 
 status_t FFMediaPlayer::setListener(MediaPlayerListener *listener) {
@@ -211,20 +211,6 @@ status_t FFMediaPlayer::reset() {
         mediaPlayer = nullptr;
     }
     return NO_ERROR;
-}
-
-status_t FFMediaPlayer::setLooping(bool looping) {
-    if (mediaPlayer != nullptr) {
-        mediaPlayer->setLooping(looping);
-    }
-    return NO_ERROR;
-}
-
-bool FFMediaPlayer::isLooping() {
-    if (mediaPlayer != nullptr) {
-        return (mediaPlayer->isLooping() != 0);
-    }
-    return false;
 }
 
 status_t FFMediaPlayer::setVolume(float volume) {
