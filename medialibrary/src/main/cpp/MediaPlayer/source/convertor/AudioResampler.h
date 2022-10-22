@@ -1,6 +1,3 @@
-//
-// Created by cain on 2019/1/6.
-//
 
 #ifndef AUDIORESAMPLER_H
 #define AUDIORESAMPLER_H

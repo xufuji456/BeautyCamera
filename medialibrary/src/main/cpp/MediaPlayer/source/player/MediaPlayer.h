@@ -11,8 +11,8 @@
 #include <decoder/AudioDecoder.h>
 #include <decoder/VideoDecoder.h>
 
-#include <render/OpenSLAudioRender.h>
-#include <render/NativeWindowVideoRender.h>
+#include <render/android/OpenSLAudioRender.h>
+#include <render/android/NativeWindowVideoRender.h>
 
 #include <android/native_window.h>
 #include <android/native_window_jni.h>

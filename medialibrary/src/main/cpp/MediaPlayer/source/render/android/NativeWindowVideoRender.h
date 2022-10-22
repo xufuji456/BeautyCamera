@@ -2,8 +2,8 @@
 // Created by cain on 2018/12/30.
 //
 
-#ifndef GLESDEVICE_H
-#define GLESDEVICE_H
+#ifndef NATIVEWINDOW_VIDEORENDER_H
+#define NATIVEWINDOW_VIDEORENDER_H
 
 #include <render/VideoRender.h>
 #include <android/native_window.h>
@@ -33,4 +33,4 @@ private:
     ANativeWindow *mWindow;
 };
 
-#endif //GLESDEVICE_H
+#endif //NATIVEWINDOW_VIDEORENDER_H

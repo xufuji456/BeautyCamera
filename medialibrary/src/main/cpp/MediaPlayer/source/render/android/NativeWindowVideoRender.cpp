@@ -1,6 +1,3 @@
-//
-// Created by cain on 2018/12/30.
-//
 
 #include "NativeWindowVideoRender.h"
 

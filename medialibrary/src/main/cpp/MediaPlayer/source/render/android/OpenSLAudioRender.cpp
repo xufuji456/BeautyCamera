@@ -5,8 +5,8 @@
 #include <AndroidLog.h>
 #include "OpenSLAudioRender.h"
 
-#define OPENSLES_BUFFERS 4 // 最大缓冲区数量
-#define OPENSLES_BUFLEN  10 // 缓冲区长度(毫秒)
+#define OPENSLES_BUFFERS 4
+#define OPENSLES_BUF_SIZE  10
 
 OpenSLAudioRender::OpenSLAudioRender() {
     slObject = nullptr;
@@ -56,22 +56,6 @@ void OpenSLAudioRender::start() {
             audioThread = new Thread(this, Priority_High);
             audioThread->start();
         }
-    } else {
-        ALOGE("audio device callback is NULL!");
-    }
-}
-
-void OpenSLAudioRender::stop() {
-
-    mMutex.lock();
-    abortRequest = 1;
-    mCondition.signal();
-    mMutex.unlock();
-
-    if (audioThread) {
-        audioThread->join();
-        delete audioThread;
-        audioThread = nullptr;
     }
 }
 
@@ -102,11 +86,23 @@ void OpenSLAudioRender::flush() {
 void OpenSLAudioRender::setVolume(float volume) {
     Mutex::Autolock lock(mMutex);
     if (!updateVolume) {
-        leftVolume = volume;
-        rightVolume = volume;
+        mVolume = volume;
         updateVolume = true;
     }
     mCondition.signal();
+}
+
+void OpenSLAudioRender::stop() {
+    mMutex.lock();
+    abortRequest = 1;
+    mCondition.signal();
+    mMutex.unlock();
+
+    if (audioThread) {
+        audioThread->join();
+        delete audioThread;
+        audioThread = nullptr;
+    }
 }
 
 void OpenSLAudioRender::run() {
@@ -179,7 +175,7 @@ void OpenSLAudioRender::run() {
         // 更新音量
         if (updateVolume) {
             if (slVolumeItf != nullptr) {
-                SLmillibel level = getAmplificationLevel((leftVolume + rightVolume) / 2);
+                SLmillibel level = getAmplificationLevel(mVolume);
                 SLresult result = (*slVolumeItf)->SetVolumeLevel(slVolumeItf, level);
                 if (result != SL_RESULT_SUCCESS) {
                     ALOGE("slVolumeItf->SetVolumeLevel failed %d\n", (int)result);
@@ -338,7 +334,7 @@ int OpenSLAudioRender::open(const AudioDeviceSpec *desired, AudioDeviceSpec *obt
 
     // 这里计算缓冲区大小等参数
     bytes_per_frame   = format_pcm.numChannels * format_pcm.bitsPerSample / 8;  // 一帧占多少字节
-    milli_per_buffer  = OPENSLES_BUFLEN;                                        // 每个缓冲区占多少毫秒
+    milli_per_buffer  = OPENSLES_BUF_SIZE;                                      // 每个缓冲区占多少毫秒
     frames_per_buffer = milli_per_buffer * format_pcm.samplesPerSec / 1000000;  // 一个缓冲区有多少帧数据
     bytes_per_buffer  = bytes_per_frame * frames_per_buffer;                    // 一个缓冲区大小
     buffer_capacity   = OPENSLES_BUFFERS * bytes_per_buffer;
@@ -346,7 +342,7 @@ int OpenSLAudioRender::open(const AudioDeviceSpec *desired, AudioDeviceSpec *obt
     ALOGI("OpenSL-ES: bytes_per_frame  = %d bytes\n",  bytes_per_frame);
     ALOGI("OpenSL-ES: milli_per_buffer = %d ms\n",     milli_per_buffer);
     ALOGI("OpenSL-ES: frame_per_buffer = %d frames\n", frames_per_buffer);
-    ALOGI("OpenSL-ES: buffer_capacity  = %d bytes\n",  buffer_capacity);
+    ALOGI("OpenSL-ES: buffer_capacity  = %zu bytes\n",  buffer_capacity);
     ALOGI("OpenSL-ES: buffer_capacity  = %d bytes\n",  (int)buffer_capacity);
 
     if (obtained != nullptr) {
@@ -379,11 +375,6 @@ int OpenSLAudioRender::open(const AudioDeviceSpec *desired, AudioDeviceSpec *obt
     return buffer_capacity;
 }
 
-/**
- * 转换成SL的采样率
- * @param sampleRate
- * @return
- */
 SLuint32 OpenSLAudioRender::getSLSampleRate(int sampleRate) {
     switch (sampleRate) {
         case 8000: {
@@ -431,16 +422,11 @@ SLuint32 OpenSLAudioRender::getSLSampleRate(int sampleRate) {
     }
 }
 
-/**
- * 计算SL的音量
- * @param volumeLevel
- * @return
- */
 SLmillibel OpenSLAudioRender::getAmplificationLevel(float volumeLevel) {
     if (volumeLevel < 0.00000001) {
         return SL_MILLIBEL_MIN;
     }
-    SLmillibel mb = lroundf(2000.f * log10f(volumeLevel));
+    auto mb = (short)lroundf(2000.f * log10f(volumeLevel));
     if (mb < SL_MILLIBEL_MIN) {
         mb = SL_MILLIBEL_MIN;
     } else if (mb > 0) {

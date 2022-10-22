@@ -1,15 +1,4 @@
 
-# 根据API版本判断使用哪个版本的OpenGLES
-if (${ANDROID_PLATFORM_LEVEL} LESS 12)
-  message(FATAL_ERROR "OpenGL 2 is not supported before API level 11 (currently using ${ANDROID_PLATFORM_LEVEL}).")
-  return()
-elseif (${ANDROID_PLATFORM_LEVEL} LESS 18)
-  add_definitions("-DDYNAMIC_ES3")
-  set(GLES-lib GLESv2)
-else ()
-  set(GLES-lib GLESv3)
-endif (${ANDROID_PLATFORM_LEVEL} LESS 11)
-
 set(soundtouch_dir ../include/soundtouch)
 
 # 添加头文件路径
@@ -28,8 +17,8 @@ add_library( media_player
              source/decoder/MediaDecoder.cpp
              source/decoder/VideoDecoder.cpp
 
-             source/render/NativeWindowVideoRender.cpp
-             source/render/OpenSLAudioRender.cpp
+        source/render/android/NativeWindowVideoRender.cpp
+        source/render/android/OpenSLAudioRender.cpp
 
              source/queue/FrameQueue.cpp
              source/queue/PacketQueue.cpp
