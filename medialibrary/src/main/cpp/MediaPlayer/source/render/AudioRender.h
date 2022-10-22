@@ -1,6 +1,3 @@
-//
-// Created by cain on 2018/12/28.
-//
 
 #ifndef AUDIORENDER_H
 #define AUDIORENDER_H

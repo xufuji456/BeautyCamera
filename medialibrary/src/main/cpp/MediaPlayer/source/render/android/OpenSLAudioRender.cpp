@@ -1,6 +1,3 @@
-//
-// Created by cain on 2018/12/28.
-//
 
 #include <AndroidLog.h>
 #include "OpenSLAudioRender.h"
@@ -73,9 +70,6 @@ void OpenSLAudioRender::resume() {
     mMutex.unlock();
 }
 
-/**
- * 清空SL缓冲队列
- */
 void OpenSLAudioRender::flush() {
     mMutex.lock();
     flushRequest = 1;
@@ -115,17 +109,14 @@ void OpenSLAudioRender::run() {
 
     while (true) {
 
-        // 退出播放线程
         if (abortRequest) {
             break;
         }
 
-        // 暂停
         if (pauseRequest) {
             continue;
         }
 
-        // 获取缓冲队列状态
         SLAndroidSimpleBufferQueueState slState = {0};
         SLresult slRet = (*slBufferQueueItf)->GetState(slBufferQueueItf, &slState);
         if (slRet != SL_RESULT_SUCCESS) {
@@ -172,7 +163,6 @@ void OpenSLAudioRender::run() {
         }
         mMutex.unlock();
 
-        // 更新音量
         if (updateVolume) {
             if (slVolumeItf != nullptr) {
                 SLmillibel level = getAmplificationLevel(mVolume);
@@ -184,7 +174,6 @@ void OpenSLAudioRender::run() {
             updateVolume = false;
         }
 
-        // 刷新缓冲区还是将数据入队缓冲区
         if (flushRequest) {
             (*slBufferQueueItf)->Clear(slBufferQueueItf);
             flushRequest = 0;
@@ -194,9 +183,8 @@ void OpenSLAudioRender::run() {
             }
             slRet = (*slBufferQueueItf)->Enqueue(slBufferQueueItf, next_buffer, bytes_per_buffer);
             if (slRet == SL_RESULT_SUCCESS) {
-                // do nothing
+
             } else if (slRet == SL_RESULT_BUFFER_INSUFFICIENT) {
-                // don't retry, just pass through
                 ALOGE("SL_RESULT_BUFFER_INSUFFICIENT\n");
             } else {
                 ALOGE("slBufferQueueItf->Enqueue() = %d\n", (int)slRet);
@@ -209,22 +197,10 @@ void OpenSLAudioRender::run() {
     }
 }
 
-
-/**
- * SLES缓冲回调
- * @param bf
- * @param context
- */
 void slBufferPCMCallBack(SLAndroidSimpleBufferQueueItf bf, void *context) {
 
 }
 
-/**
- * 打开音频设备，并返回缓冲区大小
- * @param desired
- * @param obtained
- * @return
- */
 int OpenSLAudioRender::open(const AudioDeviceSpec *desired, AudioDeviceSpec *obtained) {
     SLresult result;
     result = slCreateEngine(&slObject, 0, nullptr, 0, nullptr, nullptr);
@@ -263,7 +239,6 @@ int OpenSLAudioRender::open(const AudioDeviceSpec *desired, AudioDeviceSpec *obt
             OPENSLES_BUFFERS
     };
 
-    // 根据通道数设置通道mask
     SLuint32 channelMask;
     switch (desired->channels) {
         case 2: {
@@ -280,13 +255,13 @@ int OpenSLAudioRender::open(const AudioDeviceSpec *desired, AudioDeviceSpec *obt
         }
     }
     SLDataFormat_PCM format_pcm = {
-            SL_DATAFORMAT_PCM,              // 播放器PCM格式
-            desired->channels,              // 声道数
-            getSLSampleRate(desired->freq), // SL采样率
-            SL_PCMSAMPLEFORMAT_FIXED_16,    // 位数 16位
-            SL_PCMSAMPLEFORMAT_FIXED_16,    // 和位数一致
-            channelMask,                    // 格式
-            SL_BYTEORDER_LITTLEENDIAN       // 小端存储
+            SL_DATAFORMAT_PCM,
+            desired->channels,
+            getSLSampleRate(desired->freq),
+            SL_PCMSAMPLEFORMAT_FIXED_16,
+            SL_PCMSAMPLEFORMAT_FIXED_16,
+            channelMask,
+            SL_BYTEORDER_LITTLEENDIAN
     };
 
     SLDataSource slDataSource = {&android_queue, &format_pcm};
@@ -332,18 +307,11 @@ int OpenSLAudioRender::open(const AudioDeviceSpec *desired, AudioDeviceSpec *obt
         return -1;
     }
 
-    // 这里计算缓冲区大小等参数
-    bytes_per_frame   = format_pcm.numChannels * format_pcm.bitsPerSample / 8;  // 一帧占多少字节
-    milli_per_buffer  = OPENSLES_BUF_SIZE;                                      // 每个缓冲区占多少毫秒
-    frames_per_buffer = milli_per_buffer * format_pcm.samplesPerSec / 1000000;  // 一个缓冲区有多少帧数据
-    bytes_per_buffer  = bytes_per_frame * frames_per_buffer;                    // 一个缓冲区大小
+    bytes_per_frame   = format_pcm.numChannels * format_pcm.bitsPerSample / 8;
+    milli_per_buffer  = OPENSLES_BUF_SIZE;
+    frames_per_buffer = milli_per_buffer * format_pcm.samplesPerSec / 1000000;
+    bytes_per_buffer  = bytes_per_frame * frames_per_buffer;
     buffer_capacity   = OPENSLES_BUFFERS * bytes_per_buffer;
-
-    ALOGI("OpenSL-ES: bytes_per_frame  = %d bytes\n",  bytes_per_frame);
-    ALOGI("OpenSL-ES: milli_per_buffer = %d ms\n",     milli_per_buffer);
-    ALOGI("OpenSL-ES: frame_per_buffer = %d frames\n", frames_per_buffer);
-    ALOGI("OpenSL-ES: buffer_capacity  = %zu bytes\n",  buffer_capacity);
-    ALOGI("OpenSL-ES: buffer_capacity  = %d bytes\n",  (int)buffer_capacity);
 
     if (obtained != nullptr) {
         *obtained = *desired;
@@ -352,14 +320,12 @@ int OpenSLAudioRender::open(const AudioDeviceSpec *desired, AudioDeviceSpec *obt
     }
     audioDeviceSpec = *desired;
 
-    // 创建缓冲区
     buffer = (uint8_t *)malloc(buffer_capacity);
     if (!buffer) {
         ALOGE("%s: failed to alloc buffer %d\n", __func__, (int)buffer_capacity);
         return -1;
     }
 
-    // 填充缓冲区数据
     memset(buffer, 0, buffer_capacity);
     for(int i = 0; i < OPENSLES_BUFFERS; ++i) {
         result = (*slBufferQueueItf)->Enqueue(slBufferQueueItf,
@@ -370,8 +336,6 @@ int OpenSLAudioRender::open(const AudioDeviceSpec *desired, AudioDeviceSpec *obt
         }
     }
 
-    ALOGD("open SLES Device success");
-    // 返回缓冲大小
     return buffer_capacity;
 }
 

@@ -1,6 +1,3 @@
-//
-// Created by cain on 2018/12/30.
-//
 
 #ifndef NATIVEWINDOW_VIDEORENDER_H
 #define NATIVEWINDOW_VIDEORENDER_H
