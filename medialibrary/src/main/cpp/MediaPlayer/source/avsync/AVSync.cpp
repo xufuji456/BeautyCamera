@@ -1,10 +1,7 @@
-//
-// Created by cain on 2018/12/30.
-//
 
-#include "MediaSync.h"
+#include "AVSync.h"
 
-MediaSync::MediaSync(PlayerParam *playerState) {
+AVSync::AVSync(PlayerParam *playerState) {
     this->playerState = playerState;
     audioDecoder = nullptr;
     videoDecoder = nullptr;
@@ -28,11 +25,11 @@ MediaSync::MediaSync(PlayerParam *playerState) {
     pFrameARGB = nullptr;
 }
 
-MediaSync::~MediaSync() {
+AVSync::~AVSync() {
 
 }
 
-void MediaSync::reset() {
+void AVSync::reset() {
     stop();
     playerState = nullptr;
     videoDecoder = nullptr;
@@ -54,7 +51,7 @@ void MediaSync::reset() {
     }
 }
 
-void MediaSync::start(VideoDecoder *videoDecoder, AudioDecoder *audioDecoder) {
+void AVSync::start(VideoDecoder *videoDecoder, AudioDecoder *audioDecoder) {
     mMutex.lock();
     this->videoDecoder = videoDecoder;
     this->audioDecoder = audioDecoder;
@@ -68,7 +65,7 @@ void MediaSync::start(VideoDecoder *videoDecoder, AudioDecoder *audioDecoder) {
     }
 }
 
-void MediaSync::stop() {
+void AVSync::stop() {
     mMutex.lock();
     abortRequest = true;
     mCondition.signal();
@@ -86,36 +83,36 @@ void MediaSync::stop() {
     }
 }
 
-void MediaSync::setVideoRender(VideoRender *render) {
+void AVSync::setVideoRender(VideoRender *render) {
     Mutex::Autolock lock(mMutex);
     this->videoRender = render;
 }
 
-void MediaSync::setMaxDuration(double maxDuration) {
+void AVSync::setMaxDuration(double maxDuration) {
     this->maxFrameDuration = maxDuration;
 }
 
-void MediaSync::refreshVideoTimer() {
+void AVSync::refreshVideoTimer() {
     mMutex.lock();
     this->frameTimerRefresh = 1;
     mCondition.signal();
     mMutex.unlock();
 }
 
-void MediaSync::updateAudioClock(double pts, double time) {
+void AVSync::updateAudioClock(double pts, double time) {
     audioClock->setClock(pts, time);
     extClock->syncToSlave(audioClock);
 }
 
-double MediaSync::getAudioDiffClock() {
+double AVSync::getAudioDiffClock() {
     return audioClock->getClock() - getMasterClock();
 }
 
-void MediaSync::updateExternalClock(double pts) {
+void AVSync::updateExternalClock(double pts) {
     extClock->setClock(pts);
 }
 
-double MediaSync::getMasterClock() {
+double AVSync::getMasterClock() {
     double val = 0;
     switch (playerState->syncType) {
         case AV_SYNC_VIDEO: {
@@ -134,19 +131,19 @@ double MediaSync::getMasterClock() {
     return val;
 }
 
-MediaClock* MediaSync::getAudioClock() {
+MediaClock* AVSync::getAudioClock() {
     return audioClock;
 }
 
-MediaClock *MediaSync::getVideoClock() {
+MediaClock *AVSync::getVideoClock() {
     return videoClock;
 }
 
-MediaClock *MediaSync::getExternalClock() {
+MediaClock *AVSync::getExternalClock() {
     return extClock;
 }
 
-void MediaSync::run() {
+void AVSync::run() {
     double remaining_time = 0.0;
     while (true) {
 
@@ -175,7 +172,7 @@ void MediaSync::run() {
     mCondition.signal();
 }
 
-void MediaSync::refreshVideo(double *remaining_time) {
+void AVSync::refreshVideo(double *remaining_time) {
     double time;
 
     // 检查外部时钟
@@ -302,7 +299,7 @@ void MediaSync::refreshVideo(double *remaining_time) {
     forceRefresh = 0;
 }
 
-void MediaSync::checkExternalClockSpeed() {
+void AVSync::checkExternalClockSpeed() {
     if (videoDecoder && videoDecoder->getPacketSize() <= EXTERNAL_CLOCK_MIN_FRAMES
         || audioDecoder && audioDecoder->getPacketSize() <= EXTERNAL_CLOCK_MIN_FRAMES) {
         extClock->setSpeed(FFMAX(EXTERNAL_CLOCK_SPEED_MIN,
@@ -319,7 +316,7 @@ void MediaSync::checkExternalClockSpeed() {
     }
 }
 
-double MediaSync::calculateDelay(double delay)  {
+double AVSync::calculateDelay(double delay)  {
     double sync_threshold, diff = 0;
     // 如果不是同步到视频流，则需要计算延时时间
     if (playerState->syncType != AV_SYNC_VIDEO) {
@@ -343,7 +340,7 @@ double MediaSync::calculateDelay(double delay)  {
     return delay;
 }
 
-double MediaSync::calculateDuration(Frame *vp, Frame *nextvp) {
+double AVSync::calculateDuration(Frame *vp, Frame *nextvp) {
     double duration = nextvp->pts - vp->pts;
     if (isnan(duration) || duration <= 0 || duration > maxFrameDuration) {
         return vp->duration;
@@ -352,7 +349,7 @@ double MediaSync::calculateDuration(Frame *vp, Frame *nextvp) {
     }
 }
 
-void MediaSync::renderVideo() {
+void AVSync::renderVideo() {
     mMutex.lock();
     if (!videoDecoder || !videoRender) {
         mMutex.unlock();

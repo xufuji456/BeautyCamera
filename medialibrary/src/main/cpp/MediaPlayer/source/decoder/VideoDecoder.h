@@ -4,7 +4,7 @@
 
 #include <decoder/MediaDecoder.h>
 #include <player/PlayerParam.h>
-#include <sync/MediaClock.h>
+#include <avsync/MediaClock.h>
 
 class VideoDecoder : public MediaDecoder {
 

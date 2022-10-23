@@ -57,7 +57,7 @@ MediaPlayer::MediaPlayer() {
     attachmentRequest = 0;
 
     audioRender = new OpenSLAudioRender();
-    mediaSync = new MediaSync(m_playerParam);
+    mediaSync = new AVSync(m_playerParam);
     audioResampler = nullptr;
     readThread = nullptr;
     mExit = true;

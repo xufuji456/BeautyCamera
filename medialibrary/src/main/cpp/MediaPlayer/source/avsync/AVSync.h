@@ -1,11 +1,8 @@
-//
-// Created by cain on 2018/12/30.
-//
 
-#ifndef MEDIASYNC_H
-#define MEDIASYNC_H
+#ifndef AVSYNC_H
+#define AVSYNC_H
 
-#include <sync/MediaClock.h>
+#include <avsync/MediaClock.h>
 #include <player/PlayerParam.h>
 #include <decoder/VideoDecoder.h>
 #include <decoder/AudioDecoder.h>
@@ -15,12 +12,12 @@
 /**
  * 视频同步器
  */
-class MediaSync : public Runnable {
+class AVSync : public Runnable {
 
 public:
-    MediaSync(PlayerParam *playerState);
+    AVSync(PlayerParam *playerState);
 
-    virtual ~MediaSync();
+    virtual ~AVSync();
 
     void reset();
 
@@ -94,5 +91,4 @@ private:
     SwsContext *swsContext;
 };
 
-
-#endif //MEDIASYNC_H
+#endif //AVSYNC_H

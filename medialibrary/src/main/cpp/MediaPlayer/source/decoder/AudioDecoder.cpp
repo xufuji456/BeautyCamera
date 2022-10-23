@@ -74,7 +74,7 @@ int AudioDecoder::getAudioFrame(AVFrame *frame) {
             continue;
         } else {
             got_frame = 1;
-            // rescale pts using timebase
+            // rescale m_pts using timebase
             AVRational tb = (AVRational){1, frame->sample_rate};
             if (frame->pts != AV_NOPTS_VALUE) {
                 frame->pts = av_rescale_q(frame->pts, av_codec_get_pkt_timebase(getCodecContext()), tb);

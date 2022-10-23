@@ -5,7 +5,7 @@
 #ifndef MEDIAPLAYER_H
 #define MEDIAPLAYER_H
 
-#include <sync/MediaClock.h>
+#include <avsync/MediaClock.h>
 #include <SoundTouchHelper.h>
 #include <player/PlayerParam.h>
 #include <decoder/AudioDecoder.h>
@@ -16,7 +16,7 @@
 
 #include <android/native_window.h>
 #include <android/native_window_jni.h>
-#include <sync/MediaSync.h>
+#include <avsync/AVSync.h>
 #include <convertor/AudioResampler.h>
 
 
@@ -100,7 +100,7 @@ private:
     AudioRender *audioRender;
     AudioResampler *audioResampler;
 
-    MediaSync *mediaSync;
+    AVSync *mediaSync;
 
 };
 

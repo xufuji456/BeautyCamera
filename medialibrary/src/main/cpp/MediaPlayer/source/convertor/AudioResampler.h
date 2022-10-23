@@ -3,7 +3,7 @@
 #define AUDIORESAMPLER_H
 
 #include <player/PlayerParam.h>
-#include <sync/MediaSync.h>
+#include <avsync/AVSync.h>
 #include <SoundTouchHelper.h>
 #include <render/AudioRender.h>
 
@@ -48,7 +48,7 @@ typedef struct AudioState {
  */
 class AudioResampler {
 public:
-    AudioResampler(PlayerParam *playerState, AudioDecoder *audioDecoder, MediaSync *mediaSync);
+    AudioResampler(PlayerParam *playerState, AudioDecoder *audioDecoder, AVSync *mediaSync);
 
     virtual ~AudioResampler();
 
@@ -63,7 +63,7 @@ private:
 
 private:
     PlayerParam *playerState;
-    MediaSync *mediaSync;
+    AVSync *mediaSync;
 
     AVFrame *frame;
     AudioDecoder *audioDecoder;             // 音频解码器

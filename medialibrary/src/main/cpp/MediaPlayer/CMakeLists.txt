@@ -23,8 +23,8 @@ add_library( media_player
              source/queue/FrameQueue.cpp
              source/queue/PacketQueue.cpp
 
-             source/sync/MediaClock.cpp
-             source/sync/MediaSync.cpp
+             source/avsync/MediaClock.cpp
+             source/avsync/AVSync.cpp
 
              source/player/AVMessageQueue.cpp
              source/player/MediaPlayer.cpp
