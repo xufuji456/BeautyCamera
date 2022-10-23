@@ -165,7 +165,7 @@ int VideoDecoder::decodeVideo() {
                 }
                 frame->sample_aspect_ratio = av_guess_sample_aspect_ratio(
                         m_playerParam->m_formatCtx, m_playerParam->m_videoStream, frame);
-                // drop frame
+                // drop m_frame
                 if (m_playerParam->frameDrop > 0 ||
                     (m_playerParam->frameDrop > 0 && m_playerParam->syncType != AV_SYNC_VIDEO)) {
                     if (frame->pts != AV_NOPTS_VALUE) {

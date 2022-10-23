@@ -17,7 +17,7 @@
 #include <android/native_window.h>
 #include <android/native_window_jni.h>
 #include <avsync/AVSync.h>
-#include <convertor/AudioResampler.h>
+#include <resample/AudioResampler.h>
 
 
 class MediaPlayer : public Runnable {

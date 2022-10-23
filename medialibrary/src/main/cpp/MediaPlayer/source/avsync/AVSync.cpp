@@ -154,7 +154,7 @@ void AVSync::refreshVideo(double *remaining_time) {
             if (m_playerParam->abortRequest || m_playerParam->pauseRequest) {
                 break;
             }
-            // use last frame and current frame to calculate duration
+            // use last m_frame and current m_frame to calculate duration
             lastDuration = calculateDuration(lastFrame, currentFrame);
 
             delay = calculateDelay(lastDuration);
@@ -177,7 +177,7 @@ void AVSync::refreshVideo(double *remaining_time) {
                 break;
             }
 
-            // update frame timer
+            // update m_frame timer
             m_frameTimer += delay;
             if (delay > 0 && time - m_frameTimer > AV_SYNC_THRESHOLD_MAX) {
                 m_frameTimer = time;

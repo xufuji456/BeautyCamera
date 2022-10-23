@@ -11,7 +11,7 @@ add_library( media_player
 
              SHARED
 
-             source/convertor/AudioResampler.cpp
+        source/resample/AudioResampler.cpp
 
              source/decoder/AudioDecoder.cpp
              source/decoder/MediaDecoder.cpp
