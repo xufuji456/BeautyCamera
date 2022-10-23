@@ -16,7 +16,7 @@ public interface IMediaPlayer {
     void setDataSource(FileDescriptor fd)
             throws IOException, IllegalArgumentException, IllegalStateException;
 
-    void setDataSource(FileDescriptor fd, long offset, long length)
+    void setDataSource(FileDescriptor fd, long length)
             throws IOException, IllegalArgumentException, IllegalStateException;
 
     void prepare() throws IOException, IllegalStateException;
@@ -41,7 +41,7 @@ public interface IMediaPlayer {
 
     boolean isPlaying();
 
-    void seekTo(float msec) throws IllegalStateException;
+    void seekTo(long msec) throws IllegalStateException;
 
     long getCurrentPosition();
 

@@ -1,6 +1,3 @@
-//
-// Created by cain on 2018/12/26.
-//
 
 #ifndef MEDIAPLAYER_H
 #define MEDIAPLAYER_H
@@ -28,7 +25,7 @@ public:
 
     status_t reset();
 
-    void setDataSource(const char *url, int64_t offset = 0);
+    void setDataSource(const char *url);
 
     void setVideoRender(VideoRender *render);
 

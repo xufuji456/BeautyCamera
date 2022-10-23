@@ -97,7 +97,7 @@ void AVSync::updateExternalClock(double pts) {
 
 double AVSync::getMasterClock() {
     double val = 0;
-    switch (m_playerParam->syncType) {
+    switch (m_playerParam->m_syncType) {
         case AV_SYNC_VIDEO: {
             val = m_videoClock->getClock();
             break;
@@ -129,14 +129,14 @@ MediaClock *AVSync::getExternalClock() {
 void AVSync::refreshVideo(double *remaining_time) {
     double time;
 
-    if (!m_playerParam->pauseRequest &&
-        m_playerParam->syncType == AV_SYNC_EXTERNAL) {
+    if (!m_playerParam->m_pauseReq &&
+        m_playerParam->m_syncType == AV_SYNC_EXTERNAL) {
         checkExternalClockSpeed();
     }
 
     for (;;) {
 
-        if (m_playerParam->abortRequest || !m_videoDecoder) {
+        if (m_playerParam->m_abortReq || !m_videoDecoder) {
             break;
         }
 
@@ -151,10 +151,10 @@ void AVSync::refreshVideo(double *remaining_time) {
                 m_timerRefresh = 0;
             }
 
-            if (m_playerParam->abortRequest || m_playerParam->pauseRequest) {
+            if (m_playerParam->m_abortReq || m_playerParam->m_pauseReq) {
                 break;
             }
-            // use last m_frame and current m_frame to calculate duration
+            // use last m_frame and current m_frame to calculate m_duration
             lastDuration = calculateDuration(lastFrame, currentFrame);
 
             delay = calculateDelay(lastDuration);
@@ -171,7 +171,7 @@ void AVSync::refreshVideo(double *remaining_time) {
             if (isnan(m_frameTimer) || time < m_frameTimer) {
                 m_frameTimer = time;
             }
-            // video fast, just wait for rendering
+            // video m_decodeFastFlag, just wait for rendering
             if (time < m_frameTimer + delay) {
                 *remaining_time = FFMIN(m_frameTimer + delay - time, *remaining_time);
                 break;
@@ -196,8 +196,8 @@ void AVSync::refreshVideo(double *remaining_time) {
                 duration = calculateDuration(currentFrame, nextFrame);
 
                 if ((time > m_frameTimer + duration)
-                    && (m_playerParam->frameDrop > 0
-                        || (m_playerParam->frameDrop && m_playerParam->syncType != AV_SYNC_VIDEO))) {
+                    && (m_playerParam->m_frameDrop > 0
+                        || (m_playerParam->m_frameDrop && m_playerParam->m_syncType != AV_SYNC_VIDEO))) {
                     m_videoDecoder->getFrameQueue()->popFrame();
                     continue;
                 }
@@ -209,7 +209,7 @@ void AVSync::refreshVideo(double *remaining_time) {
         break;
     }
 
-    if (m_playerParam->messageQueue && m_playerParam->syncType == AV_SYNC_VIDEO) {
+    if (m_playerParam->m_messageQueue && m_playerParam->m_syncType == AV_SYNC_VIDEO) {
         int64_t start_time = m_videoDecoder->getFormatContext()->start_time;
         int64_t start_diff = 0;
         if (start_time > 0 && start_time != AV_NOPTS_VALUE) {
@@ -219,7 +219,7 @@ void AVSync::refreshVideo(double *remaining_time) {
         int64_t pos = 0;
         double clock = getMasterClock();
         if (isnan(clock)) {
-            pos = m_playerParam->seekPos;
+            pos = m_playerParam->m_seekPos;
         } else {
             pos = (int64_t)(clock * 1000);
         }
@@ -227,15 +227,15 @@ void AVSync::refreshVideo(double *remaining_time) {
             pos = 0;
         }
         pos = (long) (pos - start_diff);
-        if (m_playerParam->videoDuration < 0) {
+        if (m_playerParam->m_videoDuration < 0) {
             pos = 0;
         }
-        m_playerParam->messageQueue->sendMessage(MSG_CURRENT_POSITION, pos,
-                                                 m_playerParam->videoDuration);
+        m_playerParam->m_messageQueue->sendMessage(MSG_CURRENT_POSITION, pos,
+                                                   m_playerParam->m_videoDuration);
     }
 
     // refresh display
-    if (!m_playerParam->displayDisable && m_forceRefresh && m_videoDecoder
+    if (!m_playerParam->m_displayDisable && m_forceRefresh && m_videoDecoder
         && m_videoDecoder->getFrameQueue()->getShowIndex()) {
         renderVideo();
     }
@@ -263,7 +263,7 @@ double AVSync::calculateDelay(double delay)  {
     double diff = 0;
     double sync_threshold = 0;
 
-    if (m_playerParam->syncType != AV_SYNC_VIDEO) {
+    if (m_playerParam->m_syncType != AV_SYNC_VIDEO) {
         // diff between video and master clock
         diff = m_videoClock->getClock() - getMasterClock();
         sync_threshold = FFMAX(AV_SYNC_THRESHOLD_MIN, FFMIN(AV_SYNC_THRESHOLD_MAX, delay));
@@ -335,18 +335,18 @@ void AVSync::run() {
     double remaining_time = 0.0;
     while (true) {
 
-        if (m_abortReq || m_playerParam->abortRequest) {
+        if (m_abortReq || m_playerParam->m_abortReq) {
             if (m_videoRender != nullptr) {
                 m_videoRender->onDestroy();
             }
             break;
         }
 
-        if (m_playerParam->pauseRequest) {
+        if (m_playerParam->m_pauseReq) {
             av_usleep((int64_t) (REFRESH_RATE * 1000000.0));
         }
 
-        if (!m_playerParam->pauseRequest || m_forceRefresh) {
+        if (!m_playerParam->m_pauseReq || m_forceRefresh) {
             refreshVideo(&remaining_time);
         }
         if (remaining_time <= 0) {

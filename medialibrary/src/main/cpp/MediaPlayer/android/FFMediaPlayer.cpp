@@ -65,14 +65,14 @@ void FFMediaPlayer::disconnect() {
 
 }
 
-status_t FFMediaPlayer::setDataSource(const char *url, int64_t offset) {
+status_t FFMediaPlayer::setDataSource(const char *url) {
     if (url == nullptr) {
         return BAD_VALUE;
     }
     if (mediaPlayer == nullptr) {
         mediaPlayer = new MediaPlayer();
     }
-    mediaPlayer->setDataSource(url, offset);
+    mediaPlayer->setDataSource(url);
     mediaPlayer->setVideoRender(videoRender);
     return NO_ERROR;
 }
@@ -172,7 +172,7 @@ int FFMediaPlayer::getVideoHeight() {
     return 0;
 }
 
-status_t FFMediaPlayer::seekTo(float msec) {
+status_t FFMediaPlayer::seekTo(long msec) {
     if (mediaPlayer != nullptr) {
         // if in seeking state, put seek message in queue, to process after preview seeking.
         if (mSeeking) {

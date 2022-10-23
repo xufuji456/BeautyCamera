@@ -153,15 +153,14 @@ void CainMediaPlayer_setDataSource(JNIEnv *env, jobject thiz, jstring path_) {
         return;
     }
 
-    status_t opStatus = mp->setDataSource(path, 0);
+    status_t opStatus = mp->setDataSource(path);
     process_media_player_call(env, thiz, opStatus, "java/io/IOException",
             "setDataSource failed." );
 
     env->ReleaseStringUTFChars(path_, path);
 }
 
-void CainMediaPlayer_setDataSourceFD(JNIEnv *env, jobject thiz, jobject fileDescriptor,
-                                     jlong offset, jlong length) {
+void CainMediaPlayer_setDataSourceFD(JNIEnv *env, jobject thiz, jobject fileDescriptor, jlong length) {
     FFMediaPlayer *mp = getMediaPlayer(env, thiz);
     if (mp == nullptr) {
         jniThrowException(env, "java/lang/IllegalStateException");
@@ -174,30 +173,15 @@ void CainMediaPlayer_setDataSourceFD(JNIEnv *env, jobject thiz, jobject fileDesc
     }
 
     int fd = jniGetFDFromFileDescriptor(env, fileDescriptor);
-    if (offset < 0 || length < 0 || fd < 0) {
-        if (offset < 0) {
-            ALOGE("negative offset (%ld)", offset);
-        }
-        if (length < 0) {
-            ALOGE("negative length (%ld)", length);
-        }
-        if (fd < 0) {
-            ALOGE("invalid file descriptor");
-        }
-        jniThrowException(env, "java/lang/IllegalArgumentException");
-        return;
-    }
-
     char path[256] = "";
     int myfd = dup(fd);
     char str[20];
     sprintf(str, "pipe:%d", myfd);
     strcat(path, str);
 
-    status_t opStatus = mp->setDataSource(path, offset);
+    status_t opStatus = mp->setDataSource(path);
     process_media_player_call( env, thiz, opStatus, "java/io/IOException",
             "setDataSourceFD failed.");
-
 }
 
 void log_callback(void *ptr, int level, const char *format, va_list args) {
@@ -345,7 +329,7 @@ void CainMediaPlayer_stop(JNIEnv *env, jobject thiz) {
     mp->stop();
 }
 
-void CainMediaPlayer_seekTo(JNIEnv *env, jobject thiz, jfloat timeMs) {
+void CainMediaPlayer_seekTo(JNIEnv *env, jobject thiz, jlong timeMs) {
     FFMediaPlayer *mp = getMediaPlayer(env, thiz);
     if (mp == nullptr) {
         jniThrowException(env, "java/lang/IllegalStateException");
@@ -438,7 +422,7 @@ jint CainMediaPlayer_getVideoHeight(JNIEnv *env, jobject thiz) {
 
 static const JNINativeMethod gMethods[] = {
         {"_setDataSource", "(Ljava/lang/String;)V", (void *)CainMediaPlayer_setDataSource},
-        {"_setDataSource", "(Ljava/io/FileDescriptor;JJ)V", (void *)CainMediaPlayer_setDataSourceFD},
+        {"_setDataSource", "(Ljava/io/FileDescriptor;J)V", (void *)CainMediaPlayer_setDataSourceFD},
         {"_setVideoSurface", "(Landroid/view/Surface;)V", (void *) CainMediaPlayer_setVideoSurface},
         {"_prepare", "()V", (void *) CainMediaPlayer_prepare},
         {"_prepareAsync", "()V", (void *) CainMediaPlayer_prepareAsync},
@@ -448,7 +432,7 @@ static const JNINativeMethod gMethods[] = {
         {"_getRotate", "()I", (void *) CainMediaPlayer_getRotate},
         {"_getVideoWidth", "()I", (void *) CainMediaPlayer_getVideoWidth},
         {"_getVideoHeight", "()I", (void *) CainMediaPlayer_getVideoHeight},
-        {"_seekTo", "(F)V", (void *) CainMediaPlayer_seekTo},
+        {"_seekTo", "(J)V", (void *) CainMediaPlayer_seekTo},
         {"_pause", "()V", (void *) CainMediaPlayer_pause},
         {"_isPlaying", "()Z", (void *) CainMediaPlayer_isPlaying},
         {"_getCurrentPosition", "()J", (void *) CainMediaPlayer_getCurrentPosition},

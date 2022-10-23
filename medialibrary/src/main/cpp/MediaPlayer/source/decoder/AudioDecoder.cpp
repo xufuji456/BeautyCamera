@@ -36,7 +36,7 @@ int AudioDecoder::getAudioFrame(AVFrame *frame) {
             ret = -1;
             break;
         }
-        if (m_playerParam->seekRequest) {
+        if (m_playerParam->m_seekRequest) {
             continue;
         }
 
@@ -51,7 +51,7 @@ int AudioDecoder::getAudioFrame(AVFrame *frame) {
             }
         }
 
-        m_playerParam->mMutex.lock();
+        m_playerParam->m_playMutex.lock();
         ret = avcodec_send_packet(getCodecContext(), &pkt);
         if (ret < 0) {
             if (ret == AVERROR(EAGAIN)) {
@@ -61,12 +61,12 @@ int AudioDecoder::getAudioFrame(AVFrame *frame) {
                 av_packet_unref(&pkt);
                 m_pktPending = false;
             }
-            m_playerParam->mMutex.unlock();
+            m_playerParam->m_playMutex.unlock();
             continue;
         }
 
         ret = avcodec_receive_frame(getCodecContext(), frame);
-        m_playerParam->mMutex.unlock();
+        m_playerParam->m_playMutex.unlock();
         av_packet_unref(m_packet);
         if (ret < 0) {
             av_frame_unref(frame);

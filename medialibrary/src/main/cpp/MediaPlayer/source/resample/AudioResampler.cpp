@@ -88,7 +88,7 @@ void AudioResampler::pcmQueueCallback(uint8_t *stream, int len) {
             length = len;
         }
         // copy pcm data to buffer
-        if (m_audioState->m_outputBuffer != NULL && !m_playerParam->mute) {
+        if (m_audioState->m_outputBuffer != NULL && !m_playerParam->m_mute) {
             memcpy(stream, m_audioState->m_outputBuffer + m_audioState->bufferIndex, length);
         } else {
             memset(stream, 0, length);
@@ -111,7 +111,7 @@ int AudioResampler::audioSynchronize(int nbSamples) {
     int wanted_nb_samples = nbSamples;
 
     // sync with audio
-    if (m_playerParam->syncType != AV_SYNC_AUDIO) {
+    if (m_playerParam->m_syncType != AV_SYNC_AUDIO) {
         double diff, avg_diff;
         int min_nb_samples, max_nb_samples;
         diff = m_avSync ? m_avSync->getAudioDiffClock() : 0;
@@ -146,7 +146,7 @@ int AudioResampler::audioFrameResample() {
     int resampled_data_size;
     int64_t dec_channel_layout;
 
-    if (!m_audioDecoder || m_playerParam->abortRequest || m_playerParam->pauseRequest) {
+    if (!m_audioDecoder || m_playerParam->m_abortReq || m_playerParam->m_pauseReq) {
         return -1;
     }
 
@@ -234,7 +234,7 @@ int AudioResampler::audioFrameResample() {
             resampled_data_size = len2 * m_audioState->m_audioParamDst.channels * av_get_bytes_per_sample(m_audioState->m_audioParamDst.fmt);
 
             // use soundtouch to handle speed and pitch
-            if (m_playerParam->playbackRate != 1.0f && !m_playerParam->abortRequest) {
+            if (m_playerParam->m_playbackRate != 1.0f && !m_playerParam->m_abortReq) {
                 int bytes_per_sample = av_get_bytes_per_sample(m_audioState->m_audioParamDst.fmt);
                 av_fast_malloc(&m_audioState->m_soundTouchBuffer, &m_audioState->m_soundTouchBufSize, out_size * translate_time);
                 for (int i = 0; i < (resampled_data_size / 2); i++) {
@@ -243,8 +243,8 @@ int AudioResampler::audioFrameResample() {
                 if (!m_soundTouchHelper) {
                     m_soundTouchHelper = new SoundTouchHelper();
                 }
-                int ret_len = m_soundTouchHelper->translate(m_audioState->m_soundTouchBuffer, (float)(m_playerParam->playbackRate),
-                                                            (float)(1.0f / m_playerParam->playbackRate),
+                int ret_len = m_soundTouchHelper->translate(m_audioState->m_soundTouchBuffer, (float)(m_playerParam->m_playbackRate),
+                                                            (float)(1.0f / m_playerParam->m_playbackRate),
                                                            resampled_data_size / 2, bytes_per_sample,
                                                             m_audioState->m_audioParamDst.channels, m_frame->sample_rate);
                 if (ret_len > 0) {

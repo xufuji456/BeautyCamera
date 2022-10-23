@@ -45,9 +45,9 @@ void MediaDecoder::flush() {
     if (m_packetQueue) {
         m_packetQueue->flush();
     }
-    m_playerParam->mMutex.lock();
+    m_playerParam->m_playMutex.lock();
     avcodec_flush_buffers(getCodecContext());
-    m_playerParam->mMutex.unlock();
+    m_playerParam->m_playMutex.unlock();
 }
 
 int MediaDecoder::pushPacket(AVPacket *pkt) {

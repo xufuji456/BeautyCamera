@@ -38,7 +38,7 @@ public class FFMediaPlayer implements IMediaPlayer {
     private native void native_setup(Object player);
     private native void _setDataSource(@NonNull String path)
             throws IOException, IllegalArgumentException, SecurityException, IllegalStateException;
-    private native void _setDataSource(FileDescriptor fd, long offset, long length)
+    private native void _setDataSource(FileDescriptor fd, long length)
             throws IOException, IllegalArgumentException, IllegalStateException;
     private native void _setVideoSurface(Surface surface);
     private native void _prepare() throws IOException, IllegalStateException;
@@ -50,7 +50,7 @@ public class FFMediaPlayer implements IMediaPlayer {
     private native int _getVideoWidth();
     private native int _getVideoHeight();
     private native boolean _isPlaying();
-    private native void _seekTo(float msec) throws IllegalStateException;
+    private native void _seekTo(long msec) throws IllegalStateException;
     private native long _getCurrentPosition();
     private native long _getDuration();
     private native void _setRate(float rate);
@@ -109,13 +109,13 @@ public class FFMediaPlayer implements IMediaPlayer {
     @Override
     public void setDataSource(FileDescriptor fd)
             throws IOException, IllegalArgumentException, IllegalStateException {
-        setDataSource(fd, 0, Long.MAX_VALUE);
+        setDataSource(fd, Long.MAX_VALUE);
     }
 
     @Override
-    public void setDataSource(FileDescriptor fd, long offset, long length)
+    public void setDataSource(FileDescriptor fd, long length)
             throws IOException, IllegalArgumentException, IllegalStateException {
-        _setDataSource(fd, offset, length);
+        _setDataSource(fd, length);
     }
 
     @Override
@@ -191,7 +191,7 @@ public class FFMediaPlayer implements IMediaPlayer {
     }
 
     @Override
-    public void seekTo(float msec) throws IllegalStateException {
+    public void seekTo(long msec) throws IllegalStateException {
         _seekTo(msec);
     }
 

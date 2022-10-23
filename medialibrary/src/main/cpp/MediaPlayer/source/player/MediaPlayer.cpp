@@ -1,6 +1,3 @@
-//
-// Created by cain on 2018/12/26.
-//
 
 #include "MediaPlayer.h"
 
@@ -110,10 +107,9 @@ status_t MediaPlayer::reset() {
     return NO_ERROR;
 }
 
-void MediaPlayer::setDataSource(const char *url, int64_t offset) {
+void MediaPlayer::setDataSource(const char *url) {
     Mutex::Autolock lock(mMutex);
     m_playerParam->url = av_strdup(url);
-    m_playerParam->offset = offset;
 }
 
 void MediaPlayer::setVideoRender(VideoRender *render) {
@@ -126,7 +122,7 @@ status_t MediaPlayer::prepare() {
     if (!m_playerParam->url) {
         return BAD_VALUE;
     }
-    m_playerParam->abortRequest = 0;
+    m_playerParam->m_abortReq = 0;
     if (!readThread) {
         readThread = new Thread(this);
         readThread->start();
@@ -140,35 +136,35 @@ status_t MediaPlayer::prepareAsync() {
         return BAD_VALUE;
     }
     // 发送消息请求准备
-    if (m_playerParam->messageQueue) {
-        m_playerParam->messageQueue->sendMessage(MSG_REQUEST_PREPARE);
+    if (m_playerParam->m_messageQueue) {
+        m_playerParam->m_messageQueue->sendMessage(MSG_REQUEST_PREPARE);
     }
     return NO_ERROR;
 }
 
 void MediaPlayer::start() {
     Mutex::Autolock lock(mMutex);
-    m_playerParam->abortRequest = 0;
-    m_playerParam->pauseRequest = 0;
+    m_playerParam->m_abortReq = 0;
+    m_playerParam->m_pauseReq = 0;
     mExit = false;
     mCondition.signal();
 }
 
 void MediaPlayer::pause() {
     Mutex::Autolock lock(mMutex);
-    m_playerParam->pauseRequest = 1;
+    m_playerParam->m_pauseReq = 1;
     mCondition.signal();
 }
 
 void MediaPlayer::resume() {
     Mutex::Autolock lock(mMutex);
-    m_playerParam->pauseRequest = 0;
+    m_playerParam->m_pauseReq = 0;
     mCondition.signal();
 }
 
 void MediaPlayer::stop() {
     mMutex.lock();
-    m_playerParam->abortRequest = 1;
+    m_playerParam->m_abortReq = 1;
     mCondition.signal();
     mMutex.unlock();
     mMutex.lock();
@@ -189,20 +185,20 @@ void MediaPlayer::seekTo(long timeMs) {
     }
 
     mMutex.lock();
-    while (m_playerParam->seekRequest) {
+    while (m_playerParam->m_seekRequest) {
         mCondition.wait(mMutex);
     }
     mMutex.unlock();
 
-    if (!m_playerParam->seekRequest) {
+    if (!m_playerParam->m_seekRequest) {
         int64_t seek_pos = av_rescale(timeMs, AV_TIME_BASE, 1000);
         int64_t start_time = m_playerParam->m_formatCtx ? m_playerParam->m_formatCtx->start_time : 0;
         if (start_time > 0 && start_time != AV_NOPTS_VALUE) {
             seek_pos += start_time;
         }
-        m_playerParam->seekPos = seek_pos;
-        m_playerParam->seekFlags &= ~AVSEEK_FLAG_BYTE;
-        m_playerParam->seekRequest = 1;
+        m_playerParam->m_seekPos = seek_pos;
+        m_playerParam->m_seekFlag &= ~AVSEEK_FLAG_BYTE;
+        m_playerParam->m_seekRequest = 1;
         mCondition.signal();
     }
 }
@@ -215,14 +211,14 @@ void MediaPlayer::setVolume(float volume) {
 
 void MediaPlayer::setMute(int mute) {
     mMutex.lock();
-    m_playerParam->mute = mute;
+    m_playerParam->m_mute = mute;
     mCondition.signal();
     mMutex.unlock();
 }
 
 void MediaPlayer::setRate(float rate) {
     mMutex.lock();
-    m_playerParam->playbackRate = rate;
+    m_playerParam->m_playbackRate = rate;
     mCondition.signal();
     mMutex.unlock();
 }
@@ -255,8 +251,8 @@ long MediaPlayer::getCurrentPosition() {
     Mutex::Autolock lock(mMutex);
     int64_t currentPosition = 0;
     // 处于定位
-    if (m_playerParam->seekRequest) {
-        currentPosition = m_playerParam->seekPos;
+    if (m_playerParam->m_seekRequest) {
+        currentPosition = m_playerParam->m_seekPos;
     } else {
 
         // 起始延时
@@ -270,7 +266,7 @@ long MediaPlayer::getCurrentPosition() {
         int64_t pos = 0;
         double clock = mediaSync->getMasterClock();
         if (isnan(clock)) {
-            pos = m_playerParam->seekPos;
+            pos = m_playerParam->m_seekPos;
         } else {
             pos = (int64_t)(clock * 1000);
         }
@@ -289,12 +285,12 @@ long MediaPlayer::getDuration() {
 
 int MediaPlayer::isPlaying() {
     Mutex::Autolock lock(mMutex);
-    return !m_playerParam->abortRequest && !m_playerParam->pauseRequest;
+    return !m_playerParam->m_abortReq && !m_playerParam->m_pauseReq;
 }
 
 static int avformat_interrupt_cb(void *ctx) {
     auto *playerState = (PlayerParam *) ctx;
-    if (playerState->abortRequest) {
+    if (playerState->m_abortReq) {
         return AVERROR_EOF;
     }
     return 0;
@@ -302,7 +298,7 @@ static int avformat_interrupt_cb(void *ctx) {
 
 FFMessageQueue *MediaPlayer::getMessageQueue() {
     Mutex::Autolock lock(mMutex);
-    return m_playerParam->messageQueue;
+    return m_playerParam->m_messageQueue;
 }
 
 void MediaPlayer::run() {
@@ -328,12 +324,8 @@ int MediaPlayer::readPackets() {
         ic->interrupt_callback.callback = avformat_interrupt_cb;
         ic->interrupt_callback.opaque = m_playerParam;
 
-        if (m_playerParam->offset > 0) {
-            ic->skip_initial_bytes = m_playerParam->offset;
-        }
-
         // 打开文件
-        ret = avformat_open_input(&ic, m_playerParam->url, m_playerParam->iformat, nullptr);
+        ret = avformat_open_input(&ic, m_playerParam->url, nullptr, nullptr);
         if (ret < 0) {
             av_log(nullptr, AV_LOG_ERROR, "open input err:url=%s, msg=%s", m_playerParam->url, strerror(ret));
             ret = -1;
@@ -341,8 +333,8 @@ int MediaPlayer::readPackets() {
         }
 
         // 打开文件回调
-        if (m_playerParam->messageQueue) {
-            m_playerParam->messageQueue->sendMessage(MSG_OPEN_INPUT);
+        if (m_playerParam->m_messageQueue) {
+            m_playerParam->m_messageQueue->sendMessage(MSG_OPEN_INPUT);
         }
 
         av_format_inject_global_side_data(ic);
@@ -358,15 +350,15 @@ int MediaPlayer::readPackets() {
         }
 
         // 查找媒体流信息回调
-        if (m_playerParam->messageQueue) {
-            m_playerParam->messageQueue->sendMessage(MSG_FIND_STREAM_INFO);
+        if (m_playerParam->m_messageQueue) {
+            m_playerParam->m_messageQueue->sendMessage(MSG_FIND_STREAM_INFO);
         }
 
         if (ic->duration != AV_NOPTS_VALUE) {
             mDuration = av_rescale(ic->duration, 1000, AV_TIME_BASE);
         }
 
-        m_playerParam->videoDuration = mDuration;
+        m_playerParam->m_videoDuration = mDuration;
 
         if (ic->pb) {
             ic->pb->eof_reached = 0;
@@ -376,16 +368,16 @@ int MediaPlayer::readPackets() {
         mediaSync->setMaxDuration((ic->iformat->flags & AVFMT_TS_DISCONT) ? 10.0 : 3600.0);
 
         // 如果不是从头开始播放，则跳转到播放位置
-        if (m_playerParam->startTime != AV_NOPTS_VALUE) {
+        if (m_playerParam->m_startTime != AV_NOPTS_VALUE) {
             int64_t timestamp;
 
-            timestamp = m_playerParam->startTime;
+            timestamp = m_playerParam->m_startTime;
             if (ic->start_time != AV_NOPTS_VALUE) {
                 timestamp += ic->start_time;
             }
-            m_playerParam->mMutex.lock();
+            m_playerParam->m_playMutex.lock();
             ret = avformat_seek_file(ic, -1, INT64_MIN, timestamp, INT64_MAX, 0);
-            m_playerParam->mMutex.unlock();
+            m_playerParam->m_playMutex.unlock();
             if (ret < 0) {
                 av_log(nullptr, AV_LOG_WARNING, "%s: could not seek to position %0.3f\n",
                        m_playerParam->url, (double)timestamp / AV_TIME_BASE);
@@ -407,14 +399,14 @@ int MediaPlayer::readPackets() {
             }
         }
         // 如果不禁止视频流，则查找最合适的视频流索引
-        if (!m_playerParam->videoDisable) {
+        if (!m_playerParam->m_videoDisable) {
             videoIndex = av_find_best_stream(ic, AVMEDIA_TYPE_VIDEO,
                                              videoIndex, -1, nullptr, 0);
         } else {
             videoIndex = -1;
         }
         // 如果不禁止音频流，则查找最合适的音频流索引(与视频流关联的音频流)
-        if (!m_playerParam->audioDisable) {
+        if (!m_playerParam->m_audioDisable) {
             audioIndex = av_find_best_stream(ic, AVMEDIA_TYPE_AUDIO,
                                              audioIndex, videoIndex, nullptr, 0);
         } else {
@@ -446,8 +438,8 @@ int MediaPlayer::readPackets() {
         ret = 0;
 
         // 准备解码器消息回调
-        if (m_playerParam->messageQueue) {
-            m_playerParam->messageQueue->sendMessage(MSG_PREPARE_DECODER);
+        if (m_playerParam->m_messageQueue) {
+            m_playerParam->m_messageQueue->sendMessage(MSG_PREPARE_DECODER);
         }
 
     } while (false);
@@ -457,10 +449,10 @@ int MediaPlayer::readPackets() {
     if (ret < 0) {
         mExit = true;
         mCondition.signal();
-        if (m_playerParam->messageQueue) {
+        if (m_playerParam->m_messageQueue) {
             const char errorMsg[] = "prepare decoder failed!";
-            m_playerParam->messageQueue->sendMessage(MSG_ERROR, 0, 0,
-                                                     (void *) errorMsg,
+            m_playerParam->m_messageQueue->sendMessage(MSG_ERROR, 0, 0,
+                                                       (void *) errorMsg,
                                                      sizeof(errorMsg) / errorMsg[0]);
         }
         return -1;
@@ -468,38 +460,38 @@ int MediaPlayer::readPackets() {
 
     if (videoDecoder) {
         AVCodecParameters *codecpar = m_playerParam->m_videoStream->codecpar;
-        if (m_playerParam->messageQueue) {
-            m_playerParam->messageQueue->sendMessage(MSG_VIDEO_SIZE_CHANGED,
-                                                     codecpar->width, codecpar->height);
-            m_playerParam->messageQueue->sendMessage(MSG_SAR_CHANGED,
-                                                     codecpar->sample_aspect_ratio.num,
-                                                     codecpar->sample_aspect_ratio.den);
+        if (m_playerParam->m_messageQueue) {
+            m_playerParam->m_messageQueue->sendMessage(MSG_VIDEO_SIZE_CHANGED,
+                                                       codecpar->width, codecpar->height);
+            m_playerParam->m_messageQueue->sendMessage(MSG_SAR_CHANGED,
+                                                       codecpar->sample_aspect_ratio.num,
+                                                       codecpar->sample_aspect_ratio.den);
         }
     }
 
-    if (m_playerParam->messageQueue) {
-        m_playerParam->messageQueue->sendMessage(MSG_PREPARED);
+    if (m_playerParam->m_messageQueue) {
+        m_playerParam->m_messageQueue->sendMessage(MSG_PREPARED);
     }
 
     if (videoDecoder != nullptr) {
         videoDecoder->start();
-        if (m_playerParam->messageQueue) {
-            m_playerParam->messageQueue->sendMessage(MSG_VIDEO_START);
+        if (m_playerParam->m_messageQueue) {
+            m_playerParam->m_messageQueue->sendMessage(MSG_VIDEO_START);
         }
     } else {
-        if (m_playerParam->syncType == AV_SYNC_VIDEO) {
-            m_playerParam->syncType = AV_SYNC_AUDIO;
+        if (m_playerParam->m_syncType == AV_SYNC_VIDEO) {
+            m_playerParam->m_syncType = AV_SYNC_AUDIO;
         }
     }
 
     if (audioDecoder != nullptr) {
         audioDecoder->start();
-        if (m_playerParam->messageQueue) {
-            m_playerParam->messageQueue->sendMessage(MSG_AUDIO_START);
+        if (m_playerParam->m_messageQueue) {
+            m_playerParam->m_messageQueue->sendMessage(MSG_AUDIO_START);
         }
     } else {
-        if (m_playerParam->syncType == AV_SYNC_AUDIO) {
-            m_playerParam->syncType = AV_SYNC_EXTERNAL;
+        if (m_playerParam->m_syncType == AV_SYNC_AUDIO) {
+            m_playerParam->m_syncType = AV_SYNC_EXTERNAL;
         }
     }
 
@@ -510,11 +502,11 @@ int MediaPlayer::readPackets() {
         if (ret < 0) {
             av_log(nullptr, AV_LOG_WARNING, "could not open audio device\n");
             // 如果音频设备打开失败，则调整时钟的同步类型
-            if (m_playerParam->syncType == AV_SYNC_AUDIO) {
+            if (m_playerParam->m_syncType == AV_SYNC_AUDIO) {
                 if (videoDecoder != nullptr) {
-                    m_playerParam->syncType = AV_SYNC_VIDEO;
+                    m_playerParam->m_syncType = AV_SYNC_VIDEO;
                 } else {
-                    m_playerParam->syncType = AV_SYNC_EXTERNAL;
+                    m_playerParam->m_syncType = AV_SYNC_EXTERNAL;
                 }
             }
         } else {
@@ -524,9 +516,9 @@ int MediaPlayer::readPackets() {
     }
 
     if (videoDecoder) {
-        if (m_playerParam->syncType == AV_SYNC_AUDIO) {
+        if (m_playerParam->m_syncType == AV_SYNC_AUDIO) {
             videoDecoder->setMasterClock(mediaSync->getAudioClock());
-        } else if (m_playerParam->syncType == AV_SYNC_VIDEO) {
+        } else if (m_playerParam->m_syncType == AV_SYNC_VIDEO) {
             videoDecoder->setMasterClock(mediaSync->getVideoClock());
         } else {
             videoDecoder->setMasterClock(mediaSync->getExternalClock());
@@ -537,18 +529,18 @@ int MediaPlayer::readPackets() {
     mediaSync->start(videoDecoder, audioDecoder);
 
     // 等待开始
-    if (m_playerParam->pauseRequest) {
+    if (m_playerParam->m_pauseReq) {
         // 请求开始
-        if (m_playerParam->messageQueue) {
-            m_playerParam->messageQueue->sendMessage(MSG_REQUEST_START);
+        if (m_playerParam->m_messageQueue) {
+            m_playerParam->m_messageQueue->sendMessage(MSG_REQUEST_START);
         }
-        while ((!m_playerParam->abortRequest) && m_playerParam->pauseRequest) {
+        while ((!m_playerParam->m_abortReq) && m_playerParam->m_pauseReq) {
             av_usleep(10 * 1000);
         }
     }
 
-    if (m_playerParam->messageQueue) {
-        m_playerParam->messageQueue->sendMessage(MSG_STARTED);
+    if (m_playerParam->m_messageQueue) {
+        m_playerParam->m_messageQueue->sendMessage(MSG_STARTED);
     }
 
     // 读数据包流程
@@ -562,14 +554,14 @@ int MediaPlayer::readPackets() {
     for (;;) {
 
         // 退出播放器
-        if (m_playerParam->abortRequest) {
+        if (m_playerParam->m_abortReq) {
             break;
         }
 
         // 是否暂停
-        if (m_playerParam->pauseRequest != lastPaused) {
-            lastPaused = m_playerParam->pauseRequest;
-            if (m_playerParam->pauseRequest) {
+        if (m_playerParam->m_pauseReq != lastPaused) {
+            lastPaused = m_playerParam->m_pauseReq;
+            if (m_playerParam->m_pauseReq) {
                 av_read_pause(ic);
             } else {
                 av_read_play(ic);
@@ -577,7 +569,7 @@ int MediaPlayer::readPackets() {
         }
 
 #if CONFIG_RTSP_DEMUXER || CONFIG_MMSH_PROTOCOL
-        if (m_playerParam->pauseRequest &&
+        if (m_playerParam->m_pauseReq &&
             (!strcmp(pFormatCtx->iformat->name, "rtsp") ||
              (pFormatCtx->pb && !strncmp(url, "mmsh:", 5)))) {
             av_usleep(10 * 1000);
@@ -585,14 +577,14 @@ int MediaPlayer::readPackets() {
         }
 #endif
         // 定位处理
-        if (m_playerParam->seekRequest) {
-            int64_t seek_target = m_playerParam->seekPos;
+        if (m_playerParam->m_seekRequest) {
+            int64_t seek_target = m_playerParam->m_seekPos;
             int64_t seek_min = INT64_MIN;
             int64_t seek_max = INT64_MAX;
             // 定位
-            m_playerParam->mMutex.lock();
-            ret = avformat_seek_file(ic, -1, seek_min, seek_target, seek_max, m_playerParam->seekFlags);
-            m_playerParam->mMutex.unlock();
+            m_playerParam->m_playMutex.lock();
+            ret = avformat_seek_file(ic, -1, seek_min, seek_target, seek_max, m_playerParam->m_seekFlag);
+            m_playerParam->m_playMutex.unlock();
             if (ret < 0) {
                 av_log(nullptr, AV_LOG_ERROR, "%s: error while seeking\n", m_playerParam->url);
             } else {
@@ -604,7 +596,7 @@ int MediaPlayer::readPackets() {
                 }
 
                 // 更新外部时钟值
-                if (m_playerParam->seekFlags & AVSEEK_FLAG_BYTE) {
+                if (m_playerParam->m_seekFlag & AVSEEK_FLAG_BYTE) {
                     mediaSync->updateExternalClock(NAN);
                 } else {
                     mediaSync->updateExternalClock(seek_target / (double)AV_TIME_BASE);
@@ -612,13 +604,13 @@ int MediaPlayer::readPackets() {
                 mediaSync->refreshVideoTimer();
             }
             attachmentRequest = 1;
-            m_playerParam->seekRequest = 0;
+            m_playerParam->m_seekRequest = 0;
             mCondition.signal();
             eof = 0;
             // 定位完成回调通知
-            if (m_playerParam->messageQueue) {
-                m_playerParam->messageQueue->sendMessage(MSG_SEEK_COMPLETE,
-                                                         (int) av_rescale(seek_target, 1000,
+            if (m_playerParam->m_messageQueue) {
+                m_playerParam->m_messageQueue->sendMessage(MSG_SEEK_COMPLETE,
+                                                           (int) av_rescale(seek_target, 1000,
                                                                           AV_TIME_BASE), ret);
             }
         }
@@ -662,11 +654,11 @@ int MediaPlayer::readPackets() {
             }
 
             // 如果不处于暂停状态，并且队列中所有数据都没有，则判断是否需要
-            if (!m_playerParam->pauseRequest && (!audioDecoder || audioDecoder->getPacketSize() == 0)
+            if (!m_playerParam->m_pauseReq && (!audioDecoder || audioDecoder->getPacketSize() == 0)
                 && (!videoDecoder || (videoDecoder->getPacketSize() == 0
                                       && videoDecoder->getFrameSize() == 0))) {
-                if (m_playerParam->loop) {
-                    seekTo(m_playerParam->startTime != AV_NOPTS_VALUE ? m_playerParam->startTime : 0);
+                if (m_playerParam->m_loop) {
+                    seekTo(m_playerParam->m_startTime != AV_NOPTS_VALUE ? m_playerParam->m_startTime : 0);
                 } else {
                     ret = AVERROR_EOF;
                     break;
@@ -683,11 +675,11 @@ int MediaPlayer::readPackets() {
         stream_start_time = ic->streams[pkt->stream_index]->start_time;
         pkt_ts = pkt->pts == AV_NOPTS_VALUE ? pkt->dts : pkt->pts;
         // 播放范围
-        playInRange = m_playerParam->duration == AV_NOPTS_VALUE
+        playInRange = m_playerParam->m_duration == AV_NOPTS_VALUE
                       || (pkt_ts - (stream_start_time != AV_NOPTS_VALUE ? stream_start_time : 0)) *
                          av_q2d(ic->streams[pkt->stream_index]->time_base)
-                         - (double)(m_playerParam->startTime != AV_NOPTS_VALUE ? m_playerParam->startTime : 0) / 1000000
-                         <= ((double)m_playerParam->duration / 1000000);
+                         - (double)(m_playerParam->m_startTime != AV_NOPTS_VALUE ? m_playerParam->m_startTime : 0) / 1000000
+                         <= ((double)m_playerParam->m_duration / 1000000);
         if (playInRange && audioDecoder && pkt->stream_index == m_playerParam->m_audioIndex) {
             audioDecoder->pushPacket(pkt);
         } else if (playInRange && videoDecoder && pkt->stream_index == m_playerParam->m_videoIndex) {
@@ -717,20 +709,20 @@ int MediaPlayer::readPackets() {
     mCondition.signal();
 
     if (ret < 0) {
-        if (m_playerParam->messageQueue) {
+        if (m_playerParam->m_messageQueue) {
             const char errorMsg[] = "error when reading packets!";
-            m_playerParam->messageQueue->sendMessage(MSG_ERROR, 0, 0,
-                                                     (void *) errorMsg,
+            m_playerParam->m_messageQueue->sendMessage(MSG_ERROR, 0, 0,
+                                                       (void *) errorMsg,
                                                      sizeof(errorMsg) / errorMsg[0]);
         }
     } else { // 播放完成
-        if (m_playerParam->messageQueue) {
-            m_playerParam->messageQueue->sendMessage(MSG_COMPLETED);
+        if (m_playerParam->m_messageQueue) {
+            m_playerParam->m_messageQueue->sendMessage(MSG_COMPLETED);
         }
     }
     // 停止消息队列
-    if (m_playerParam->messageQueue) {
-        m_playerParam->messageQueue->stop();
+    if (m_playerParam->m_messageQueue) {
+        m_playerParam->m_messageQueue->stop();
     }
 
     return ret;
@@ -767,11 +759,11 @@ int MediaPlayer::prepareDecoder(int streamIndex) {
         // 优先使用指定的解码器
         switch(avctx->codec_type) {
             case AVMEDIA_TYPE_AUDIO: {
-                forcedCodecName = m_playerParam->audioCodecName;
+                forcedCodecName = m_playerParam->m_audioCodecName;
                 break;
             }
             case AVMEDIA_TYPE_VIDEO: {
-                forcedCodecName = m_playerParam->videoCodecName;
+                forcedCodecName = m_playerParam->m_videoCodecName;
                 break;
             }
             default:
@@ -800,7 +792,7 @@ int MediaPlayer::prepareDecoder(int streamIndex) {
         }
         avctx->codec_id = codec->id;
 
-        if (m_playerParam->fast) {
+        if (m_playerParam->m_decodeFastFlag) {
             avctx->flags2 |= AV_CODEC_FLAG2_FAST;
         }
 #if FF_API_EMU_EDGE
@@ -851,10 +843,10 @@ int MediaPlayer::prepareDecoder(int streamIndex) {
 
     // 准备失败，则需要释放创建的解码上下文
     if (ret < 0) {
-        if (m_playerParam->messageQueue) {
+        if (m_playerParam->m_messageQueue) {
             const char errorMsg[] = "failed to open stream!";
-            m_playerParam->messageQueue->sendMessage(MSG_ERROR, 0, 0,
-                                                     (void *) errorMsg,
+            m_playerParam->m_messageQueue->sendMessage(MSG_ERROR, 0, 0,
+                                                       (void *) errorMsg,
                                                      sizeof(errorMsg) / errorMsg[0]);
         }
         avcodec_free_context(&avctx);
@@ -944,8 +936,8 @@ void MediaPlayer::pcmQueueCallback(uint8_t *stream, int len) {
         return;
     }
     audioResampler->pcmQueueCallback(stream, len);
-    if (m_playerParam->messageQueue && m_playerParam->syncType != AV_SYNC_VIDEO) {
-        m_playerParam->messageQueue->sendMessage(MSG_CURRENT_POSITION, getCurrentPosition(),
-                                                 m_playerParam->videoDuration);
+    if (m_playerParam->m_messageQueue && m_playerParam->m_syncType != AV_SYNC_VIDEO) {
+        m_playerParam->m_messageQueue->sendMessage(MSG_CURRENT_POSITION, getCurrentPosition(),
+                                                   m_playerParam->m_videoDuration);
     }
 }

@@ -123,11 +123,11 @@ int VideoDecoder::decodeVideo() {
 
     for (;;) {
 
-        if (m_abortReq || m_playerParam->abortRequest) {
+        if (m_abortReq || m_playerParam->m_abortReq) {
             ret = -1;
             break;
         }
-        if (m_playerParam->seekRequest) {
+        if (m_playerParam->m_seekRequest) {
             continue;
         }
         if (m_packetQueue->getPacket(packet) < 0) {
@@ -135,16 +135,16 @@ int VideoDecoder::decodeVideo() {
             break;
         }
 
-        m_playerParam->mMutex.lock();
+        m_playerParam->m_playMutex.lock();
         ret = avcodec_send_packet(getCodecContext(), packet);
         if (ret < 0 && ret != AVERROR(EAGAIN) && ret != AVERROR_EOF) {
             av_packet_unref(packet);
-            m_playerParam->mMutex.unlock();
+            m_playerParam->m_playMutex.unlock();
             continue;
         }
 
         ret = avcodec_receive_frame(getCodecContext(), frame);
-        m_playerParam->mMutex.unlock();
+        m_playerParam->m_playMutex.unlock();
         if (ret < 0 && ret != AVERROR_EOF) {
             av_frame_unref(frame);
             av_packet_unref(packet);
@@ -152,9 +152,9 @@ int VideoDecoder::decodeVideo() {
         } else {
             got_picture = 1;
 
-            if (m_playerParam->reorderVideoPts == -1) {
+            if (m_playerParam->m_reorderVideoPts == -1) {
                 frame->pts = av_frame_get_best_effort_timestamp(frame);
-            } else if (!m_playerParam->reorderVideoPts) {
+            } else if (!m_playerParam->m_reorderVideoPts) {
                 frame->pts = frame->pkt_dts;
             }
 
@@ -166,8 +166,8 @@ int VideoDecoder::decodeVideo() {
                 frame->sample_aspect_ratio = av_guess_sample_aspect_ratio(
                         m_playerParam->m_formatCtx, m_playerParam->m_videoStream, frame);
                 // drop m_frame
-                if (m_playerParam->frameDrop > 0 ||
-                    (m_playerParam->frameDrop > 0 && m_playerParam->syncType != AV_SYNC_VIDEO)) {
+                if (m_playerParam->m_frameDrop > 0 ||
+                    (m_playerParam->m_frameDrop > 0 && m_playerParam->m_syncType != AV_SYNC_VIDEO)) {
                     if (frame->pts != AV_NOPTS_VALUE) {
                         double diff = pts - m_masterClock->getClock();
                         if (!isnan(diff) && fabs(diff) < AV_NOSYNC_THRESHOLD &&

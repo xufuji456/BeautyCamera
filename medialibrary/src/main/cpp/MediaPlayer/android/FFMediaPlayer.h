@@ -46,7 +46,7 @@ enum media_info_type {
     // The player just pushed the very first video frame for rendering
     MEDIA_INFO_RENDERING_START = 3,
     // 7xx
-    // The video is too complex for the decoder: it can't decode frames fast
+    // The video is too complex for the decoder: it can't decode frames m_decodeFastFlag
     // enough. Possibly only the audio plays fine at this stage.
     MEDIA_INFO_VIDEO_TRACK_LAGGING = 700,
     // MediaPlayer is temporarily pausing playback internally in order to
@@ -91,7 +91,7 @@ public:
 
     void disconnect();
 
-    status_t setDataSource(const char *url, int64_t offset = 0);
+    status_t setDataSource(const char *url);
 
     status_t setVideoSurface(void* surface);
 
@@ -117,7 +117,7 @@ public:
 
     int getVideoHeight();
 
-    status_t seekTo(float msec);
+    status_t seekTo(long msec);
 
     long getCurrentPosition();
 

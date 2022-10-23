@@ -79,7 +79,7 @@ public:
     virtual ~PlayerParam();
 
 public:
-    Mutex mMutex;
+    Mutex m_playMutex;
 
     AVFormatContext *m_formatCtx;
 
@@ -91,38 +91,36 @@ public:
     AVCodecContext *m_videoCodecCtx;
     AVCodecContext *m_subtitleCodecCtx;
 
-    FFMessageQueue *messageQueue;
-    int64_t videoDuration;
+    FFMessageQueue *m_messageQueue;
+    int64_t m_videoDuration;
 
-    AVInputFormat *iformat;
     const char *url;
-    int64_t offset;
 
-    const char *audioCodecName;
-    const char *videoCodecName;
+    const char *m_audioCodecName;
+    const char *m_videoCodecName;
 
-    int abortRequest;
-    int pauseRequest;
-    AVSyncType syncType;
-    int64_t startTime;
-    int64_t duration;
-    int audioDisable;
-    int videoDisable;
-    int displayDisable;
+    int m_abortReq;
+    int m_pauseReq;
+    AVSyncType m_syncType;
+    int64_t m_startTime;
+    int64_t m_duration;
+    int m_audioDisable;
+    int m_videoDisable;
+    int m_displayDisable;
 
-    int fast;
-    int seekFlags;
-    int seekRequest;
-    int64_t seekPos;
-    float playbackRate;
+    int m_seekFlag;
+    int m_seekRequest;
+    int64_t m_seekPos;
+    float m_playbackRate;
+    int m_decodeFastFlag;
 
-    int loop;
-    int mute;
-    int frameDrop;
+    int m_loop;
+    int m_mute;
+    int m_frameDrop;
     int m_videoIndex;
     int m_audioIndex;
     int m_subtitleIndex;
-    int reorderVideoPts;
+    int m_reorderVideoPts;
 };
 
 #endif //PLAYERPARAM_H
