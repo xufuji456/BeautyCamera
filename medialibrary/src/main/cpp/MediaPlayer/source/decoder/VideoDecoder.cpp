@@ -1,9 +1,8 @@
 
 #include "VideoDecoder.h"
 
-VideoDecoder::VideoDecoder(AVFormatContext *formatCtx, PlayerParam *playerParam)
+VideoDecoder::VideoDecoder(PlayerParam *playerParam)
         : MediaDecoder(playerParam) {
-    this->pFormatCtx = formatCtx;
     m_decodeThread = nullptr;
     m_masterClock  = nullptr;
     m_frameQueue   = new FrameQueue(VIDEO_QUEUE_SIZE, 1);
@@ -19,7 +18,6 @@ VideoDecoder::VideoDecoder(AVFormatContext *formatCtx, PlayerParam *playerParam)
 
 VideoDecoder::~VideoDecoder() {
     m_decodeMutex.lock();
-    pFormatCtx = nullptr;
     if (m_frameQueue) {
         m_frameQueue->flush();
         delete m_frameQueue;
@@ -90,7 +88,7 @@ FrameQueue *VideoDecoder::getFrameQueue() {
 
 AVFormatContext *VideoDecoder::getFormatContext() {
     Mutex::Autolock lock(m_decodeMutex);
-    return pFormatCtx;
+    return m_playerParam->m_formatCtx;
 }
 
 AVCodecContext *VideoDecoder::getCodecContext() {
@@ -108,8 +106,8 @@ int VideoDecoder::decodeVideo() {
     AVFrame *frame = av_frame_alloc();
 
     AVRational timebase = m_playerParam->m_videoStream->time_base;
-    AVRational frame_rate = av_guess_frame_rate(pFormatCtx, m_playerParam->m_videoStream, nullptr);
-
+    AVRational frame_rate = av_guess_frame_rate(
+            m_playerParam->m_formatCtx, m_playerParam->m_videoStream, nullptr);
     if (!frame) {
         m_exit = true;
         m_decodeCond.signal();
@@ -165,7 +163,8 @@ int VideoDecoder::decodeVideo() {
                 if (frame->pts != AV_NOPTS_VALUE) {
                     pts = av_q2d(m_playerParam->m_videoStream->time_base) * (double)frame->pts;
                 }
-                frame->sample_aspect_ratio = av_guess_sample_aspect_ratio(pFormatCtx, m_playerParam->m_videoStream, frame);
+                frame->sample_aspect_ratio = av_guess_sample_aspect_ratio(
+                        m_playerParam->m_formatCtx, m_playerParam->m_videoStream, frame);
                 // drop frame
                 if (m_playerParam->frameDrop > 0 ||
                     (m_playerParam->frameDrop > 0 && m_playerParam->syncType != AV_SYNC_VIDEO)) {

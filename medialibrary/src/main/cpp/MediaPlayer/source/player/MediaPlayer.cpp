@@ -294,7 +294,7 @@ int MediaPlayer::isPlaying() {
 }
 
 static int avformat_interrupt_cb(void *ctx) {
-    PlayerParam *playerState = (PlayerParam *) ctx;
+    auto *playerState = (PlayerParam *) ctx;
     if (playerState->abortRequest) {
         return AVERROR_EOF;
     }
@@ -323,12 +323,11 @@ int MediaPlayer::readPackets() {
             ret = AVERROR(ENOMEM);
             break;
         }
+        playerState->m_formatCtx = pFormatCtx;
 
-        // 设置解复用中断回调
         pFormatCtx->interrupt_callback.callback = avformat_interrupt_cb;
         pFormatCtx->interrupt_callback.opaque = playerState;
 
-        // 处理文件偏移量
         if (playerState->offset > 0) {
             pFormatCtx->skip_initial_bytes = playerState->offset;
         }
@@ -833,7 +832,7 @@ int MediaPlayer::prepareDecoder(int streamIndex) {
                 playerState->m_videoIndex    = streamIndex;
                 playerState->m_videoStream   = pFormatCtx->streams[streamIndex];
                 playerState->m_videoCodecCtx = avctx;
-                videoDecoder = new VideoDecoder(pFormatCtx, playerState);
+                videoDecoder = new VideoDecoder(playerState);
                 attachmentRequest = 1;
                 break;
             }

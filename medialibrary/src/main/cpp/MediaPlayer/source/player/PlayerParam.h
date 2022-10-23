@@ -83,6 +83,8 @@ private:
 public:
     Mutex mMutex;                   // 操作互斥锁
 
+    AVFormatContext *m_formatCtx;
+
     AVStream *m_audioStream;
     AVStream *m_videoStream;
     AVStream *m_subtitleStream;

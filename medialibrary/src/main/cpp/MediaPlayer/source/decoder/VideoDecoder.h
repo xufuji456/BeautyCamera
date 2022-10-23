@@ -9,7 +9,6 @@
 class VideoDecoder : public MediaDecoder {
 
 private:
-    AVFormatContext *pFormatCtx;
 
     bool m_exit{};
     int m_rotate;
@@ -20,7 +19,7 @@ private:
     int decodeVideo();
 
 public:
-    VideoDecoder(AVFormatContext *formatCtx, PlayerParam *playerParam);
+    VideoDecoder(PlayerParam *playerParam);
 
     virtual ~VideoDecoder();
 
