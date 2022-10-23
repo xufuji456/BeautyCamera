@@ -1,28 +1,29 @@
 
 #include "AVSync.h"
 
-AVSync::AVSync(PlayerParam *playerState) {
-    this->playerState = playerState;
-    audioDecoder = nullptr;
-    videoDecoder = nullptr;
-    audioClock = new MediaClock();
-    videoClock = new MediaClock();
-    extClock = new MediaClock();
+AVSync::AVSync(PlayerParam *playerParam) {
+    this->m_playerParam = playerParam;
 
-    mExit = true;
-    abortRequest = true;
-    syncThread = nullptr;
+    m_audioClock    = new MediaClock();
+    m_videoClock    = new MediaClock();
+    m_externalClock = new MediaClock();
 
-    forceRefresh = 0;
-    maxFrameDuration = 10.0;
-    frameTimerRefresh = 1;
-    frameTimer = 0;
+    m_exit     = true;
+    m_abortReq = true;
 
+    m_frameTimer       = 0;
+    m_forceRefresh     = 0;
+    m_timerRefresh     = 1;
+    m_maxFrameDuration = 10.0;
 
-    videoRender = nullptr;
-    swsContext = nullptr;
-    mBuffer = nullptr;
-    pFrameARGB = nullptr;
+    m_buffer       = nullptr;
+    m_frameRGBA    = nullptr;
+    m_swsContext   = nullptr;
+    m_syncThread   = nullptr;
+    m_videoRender  = nullptr;
+    m_audioDecoder = nullptr;
+    m_videoDecoder = nullptr;
+
 }
 
 AVSync::~AVSync() {
@@ -31,100 +32,82 @@ AVSync::~AVSync() {
 
 void AVSync::reset() {
     stop();
-    playerState = nullptr;
-    videoDecoder = nullptr;
-    audioDecoder = nullptr;
-    videoRender = nullptr;
 
-    if (pFrameARGB) {
-        av_frame_free(&pFrameARGB);
-        av_free(pFrameARGB);
-        pFrameARGB = nullptr;
+    m_videoRender  = nullptr;
+    m_videoDecoder = nullptr;
+    m_audioDecoder = nullptr;
+    m_playerParam  = nullptr;
+
+    if (m_buffer) {
+        av_freep(&m_buffer);
+        m_buffer = nullptr;
     }
-    if (mBuffer) {
-        av_freep(&mBuffer);
-        mBuffer = nullptr;
+    if (m_frameRGBA) {
+        av_frame_free(&m_frameRGBA);
+        m_frameRGBA = nullptr;
     }
-    if (swsContext) {
-        sws_freeContext(swsContext);
-        swsContext = nullptr;
+    if (m_swsContext) {
+        sws_freeContext(m_swsContext);
+        m_swsContext = nullptr;
     }
 }
 
 void AVSync::start(VideoDecoder *videoDecoder, AudioDecoder *audioDecoder) {
-    mMutex.lock();
-    this->videoDecoder = videoDecoder;
-    this->audioDecoder = audioDecoder;
-    abortRequest = false;
-    mExit = false;
-    mCondition.signal();
-    mMutex.unlock();
-    if (videoDecoder && !syncThread) {
-        syncThread = new Thread(this);
-        syncThread->start();
-    }
-}
-
-void AVSync::stop() {
-    mMutex.lock();
-    abortRequest = true;
-    mCondition.signal();
-    mMutex.unlock();
-
-    mMutex.lock();
-    while (!mExit) {
-        mCondition.wait(mMutex);
-    }
-    mMutex.unlock();
-    if (syncThread) {
-        syncThread->join();
-        delete syncThread;
-        syncThread = nullptr;
+    m_syncMutex.lock();
+    this->m_videoDecoder = videoDecoder;
+    this->m_audioDecoder = audioDecoder;
+    m_exit     = false;
+    m_abortReq = false;
+    m_syncCond.signal();
+    m_syncMutex.unlock();
+    if (videoDecoder && !m_syncThread) {
+        m_syncThread = new Thread(this);
+        m_syncThread->start();
     }
 }
 
 void AVSync::setVideoRender(VideoRender *render) {
-    Mutex::Autolock lock(mMutex);
-    this->videoRender = render;
+    Mutex::Autolock lock(m_syncMutex);
+    this->m_videoRender = render;
 }
 
 void AVSync::setMaxDuration(double maxDuration) {
-    this->maxFrameDuration = maxDuration;
+    this->m_maxFrameDuration = maxDuration;
 }
 
 void AVSync::refreshVideoTimer() {
-    mMutex.lock();
-    this->frameTimerRefresh = 1;
-    mCondition.signal();
-    mMutex.unlock();
+    m_syncMutex.lock();
+    this->m_timerRefresh = 1;
+    m_syncCond.signal();
+    m_syncMutex.unlock();
 }
 
 void AVSync::updateAudioClock(double pts, double time) {
-    audioClock->setClock(pts, time);
-    extClock->syncToSlave(audioClock);
+    m_audioClock->setClock(pts, time);
+    m_externalClock->syncToSlave(m_audioClock);
 }
 
 double AVSync::getAudioDiffClock() {
-    return audioClock->getClock() - getMasterClock();
+    return m_audioClock->getClock() - getMasterClock();
 }
 
 void AVSync::updateExternalClock(double pts) {
-    extClock->setClock(pts);
+    m_externalClock->setClock(pts);
 }
 
 double AVSync::getMasterClock() {
     double val = 0;
-    switch (playerState->syncType) {
+    switch (m_playerParam->syncType) {
         case AV_SYNC_VIDEO: {
-            val = videoClock->getClock();
+            val = m_videoClock->getClock();
             break;
         }
         case AV_SYNC_AUDIO: {
-            val = audioClock->getClock();
+            val = m_audioClock->getClock();
             break;
         }
         case AV_SYNC_EXTERNAL: {
-            val = extClock->getClock();
+            val = m_externalClock->getClock();
             break;
         }
     }
@@ -132,85 +115,50 @@ double AVSync::getMasterClock() {
 }
 
 MediaClock* AVSync::getAudioClock() {
-    return audioClock;
+    return m_audioClock;
 }
 
 MediaClock *AVSync::getVideoClock() {
-    return videoClock;
+    return m_videoClock;
 }
 
 MediaClock *AVSync::getExternalClock() {
-    return extClock;
-}
-
-void AVSync::run() {
-    double remaining_time = 0.0;
-    while (true) {
-
-        if (abortRequest || playerState->abortRequest) {
-            if (videoRender != nullptr) {
-                videoRender->onDestroy();
-            }
-            break;
-        }
-
-        // 处于暂停状态，则睡眠一定的时间
-        if (playerState->pauseRequest) {
-            av_usleep((int64_t) (REFRESH_RATE * 1000000.0));
-        }
-
-        // 是否立马刷新
-        if (!playerState->pauseRequest || forceRefresh) {
-            refreshVideo(&remaining_time);
-        }
-        if (remaining_time <= 0) {
-            remaining_time = REFRESH_RATE;
-        }
-    }
-
-    mExit = true;
-    mCondition.signal();
+    return m_externalClock;
 }
 
 void AVSync::refreshVideo(double *remaining_time) {
     double time;
 
-    // 检查外部时钟
-    if (!playerState->pauseRequest &&
-        playerState->syncType == AV_SYNC_EXTERNAL) {
+    if (!m_playerParam->pauseRequest &&
+        m_playerParam->syncType == AV_SYNC_EXTERNAL) {
         checkExternalClockSpeed();
     }
 
     for (;;) {
 
-        if (playerState->abortRequest || !videoDecoder) {
+        if (m_playerParam->abortRequest || !m_videoDecoder) {
             break;
         }
 
-        // 判断是否存在帧队列是否存在数据
-        if (videoDecoder->getFrameSize() > 0) {
+        if (m_videoDecoder->getFrameSize() > 0) {
             double lastDuration, duration, delay;
             Frame *currentFrame, *lastFrame;
-            // 上一帧
-            lastFrame = videoDecoder->getFrameQueue()->lastFrame();
-            // 当前帧
-            currentFrame = videoDecoder->getFrameQueue()->currentFrame();
-            // 判断是否需要强制更新帧的时间
-            if (frameTimerRefresh) {
-                frameTimer = av_gettime_relative() / 1000000.0;
-                frameTimerRefresh = 0;
+            lastFrame = m_videoDecoder->getFrameQueue()->lastFrame();
+            currentFrame = m_videoDecoder->getFrameQueue()->currentFrame();
+
+            if (m_timerRefresh) {
+                m_frameTimer = av_gettime_relative() / 1000000.0;
+                m_timerRefresh = 0;
             }
 
-            // 如果处于暂停状态，则直接显示
-            if (playerState->abortRequest || playerState->pauseRequest) {
+            if (m_playerParam->abortRequest || m_playerParam->pauseRequest) {
                 break;
             }
-
-            // 计算上一次显示时长
+            // use last frame and current frame to calculate duration
             lastDuration = calculateDuration(lastFrame, currentFrame);
-            // 根据上一次显示的时长，计算延时
+
             delay = calculateDelay(lastDuration);
-            // 处理超过延时阈值的情况
+
             if (fabs(delay) > AV_SYNC_THRESHOLD_MAX) {
                 if (delay > 0) {
                     delay = AV_SYNC_THRESHOLD_MAX;
@@ -218,66 +166,60 @@ void AVSync::refreshVideo(double *remaining_time) {
                     delay = 0;
                 }
             }
-            // 获取当前时间
+
             time = av_gettime_relative() / 1000000.0;
-            if (isnan(frameTimer) || time < frameTimer) {
-                frameTimer = time;
+            if (isnan(m_frameTimer) || time < m_frameTimer) {
+                m_frameTimer = time;
             }
-            // 如果当前时间小于帧计时器的时间 + 延时时间，则表示还没到当前帧
-            if (time < frameTimer + delay) {
-                *remaining_time = FFMIN(frameTimer + delay - time, *remaining_time);
+            // video fast, just wait for rendering
+            if (time < m_frameTimer + delay) {
+                *remaining_time = FFMIN(m_frameTimer + delay - time, *remaining_time);
                 break;
             }
 
-            // 更新帧计时器
-            frameTimer += delay;
-            // 帧计时器落后当前时间超过了阈值，则用当前的时间作为帧计时器时间
-            if (delay > 0 && time - frameTimer > AV_SYNC_THRESHOLD_MAX) {
-                frameTimer = time;
+            // update frame timer
+            m_frameTimer += delay;
+            if (delay > 0 && time - m_frameTimer > AV_SYNC_THRESHOLD_MAX) {
+                m_frameTimer = time;
             }
 
-            // 更新视频时钟的pts
-            mMutex.lock();
+            // update pts of video clock
+            m_syncMutex.lock();
             if (!isnan(currentFrame->pts)) {
-                videoClock->setClock(currentFrame->pts);
-                extClock->syncToSlave(videoClock);
+                m_videoClock->setClock(currentFrame->pts);
+                m_externalClock->syncToSlave(m_videoClock);
             }
-            mMutex.unlock();
+            m_syncMutex.unlock();
 
-            // 如果队列中还剩余超过一帧的数据时，需要拿到下一帧，然后计算间隔，并判断是否需要进行舍帧操作
-            if (videoDecoder->getFrameSize() > 1) {
-                Frame *nextFrame = videoDecoder->getFrameQueue()->nextFrame();
+            if (m_videoDecoder->getFrameSize() > 1) {
+                Frame *nextFrame = m_videoDecoder->getFrameQueue()->nextFrame();
                 duration = calculateDuration(currentFrame, nextFrame);
-                // 如果不处于同步到视频状态，并且处于跳帧状态，则跳过当前帧
-                if ((time > frameTimer + duration)
-                    && (playerState->frameDrop > 0
-                        || (playerState->frameDrop && playerState->syncType != AV_SYNC_VIDEO))) {
-                    videoDecoder->getFrameQueue()->popFrame();
+
+                if ((time > m_frameTimer + duration)
+                    && (m_playerParam->frameDrop > 0
+                        || (m_playerParam->frameDrop && m_playerParam->syncType != AV_SYNC_VIDEO))) {
+                    m_videoDecoder->getFrameQueue()->popFrame();
                     continue;
                 }
             }
 
-            // 下一帧
-            videoDecoder->getFrameQueue()->popFrame();
-            forceRefresh = 1;
+            m_videoDecoder->getFrameQueue()->popFrame();
+            m_forceRefresh = 1;
         }
-
         break;
     }
 
-    // 回调当前时长
-    if (playerState->messageQueue && playerState->syncType == AV_SYNC_VIDEO) {
-        // 起始延时
-        int64_t start_time = videoDecoder->getFormatContext()->start_time;
+    if (m_playerParam->messageQueue && m_playerParam->syncType == AV_SYNC_VIDEO) {
+        int64_t start_time = m_videoDecoder->getFormatContext()->start_time;
         int64_t start_diff = 0;
         if (start_time > 0 && start_time != AV_NOPTS_VALUE) {
             start_diff = av_rescale(start_time, 1000, AV_TIME_BASE);
         }
-        // 计算主时钟的时间
+
         int64_t pos = 0;
         double clock = getMasterClock();
         if (isnan(clock)) {
-            pos = playerState->seekPos;
+            pos = m_playerParam->seekPos;
         } else {
             pos = (int64_t)(clock * 1000);
         }
@@ -285,46 +227,46 @@ void AVSync::refreshVideo(double *remaining_time) {
             pos = 0;
         }
         pos = (long) (pos - start_diff);
-        if (playerState->videoDuration < 0) {
+        if (m_playerParam->videoDuration < 0) {
             pos = 0;
         }
-        playerState->messageQueue->postMessage(MSG_CURRENT_POSITON, pos, playerState->videoDuration);
+        m_playerParam->messageQueue->postMessage(MSG_CURRENT_POSITON, pos, m_playerParam->videoDuration);
     }
 
-    // 显示画面
-    if (!playerState->displayDisable && forceRefresh && videoDecoder
-        && videoDecoder->getFrameQueue()->getShowIndex()) {
+    // refresh display
+    if (!m_playerParam->displayDisable && m_forceRefresh && m_videoDecoder
+        && m_videoDecoder->getFrameQueue()->getShowIndex()) {
         renderVideo();
     }
-    forceRefresh = 0;
+    m_forceRefresh = 0;
 }
 
 void AVSync::checkExternalClockSpeed() {
-    if (videoDecoder && videoDecoder->getPacketSize() <= EXTERNAL_CLOCK_MIN_FRAMES
-        || audioDecoder && audioDecoder->getPacketSize() <= EXTERNAL_CLOCK_MIN_FRAMES) {
-        extClock->setSpeed(FFMAX(EXTERNAL_CLOCK_SPEED_MIN,
-                                 extClock->getSpeed() - EXTERNAL_CLOCK_SPEED_STEP));
-    } else if ((!videoDecoder || videoDecoder->getPacketSize() > EXTERNAL_CLOCK_MAX_FRAMES)
-               && (!audioDecoder || audioDecoder->getPacketSize() > EXTERNAL_CLOCK_MAX_FRAMES)) {
-        extClock->setSpeed(FFMIN(EXTERNAL_CLOCK_SPEED_MAX,
-                                 extClock->getSpeed() + EXTERNAL_CLOCK_SPEED_STEP));
+    if (m_videoDecoder && m_videoDecoder->getPacketSize() <= EXTERNAL_CLOCK_MIN_FRAMES
+        || m_audioDecoder && m_audioDecoder->getPacketSize() <= EXTERNAL_CLOCK_MIN_FRAMES) {
+        m_externalClock->setSpeed(FFMAX(EXTERNAL_CLOCK_SPEED_MIN,
+                                        m_externalClock->getSpeed() - EXTERNAL_CLOCK_SPEED_STEP));
+    } else if ((!m_videoDecoder || m_videoDecoder->getPacketSize() > EXTERNAL_CLOCK_MAX_FRAMES)
+               && (!m_audioDecoder || m_audioDecoder->getPacketSize() > EXTERNAL_CLOCK_MAX_FRAMES)) {
+        m_externalClock->setSpeed(FFMIN(EXTERNAL_CLOCK_SPEED_MAX,
+                                        m_externalClock->getSpeed() + EXTERNAL_CLOCK_SPEED_STEP));
     } else {
-        double speed = extClock->getSpeed();
+        double speed = m_externalClock->getSpeed();
         if (speed != 1.0) {
-            extClock->setSpeed(speed + EXTERNAL_CLOCK_SPEED_STEP * (1.0 - speed) / fabs(1.0 - speed));
+            m_externalClock->setSpeed(speed + EXTERNAL_CLOCK_SPEED_STEP * (1.0 - speed) / fabs(1.0 - speed));
         }
     }
 }
 
 double AVSync::calculateDelay(double delay)  {
-    double sync_threshold, diff = 0;
-    // 如果不是同步到视频流，则需要计算延时时间
-    if (playerState->syncType != AV_SYNC_VIDEO) {
-        // 计算差值
-        diff = videoClock->getClock() - getMasterClock();
-        // 用差值与同步阈值计算延时
+    double diff = 0;
+    double sync_threshold = 0;
+
+    if (m_playerParam->syncType != AV_SYNC_VIDEO) {
+        // diff between video and master clock
+        diff = m_videoClock->getClock() - getMasterClock();
         sync_threshold = FFMAX(AV_SYNC_THRESHOLD_MIN, FFMIN(AV_SYNC_THRESHOLD_MAX, delay));
-        if (!isnan(diff) && fabs(diff) < maxFrameDuration) {
+        if (!isnan(diff) && fabs(diff) < m_maxFrameDuration) {
             if (diff <= -sync_threshold) {
                 delay = FFMAX(0, delay + diff);
             } else if (diff >= sync_threshold && delay > AV_SYNC_FRAMEDUP_THRESHOLD) {
@@ -335,14 +277,14 @@ double AVSync::calculateDelay(double delay)  {
         }
     }
 
-    av_log(nullptr, AV_LOG_TRACE, "video: delay=%0.3f A-V=%f\n", delay, -diff);
+    av_log(nullptr, AV_LOG_INFO, "video: delay=%0.3f A-V=%f\n", delay, -diff);
 
     return delay;
 }
 
 double AVSync::calculateDuration(Frame *vp, Frame *nextvp) {
     double duration = nextvp->pts - vp->pts;
-    if (isnan(duration) || duration <= 0 || duration > maxFrameDuration) {
+    if (isnan(duration) || duration <= 0 || duration > m_maxFrameDuration) {
         return vp->duration;
     } else {
         return duration;
@@ -350,34 +292,34 @@ double AVSync::calculateDuration(Frame *vp, Frame *nextvp) {
 }
 
 void AVSync::renderVideo() {
-    mMutex.lock();
-    if (!videoDecoder || !videoRender) {
-        mMutex.unlock();
+    m_syncMutex.lock();
+    if (!m_videoDecoder || !m_videoRender) {
+        m_syncMutex.unlock();
         return;
     }
-    Frame *vp = videoDecoder->getFrameQueue()->lastFrame();
+    Frame *vp = m_videoDecoder->getFrameQueue()->lastFrame();
     int ret = 0;
     if (!vp->uploaded) {
 
-        swsContext = sws_getCachedContext(swsContext,
-                                          vp->frame->width, vp->frame->height,
-                                          (AVPixelFormat) vp->frame->format,
-                                          vp->frame->width, vp->frame->height,
-                                          AV_PIX_FMT_RGBA, SWS_BILINEAR, nullptr, nullptr, nullptr);
-        if (!mBuffer) {
-            videoRender->onInit(vp->width, vp->height);
+        m_swsContext = sws_getCachedContext(m_swsContext,
+                                            vp->frame->width, vp->frame->height,
+                                            (AVPixelFormat) vp->frame->format,
+                                            vp->frame->width, vp->frame->height,
+                                            AV_PIX_FMT_RGBA, SWS_BILINEAR, nullptr, nullptr, nullptr);
+        if (!m_buffer) {
+            m_videoRender->onInit(vp->width, vp->height);
             int numBytes = av_image_get_buffer_size(AV_PIX_FMT_RGBA, vp->frame->width, vp->frame->height, 1);
-            mBuffer = (uint8_t *)av_malloc(numBytes * sizeof(uint8_t));
-            pFrameARGB = av_frame_alloc();
-            av_image_fill_arrays(pFrameARGB->data, pFrameARGB->linesize, mBuffer, AV_PIX_FMT_RGBA,
+            m_buffer = (uint8_t *)av_malloc(numBytes * sizeof(uint8_t));
+            m_frameRGBA = av_frame_alloc();
+            av_image_fill_arrays(m_frameRGBA->data, m_frameRGBA->linesize, m_buffer, AV_PIX_FMT_RGBA,
                                  vp->frame->width, vp->frame->height, 1);
         }
-        if (swsContext != nullptr) {
-            sws_scale(swsContext, (uint8_t const *const *) vp->frame->data,
+        if (m_swsContext != nullptr) {
+            sws_scale(m_swsContext, (uint8_t const *const *) vp->frame->data,
                       vp->frame->linesize, 0, vp->frame->height,
-                      pFrameARGB->data, pFrameARGB->linesize);
+                      m_frameRGBA->data, m_frameRGBA->linesize);
         }
-        ret = videoRender->onRender(pFrameARGB->data[0], pFrameARGB->linesize[0], vp->frame->height);
+        ret = m_videoRender->onRender(m_frameRGBA->data[0], m_frameRGBA->linesize[0], vp->frame->height);
         if (ret < 0) {
             return;
         }
@@ -385,5 +327,50 @@ void AVSync::renderVideo() {
         vp->uploaded = 1;
     }
 
-    mMutex.unlock();
+    m_syncMutex.unlock();
+}
+
+void AVSync::run() {
+    double remaining_time = 0.0;
+    while (true) {
+
+        if (m_abortReq || m_playerParam->abortRequest) {
+            if (m_videoRender != nullptr) {
+                m_videoRender->onDestroy();
+            }
+            break;
+        }
+
+        if (m_playerParam->pauseRequest) {
+            av_usleep((int64_t) (REFRESH_RATE * 1000000.0));
+        }
+
+        if (!m_playerParam->pauseRequest || m_forceRefresh) {
+            refreshVideo(&remaining_time);
+        }
+        if (remaining_time <= 0) {
+            remaining_time = REFRESH_RATE;
+        }
+    }
+
+    m_exit = true;
+    m_syncCond.signal();
+}
+
+void AVSync::stop() {
+    m_syncMutex.lock();
+    m_abortReq = true;
+    m_syncCond.signal();
+    m_syncMutex.unlock();
+
+    m_syncMutex.lock();
+    while (!m_exit) {
+        m_syncCond.wait(m_syncMutex);
+    }
+    m_syncMutex.unlock();
+    if (m_syncThread) {
+        m_syncThread->join();
+        delete m_syncThread;
+        m_syncThread = nullptr;
+    }
 }

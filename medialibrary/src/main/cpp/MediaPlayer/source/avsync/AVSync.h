@@ -6,51 +6,35 @@
 #include <player/PlayerParam.h>
 #include <decoder/VideoDecoder.h>
 #include <decoder/AudioDecoder.h>
-
 #include <render/VideoRender.h>
 
-/**
- * 视频同步器
- */
 class AVSync : public Runnable {
 
-public:
-    AVSync(PlayerParam *playerState);
+private:
 
-    virtual ~AVSync();
+    bool   m_exit;
+    bool   m_abortReq;
+    double m_frameTimer;
+    int    m_forceRefresh;
+    int    m_timerRefresh;
+    double m_maxFrameDuration;
 
-    void reset();
+    MediaClock *m_audioClock;
+    MediaClock *m_videoClock;
+    MediaClock *m_externalClock;
 
-    void start(VideoDecoder *videoDecoder, AudioDecoder *audioDecoder);
+    VideoDecoder *m_videoDecoder;
+    AudioDecoder *m_audioDecoder;
 
-    void stop();
+    Mutex m_syncMutex;
+    Condition m_syncCond;
+    Thread *m_syncThread;
+    VideoRender *m_videoRender;
+    PlayerParam *m_playerParam;
 
-    void setVideoRender(VideoRender *videoRender);
-
-    // 设置帧最大间隔
-    void setMaxDuration(double maxDuration);
-
-    // 更新视频帧的计时器
-    void refreshVideoTimer();
-
-    // 更新音频时钟
-    void updateAudioClock(double pts, double time);
-
-    // 获取音频时钟与主时钟的差值
-    double getAudioDiffClock();
-
-    // 更新外部时钟
-    void updateExternalClock(double pts);
-
-    double getMasterClock();
-
-    void run() override;
-
-    MediaClock *getAudioClock();
-
-    MediaClock *getVideoClock();
-
-    MediaClock *getExternalClock();
+    uint8_t *m_buffer;
+    AVFrame *m_frameRGBA;
+    SwsContext *m_swsContext;
 
 private:
     void refreshVideo(double *remaining_time);
@@ -63,32 +47,39 @@ private:
 
     void renderVideo();
 
-private:
-    PlayerParam *playerState;               // 播放器状态
-    bool abortRequest;                      // 停止
-    bool mExit;
+public:
+    AVSync(PlayerParam *playerParam);
 
-    MediaClock *audioClock;                 // 音频时钟
-    MediaClock *videoClock;                 // 视频时钟
-    MediaClock *extClock;                   // 外部时钟
+    virtual ~AVSync();
 
-    VideoDecoder *videoDecoder;             // 视频解码器
-    AudioDecoder *audioDecoder;             // 视频解码器
+    void reset();
 
-    Mutex mMutex;
-    Condition mCondition;
-    Thread *syncThread;                     // 同步线程
+    void start(VideoDecoder *videoDecoder, AudioDecoder *audioDecoder);
 
-    int forceRefresh;                       // 强制刷新标志
-    double maxFrameDuration;                // 最大帧延时
-    int frameTimerRefresh;                  // 刷新时钟
-    double frameTimer;                      // 视频时钟
+    void setVideoRender(VideoRender *videoRender);
 
-    VideoRender *videoRender;
+    void setMaxDuration(double maxDuration);
 
-    AVFrame *pFrameARGB;
-    uint8_t *mBuffer;
-    SwsContext *swsContext;
+    void refreshVideoTimer();
+
+    double getAudioDiffClock();
+
+    void updateAudioClock(double pts, double time);
+
+    void updateExternalClock(double pts);
+
+    double getMasterClock();
+
+    MediaClock *getAudioClock();
+
+    MediaClock *getVideoClock();
+
+    MediaClock *getExternalClock();
+
+    void run() override;
+
+    void stop();
+
 };
 
 #endif //AVSYNC_H
