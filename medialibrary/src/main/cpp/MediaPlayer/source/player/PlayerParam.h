@@ -8,6 +8,7 @@
 #include <Mutex.h>
 #include <Condition.h>
 #include <Thread.h>
+#include <message/FFMessageQueue.h>
 
 extern "C" {
 #include <libavcodec/avcodec.h>
@@ -20,7 +21,6 @@ extern "C" {
 #include <libavutil/imgutils.h>
 #include <libavutil/avstring.h>
 }
-#include <message/FFMessageQueue.h>
 
 #define VIDEO_QUEUE_SIZE 3
 #define SAMPLE_QUEUE_SIZE 9
@@ -58,10 +58,10 @@ extern "C" {
 #define SAMPLE_CORRECTION_PERCENT_MAX 10
 
 typedef enum {
-    AV_SYNC_AUDIO,      // 同步到音频时钟
-    AV_SYNC_VIDEO,      // 同步到视频时钟
-    AV_SYNC_EXTERNAL,   // 同步到外部时钟
-} SyncType;
+    AV_SYNC_AUDIO,
+    AV_SYNC_VIDEO,
+    AV_SYNC_EXTERNAL
+} AVSyncType;
 
 struct AVDictionary {
     int count;
@@ -70,18 +70,16 @@ struct AVDictionary {
 
 class PlayerParam {
 
+private:
+    void init();
+
 public:
     PlayerParam();
 
     virtual ~PlayerParam();
 
-    void reset();
-
-private:
-    void init();
-
 public:
-    Mutex mMutex;                   // 操作互斥锁
+    Mutex mMutex;
 
     AVFormatContext *m_formatCtx;
 
@@ -93,32 +91,30 @@ public:
     AVCodecContext *m_videoCodecCtx;
     AVCodecContext *m_subtitleCodecCtx;
 
-    FFMessageQueue *messageQueue;   // 播放器消息队列
-    int64_t videoDuration;          // 视频时长
+    FFMessageQueue *messageQueue;
+    int64_t videoDuration;
 
-    AVInputFormat *iformat;         // 指定文件封装格式，也就是解复用器
-    const char *url;                // 文件路径
-    int64_t offset;                 // 文件偏移量
+    AVInputFormat *iformat;
+    const char *url;
+    int64_t offset;
 
-    const char *audioCodecName;     // 指定音频解码器名称
-    const char *videoCodecName;     // 指定视频解码器名称
+    const char *audioCodecName;
+    const char *videoCodecName;
 
-    int abortRequest;               // 退出标志
-    int pauseRequest;               // 暂停标志
-    SyncType syncType;              // 同步类型
-    int64_t startTime;              // 播放起始位置
-    int64_t duration;               // 播放时长
-    int audioDisable;               // 是否禁止音频流
-    int videoDisable;               // 是否禁止视频流
-    int displayDisable;             // 是否禁止显示
+    int abortRequest;
+    int pauseRequest;
+    AVSyncType syncType;
+    int64_t startTime;
+    int64_t duration;
+    int audioDisable;
+    int videoDisable;
+    int displayDisable;
 
-    int fast;                       // 解码上下文的AV_CODEC_FLAG2_FAST标志
-
-    float playbackRate;             // 播放速度
-
-    int seekRequest;                // 定位请求
-    int seekFlags;                  // 定位标志
-    int64_t seekPos;                // 定位位置
+    int fast;
+    int seekFlags;
+    int seekRequest;
+    int64_t seekPos;
+    float playbackRate;
 
     int loop;
     int mute;

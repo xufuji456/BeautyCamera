@@ -1,6 +1,3 @@
-//
-// Created by cain on 2019/1/28.
-//
 
 #ifndef FF_MESSAGEQUEUE_H
 #define FF_MESSAGEQUEUE_H

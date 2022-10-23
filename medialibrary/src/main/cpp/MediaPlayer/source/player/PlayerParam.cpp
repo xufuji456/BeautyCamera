@@ -7,11 +7,13 @@
 
 PlayerParam::PlayerParam() {
     init();
-    reset();
 }
 
 PlayerParam::~PlayerParam() {
-    reset();
+    if (url) {
+        av_freep(&url);
+        url = nullptr;
+    }
     if (messageQueue) {
         messageQueue->release();
         delete messageQueue;
@@ -31,13 +33,7 @@ void PlayerParam::init() {
     m_videoCodecCtx    = nullptr;
     m_subtitleCodecCtx = nullptr;
     messageQueue       = new FFMessageQueue();
-}
 
-void PlayerParam::reset() {
-    if (url) {
-        av_freep(&url);
-        url = nullptr;
-    }
     loop = 1;
     mute = 0;
     fast = 0;
