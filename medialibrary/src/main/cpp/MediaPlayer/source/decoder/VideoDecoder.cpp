@@ -1,100 +1,100 @@
 
 #include "VideoDecoder.h"
 
-VideoDecoder::VideoDecoder(AVFormatContext *formatCtx, PlayerParam *playerState)
-        : MediaDecoder(playerState) {
+VideoDecoder::VideoDecoder(AVFormatContext *formatCtx, PlayerParam *playerParam)
+        : MediaDecoder(playerParam) {
     this->pFormatCtx = formatCtx;
-    decodeThread = nullptr;
-    masterClock  = nullptr;
-    frameQueue   = new FrameQueue(VIDEO_QUEUE_SIZE, 1);
+    m_decodeThread = nullptr;
+    m_masterClock  = nullptr;
+    m_frameQueue   = new FrameQueue(VIDEO_QUEUE_SIZE, 1);
 
-    AVDictionaryEntry *entry = av_dict_get(playerState->m_videoStream->metadata,
+    AVDictionaryEntry *entry = av_dict_get(playerParam->m_videoStream->metadata,
                                            "rotate", nullptr, AV_DICT_MATCH_CASE);
     if (entry && entry->value) {
-        mRotate = atoi(entry->value);
+        m_rotate = atoi(entry->value);
     } else {
-        mRotate = 0;
+        m_rotate = 0;
     }
 }
 
 VideoDecoder::~VideoDecoder() {
-    mMutex.lock();
+    m_decodeMutex.lock();
     pFormatCtx = nullptr;
-    if (frameQueue) {
-        frameQueue->flush();
-        delete frameQueue;
-        frameQueue = nullptr;
+    if (m_frameQueue) {
+        m_frameQueue->flush();
+        delete m_frameQueue;
+        m_frameQueue = nullptr;
     }
-    masterClock = nullptr;
-    mMutex.unlock();
+    m_masterClock = nullptr;
+    m_decodeMutex.unlock();
 }
 
 void VideoDecoder::setMasterClock(MediaClock *clock) {
-    Mutex::Autolock lock(mMutex);
-    this->masterClock = clock;
+    Mutex::Autolock lock(m_decodeMutex);
+    this->m_masterClock = clock;
 }
 
 void VideoDecoder::start() {
     MediaDecoder::start();
-    if (frameQueue) {
-        frameQueue->start();
+    if (m_frameQueue) {
+        m_frameQueue->start();
     }
-    if (!decodeThread) {
-        decodeThread = new Thread(this);
-        decodeThread->start();
-        mExit = false;
+    if (!m_decodeThread) {
+        m_decodeThread = new Thread(this);
+        m_decodeThread->start();
+        m_exit = false;
     }
 }
 
 void VideoDecoder::stop() {
     MediaDecoder::stop();
-    if (frameQueue) {
-        frameQueue->abort();
+    if (m_frameQueue) {
+        m_frameQueue->abort();
     }
-    mMutex.lock();
-    while (!mExit) {
-        mCondition.wait(mMutex);
+    m_decodeMutex.lock();
+    while (!m_exit) {
+        m_decodeCond.wait(m_decodeMutex);
     }
-    mMutex.unlock();
-    if (decodeThread) {
-        decodeThread->join();
-        delete decodeThread;
-        decodeThread = nullptr;
+    m_decodeMutex.unlock();
+    if (m_decodeThread) {
+        m_decodeThread->join();
+        delete m_decodeThread;
+        m_decodeThread = nullptr;
     }
 }
 
 void VideoDecoder::flush() {
-    mMutex.lock();
+    m_decodeMutex.lock();
     MediaDecoder::flush();
-    if (frameQueue) {
-        frameQueue->flush();
+    if (m_frameQueue) {
+        m_frameQueue->flush();
     }
-    mCondition.signal();
-    mMutex.unlock();
+    m_decodeCond.signal();
+    m_decodeMutex.unlock();
 }
 
 int VideoDecoder::getFrameSize() {
-    Mutex::Autolock lock(mMutex);
-    return frameQueue ? frameQueue->getFrameSize() : 0;
+    Mutex::Autolock lock(m_decodeMutex);
+    return m_frameQueue ? m_frameQueue->getFrameSize() : 0;
 }
 
 int VideoDecoder::getRotate() {
-    Mutex::Autolock lock(mMutex);
-    return mRotate;
+    Mutex::Autolock lock(m_decodeMutex);
+    return m_rotate;
 }
 
 FrameQueue *VideoDecoder::getFrameQueue() {
-    Mutex::Autolock lock(mMutex);
-    return frameQueue;
+    Mutex::Autolock lock(m_decodeMutex);
+    return m_frameQueue;
 }
 
 AVFormatContext *VideoDecoder::getFormatContext() {
-    Mutex::Autolock lock(mMutex);
+    Mutex::Autolock lock(m_decodeMutex);
     return pFormatCtx;
 }
 
 AVCodecContext *VideoDecoder::getCodecContext() {
-    return playerState->m_videoCodecCtx;
+    return m_playerParam->m_videoCodecCtx;
 }
 
 void VideoDecoder::run() {
@@ -107,46 +107,46 @@ int VideoDecoder::decodeVideo() {
     int got_picture;
     AVFrame *frame = av_frame_alloc();
 
-    AVRational timebase = playerState->m_videoStream->time_base;
-    AVRational frame_rate = av_guess_frame_rate(pFormatCtx, playerState->m_videoStream, nullptr);
+    AVRational timebase = m_playerParam->m_videoStream->time_base;
+    AVRational frame_rate = av_guess_frame_rate(pFormatCtx, m_playerParam->m_videoStream, nullptr);
 
     if (!frame) {
-        mExit = true;
-        mCondition.signal();
+        m_exit = true;
+        m_decodeCond.signal();
         return AVERROR(ENOMEM);
     }
 
     AVPacket *packet = av_packet_alloc();
     if (!packet) {
-        mExit = true;
-        mCondition.signal();
+        m_exit = true;
+        m_decodeCond.signal();
         return AVERROR(ENOMEM);
     }
 
     for (;;) {
 
-        if (abortRequest || playerState->abortRequest) {
+        if (m_abortReq || m_playerParam->abortRequest) {
             ret = -1;
             break;
         }
-        if (playerState->seekRequest) {
+        if (m_playerParam->seekRequest) {
             continue;
         }
-        if (packetQueue->getPacket(packet) < 0) {
+        if (m_packetQueue->getPacket(packet) < 0) {
             ret = -1;
             break;
         }
 
-        playerState->mMutex.lock();
+        m_playerParam->mMutex.lock();
         ret = avcodec_send_packet(getCodecContext(), packet);
         if (ret < 0 && ret != AVERROR(EAGAIN) && ret != AVERROR_EOF) {
             av_packet_unref(packet);
-            playerState->mMutex.unlock();
+            m_playerParam->mMutex.unlock();
             continue;
         }
 
         ret = avcodec_receive_frame(getCodecContext(), frame);
-        playerState->mMutex.unlock();
+        m_playerParam->mMutex.unlock();
         if (ret < 0 && ret != AVERROR_EOF) {
             av_frame_unref(frame);
             av_packet_unref(packet);
@@ -154,25 +154,25 @@ int VideoDecoder::decodeVideo() {
         } else {
             got_picture = 1;
 
-            if (playerState->reorderVideoPts == -1) {
+            if (m_playerParam->reorderVideoPts == -1) {
                 frame->pts = av_frame_get_best_effort_timestamp(frame);
-            } else if (!playerState->reorderVideoPts) {
+            } else if (!m_playerParam->reorderVideoPts) {
                 frame->pts = frame->pkt_dts;
             }
 
-            if (masterClock != nullptr) {
+            if (m_masterClock != nullptr) {
                 double pts = NAN;
                 if (frame->pts != AV_NOPTS_VALUE) {
-                    pts = av_q2d(playerState->m_videoStream->time_base) * (double)frame->pts;
+                    pts = av_q2d(m_playerParam->m_videoStream->time_base) * (double)frame->pts;
                 }
-                frame->sample_aspect_ratio = av_guess_sample_aspect_ratio(pFormatCtx, playerState->m_videoStream, frame);
+                frame->sample_aspect_ratio = av_guess_sample_aspect_ratio(pFormatCtx, m_playerParam->m_videoStream, frame);
                 // drop frame
-                if (playerState->frameDrop > 0 ||
-                    (playerState->frameDrop > 0 && playerState->syncType != AV_SYNC_VIDEO)) {
+                if (m_playerParam->frameDrop > 0 ||
+                    (m_playerParam->frameDrop > 0 && m_playerParam->syncType != AV_SYNC_VIDEO)) {
                     if (frame->pts != AV_NOPTS_VALUE) {
-                        double diff = pts - masterClock->getClock();
+                        double diff = pts - m_masterClock->getClock();
                         if (!isnan(diff) && fabs(diff) < AV_NOSYNC_THRESHOLD &&
-                            diff < 0 && packetQueue->getPacketSize() > 0) {
+                            diff < 0 && m_packetQueue->getPacketSize() > 0) {
                             av_frame_unref(frame);
                             got_picture = 0;
                         }
@@ -182,7 +182,7 @@ int VideoDecoder::decodeVideo() {
         }
 
         if (got_picture) {
-            if (!(vp = frameQueue->peekWritable())) {
+            if (!(vp = m_frameQueue->peekWritable())) {
                 ret = -1;
                 break;
             }
@@ -196,7 +196,7 @@ int VideoDecoder::decodeVideo() {
                            ? av_q2d((AVRational){frame_rate.den, frame_rate.num}) : 0;
             av_frame_move_ref(vp->frame, frame);
 
-            frameQueue->pushFrame();
+            m_frameQueue->pushFrame();
         }
 
         av_frame_unref(frame);
@@ -211,8 +211,8 @@ int VideoDecoder::decodeVideo() {
     av_free(packet);
     packet = nullptr;
 
-    mExit = true;
-    mCondition.signal();
+    m_exit = true;
+    m_decodeCond.signal();
 
     return ret;
 }

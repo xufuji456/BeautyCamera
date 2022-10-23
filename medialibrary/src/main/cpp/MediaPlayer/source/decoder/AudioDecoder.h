@@ -8,13 +8,13 @@
 class AudioDecoder : public MediaDecoder {
 
 private:
-    AVPacket *packet;
-    int64_t next_pts{};
-    bool packetPending;
-    AVRational next_pts_tb{};
+    bool m_pktPending;
+    AVPacket *m_packet;
+    int64_t m_next_pts{};
+    AVRational m_next_pts_tb{};
 
 public:
-    AudioDecoder(PlayerParam *playerState);
+    AudioDecoder(PlayerParam *playerParam);
 
     virtual ~AudioDecoder();
 

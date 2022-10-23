@@ -1,66 +1,64 @@
 
 #include "MediaDecoder.h"
 
-MediaDecoder::MediaDecoder(PlayerParam *playerState) {
-    packetQueue = new PacketQueue();
-    this->playerState  = playerState;
+MediaDecoder::MediaDecoder(PlayerParam *playerParam) {
+    m_packetQueue = new PacketQueue();
+    this->m_playerParam  = playerParam;
 }
 
 MediaDecoder::~MediaDecoder() {
-    mMutex.lock();
-    if (packetQueue) {
-        packetQueue->flush();
-        delete packetQueue;
-        packetQueue = nullptr;
+    m_decodeMutex.lock();
+    if (m_packetQueue) {
+        m_packetQueue->flush();
+        delete m_packetQueue;
+        m_packetQueue = nullptr;
     }
-    // TODO
-//    if (codecContext) {
-//        avcodec_close(codecContext);
-//        avcodec_free_context(&codecContext);
-//        codecContext = nullptr;
-//    }
-    playerState = nullptr;
-    mMutex.unlock();
+    m_decodeMutex.unlock();
 }
 
 void MediaDecoder::start() {
-    if (packetQueue) {
-        packetQueue->start();
+    if (m_packetQueue) {
+        m_packetQueue->start();
     }
-    mMutex.lock();
-    abortRequest = false;
-    mCondition.signal();
-    mMutex.unlock();
+    m_decodeMutex.lock();
+    m_abortReq = false;
+    m_decodeCond.signal();
+    m_decodeMutex.unlock();
 }
 
 void MediaDecoder::stop() {
-    mMutex.lock();
-    abortRequest = true;
-    mCondition.signal();
-    mMutex.unlock();
-    if (packetQueue) {
-        packetQueue->abort();
+    m_decodeMutex.lock();
+    m_abortReq = true;
+    AVCodecContext *codecContext = getCodecContext();
+    if (codecContext) {
+        avcodec_free_context(&codecContext);
+        codecContext = nullptr;
+    }
+    m_decodeCond.signal();
+    m_decodeMutex.unlock();
+    if (m_packetQueue) {
+        m_packetQueue->abort();
     }
 }
 
 void MediaDecoder::flush() {
-    if (packetQueue) {
-        packetQueue->flush();
+    if (m_packetQueue) {
+        m_packetQueue->flush();
     }
-    playerState->mMutex.lock();
+    m_playerParam->mMutex.lock();
     avcodec_flush_buffers(getCodecContext());
-    playerState->mMutex.unlock();
+    m_playerParam->mMutex.unlock();
 }
 
 int MediaDecoder::pushPacket(AVPacket *pkt) {
-    if (packetQueue) {
-        return packetQueue->pushPacket(pkt);
+    if (m_packetQueue) {
+        return m_packetQueue->pushPacket(pkt);
     }
     return 0;
 }
 
 int MediaDecoder::getPacketSize() {
-    return packetQueue ? packetQueue->getPacketSize() : 0;
+    return m_packetQueue ? m_packetQueue->getPacketSize() : 0;
 }
 
 AVCodecContext *MediaDecoder::getCodecContext() {
@@ -68,16 +66,16 @@ AVCodecContext *MediaDecoder::getCodecContext() {
 }
 
 int MediaDecoder::getMemorySize() {
-    return packetQueue ? packetQueue->getSize() : 0;
+    return m_packetQueue ? m_packetQueue->getSize() : 0;
 }
 
 int MediaDecoder::hasEnoughPackets(AVStream *stream) {
-    Mutex::Autolock lock(mMutex);
-    return (packetQueue == nullptr) || (packetQueue->isAbort())
+    Mutex::Autolock lock(m_decodeMutex);
+    return (m_packetQueue == nullptr) || (m_packetQueue->isAbort())
            || (stream->disposition & AV_DISPOSITION_ATTACHED_PIC)
-           || (packetQueue->getPacketSize() > MIN_FRAMES)
-              && (!packetQueue->getDuration()
-                  || av_q2d(stream->time_base) * (double)packetQueue->getDuration() > 1.0);
+           || (m_packetQueue->getPacketSize() > MIN_FRAMES)
+              && (!m_packetQueue->getDuration()
+                  || av_q2d(stream->time_base) * (double)m_packetQueue->getDuration() > 1.0);
 }
 
 void MediaDecoder::run() {

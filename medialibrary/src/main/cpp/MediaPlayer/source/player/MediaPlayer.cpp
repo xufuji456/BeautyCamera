@@ -576,7 +576,7 @@ int MediaPlayer::readPackets() {
         }
 
 #if CONFIG_RTSP_DEMUXER || CONFIG_MMSH_PROTOCOL
-        if (playerState->pauseRequest &&
+        if (m_playerParam->pauseRequest &&
             (!strcmp(pFormatCtx->iformat->name, "rtsp") ||
              (pFormatCtx->pb && !strncmp(url, "mmsh:", 5)))) {
             av_usleep(10 * 1000);

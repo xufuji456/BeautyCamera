@@ -10,15 +10,15 @@
 class MediaDecoder : public Runnable {
 
 protected:
-    Mutex mMutex;
-    Condition mCondition;
+    Mutex m_decodeMutex;
+    Condition m_decodeCond;
 
-    bool abortRequest{};
-    PlayerParam *playerState;
-    PacketQueue *packetQueue;
+    bool m_abortReq{};
+    PlayerParam *m_playerParam;
+    PacketQueue *m_packetQueue;
 
 public:
-    MediaDecoder(PlayerParam *playerState);
+    MediaDecoder(PlayerParam *playerParam);
 
     virtual ~MediaDecoder();
 

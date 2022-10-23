@@ -1,25 +1,25 @@
 
 #include "AudioDecoder.h"
 
-AudioDecoder::AudioDecoder(PlayerParam *playerState)
-        : MediaDecoder(playerState) {
-    packet = av_packet_alloc();
-    packetPending = false;
+AudioDecoder::AudioDecoder(PlayerParam *playerParam)
+        : MediaDecoder(playerParam) {
+    m_packet = av_packet_alloc();
+    m_pktPending = false;
 }
 
 AudioDecoder::~AudioDecoder() {
-    mMutex.lock();
-    packetPending = false;
-    if (packet) {
-        av_packet_free(&packet);
-        av_freep(&packet);
-        packet = nullptr;
+    m_decodeMutex.lock();
+    m_pktPending = false;
+    if (m_packet) {
+        av_packet_free(&m_packet);
+        av_freep(&m_packet);
+        m_packet = nullptr;
     }
-    mMutex.unlock();
+    m_decodeMutex.unlock();
 }
 
 AVCodecContext *AudioDecoder::getCodecContext() {
-    return playerState->m_audioCodecCtx;
+    return m_playerParam->m_audioCodecCtx;
 }
 
 int AudioDecoder::getAudioFrame(AVFrame *frame) {
@@ -32,42 +32,42 @@ int AudioDecoder::getAudioFrame(AVFrame *frame) {
     av_frame_unref(frame);
 
     do {
-        if (abortRequest) {
+        if (m_abortReq) {
             ret = -1;
             break;
         }
-        if (playerState->seekRequest) {
+        if (m_playerParam->seekRequest) {
             continue;
         }
 
         AVPacket pkt;
-        if (packetPending) {
-            av_packet_move_ref(&pkt, packet);
-            packetPending = false;
+        if (m_pktPending) {
+            av_packet_move_ref(&pkt, m_packet);
+            m_pktPending = false;
         } else {
-            if (packetQueue->getPacket(&pkt) < 0) {
+            if (m_packetQueue->getPacket(&pkt) < 0) {
                 ret = -1;
                 break;
             }
         }
 
-        playerState->mMutex.lock();
+        m_playerParam->mMutex.lock();
         ret = avcodec_send_packet(getCodecContext(), &pkt);
         if (ret < 0) {
             if (ret == AVERROR(EAGAIN)) {
-                av_packet_move_ref(packet, &pkt);
-                packetPending = true;
+                av_packet_move_ref(m_packet, &pkt);
+                m_pktPending = true;
             } else {
                 av_packet_unref(&pkt);
-                packetPending = false;
+                m_pktPending = false;
             }
-            playerState->mMutex.unlock();
+            m_playerParam->mMutex.unlock();
             continue;
         }
 
         ret = avcodec_receive_frame(getCodecContext(), frame);
-        playerState->mMutex.unlock();
-        av_packet_unref(packet);
+        m_playerParam->mMutex.unlock();
+        av_packet_unref(m_packet);
         if (ret < 0) {
             av_frame_unref(frame);
             got_frame = 0;
@@ -78,12 +78,12 @@ int AudioDecoder::getAudioFrame(AVFrame *frame) {
             AVRational tb = (AVRational){1, frame->sample_rate};
             if (frame->pts != AV_NOPTS_VALUE) {
                 frame->pts = av_rescale_q(frame->pts, av_codec_get_pkt_timebase(getCodecContext()), tb);
-            } else if (next_pts != AV_NOPTS_VALUE) {
-                frame->pts = av_rescale_q(next_pts, next_pts_tb, tb);
+            } else if (m_next_pts != AV_NOPTS_VALUE) {
+                frame->pts = av_rescale_q(m_next_pts, m_next_pts_tb, tb);
             }
             if (frame->pts != AV_NOPTS_VALUE) {
-                next_pts = frame->pts + frame->nb_samples;
-                next_pts_tb = tb;
+                m_next_pts = frame->pts + frame->nb_samples;
+                m_next_pts_tb = tb;
             }
         }
     } while (!got_frame);

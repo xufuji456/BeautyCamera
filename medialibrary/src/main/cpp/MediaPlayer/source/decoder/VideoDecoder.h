@@ -10,17 +10,17 @@ class VideoDecoder : public MediaDecoder {
 
 private:
     AVFormatContext *pFormatCtx;
-    FrameQueue *frameQueue;
 
-    bool mExit{};
-    int mRotate;
-    Thread *decodeThread;
-    MediaClock *masterClock;
+    bool m_exit{};
+    int m_rotate;
+    Thread *m_decodeThread;
+    FrameQueue *m_frameQueue;
+    MediaClock *m_masterClock;
 
     int decodeVideo();
 
 public:
-    VideoDecoder(AVFormatContext *formatCtx, PlayerParam *playerState);
+    VideoDecoder(AVFormatContext *formatCtx, PlayerParam *playerParam);
 
     virtual ~VideoDecoder();
 
