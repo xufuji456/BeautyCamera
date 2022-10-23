@@ -86,13 +86,12 @@ private:
     Condition mCondition;
     Thread *readThread;
 
-    PlayerParam *playerState;
+    PlayerParam *m_playerParam;
 
     AudioDecoder *audioDecoder;
     VideoDecoder *videoDecoder;
     bool mExit;
 
-    AVFormatContext *pFormatCtx;
     int64_t mDuration;
     int lastPaused;
     int eof;
