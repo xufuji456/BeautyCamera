@@ -141,7 +141,7 @@ status_t MediaPlayer::prepareAsync() {
     }
     // 发送消息请求准备
     if (m_playerParam->messageQueue) {
-        m_playerParam->messageQueue->postMessage(MSG_REQUEST_PREPARE);
+        m_playerParam->messageQueue->sendMessage(MSG_REQUEST_PREPARE);
     }
     return NO_ERROR;
 }
@@ -300,7 +300,7 @@ static int avformat_interrupt_cb(void *ctx) {
     return 0;
 }
 
-AVMessageQueue *MediaPlayer::getMessageQueue() {
+FFMessageQueue *MediaPlayer::getMessageQueue() {
     Mutex::Autolock lock(mMutex);
     return m_playerParam->messageQueue;
 }
@@ -342,7 +342,7 @@ int MediaPlayer::readPackets() {
 
         // 打开文件回调
         if (m_playerParam->messageQueue) {
-            m_playerParam->messageQueue->postMessage(MSG_OPEN_INPUT);
+            m_playerParam->messageQueue->sendMessage(MSG_OPEN_INPUT);
         }
 
         av_format_inject_global_side_data(ic);
@@ -359,7 +359,7 @@ int MediaPlayer::readPackets() {
 
         // 查找媒体流信息回调
         if (m_playerParam->messageQueue) {
-            m_playerParam->messageQueue->postMessage(MSG_FIND_STREAM_INFO);
+            m_playerParam->messageQueue->sendMessage(MSG_FIND_STREAM_INFO);
         }
 
         if (ic->duration != AV_NOPTS_VALUE) {
@@ -447,7 +447,7 @@ int MediaPlayer::readPackets() {
 
         // 准备解码器消息回调
         if (m_playerParam->messageQueue) {
-            m_playerParam->messageQueue->postMessage(MSG_PREPARE_DECODER);
+            m_playerParam->messageQueue->sendMessage(MSG_PREPARE_DECODER);
         }
 
     } while (false);
@@ -459,8 +459,9 @@ int MediaPlayer::readPackets() {
         mCondition.signal();
         if (m_playerParam->messageQueue) {
             const char errorMsg[] = "prepare decoder failed!";
-            m_playerParam->messageQueue->postMessage(MSG_ERROR, 0, 0,
-                                                     (void *)errorMsg, sizeof(errorMsg) / errorMsg[0]);
+            m_playerParam->messageQueue->sendMessage(MSG_ERROR, 0, 0,
+                                                     (void *) errorMsg,
+                                                     sizeof(errorMsg) / errorMsg[0]);
         }
         return -1;
     }
@@ -468,21 +469,22 @@ int MediaPlayer::readPackets() {
     if (videoDecoder) {
         AVCodecParameters *codecpar = m_playerParam->m_videoStream->codecpar;
         if (m_playerParam->messageQueue) {
-            m_playerParam->messageQueue->postMessage(MSG_VIDEO_SIZE_CHANGED,
+            m_playerParam->messageQueue->sendMessage(MSG_VIDEO_SIZE_CHANGED,
                                                      codecpar->width, codecpar->height);
-            m_playerParam->messageQueue->postMessage(MSG_SAR_CHANGED, codecpar->sample_aspect_ratio.num,
+            m_playerParam->messageQueue->sendMessage(MSG_SAR_CHANGED,
+                                                     codecpar->sample_aspect_ratio.num,
                                                      codecpar->sample_aspect_ratio.den);
         }
     }
 
     if (m_playerParam->messageQueue) {
-        m_playerParam->messageQueue->postMessage(MSG_PREPARED);
+        m_playerParam->messageQueue->sendMessage(MSG_PREPARED);
     }
 
     if (videoDecoder != nullptr) {
         videoDecoder->start();
         if (m_playerParam->messageQueue) {
-            m_playerParam->messageQueue->postMessage(MSG_VIDEO_START);
+            m_playerParam->messageQueue->sendMessage(MSG_VIDEO_START);
         }
     } else {
         if (m_playerParam->syncType == AV_SYNC_VIDEO) {
@@ -493,7 +495,7 @@ int MediaPlayer::readPackets() {
     if (audioDecoder != nullptr) {
         audioDecoder->start();
         if (m_playerParam->messageQueue) {
-            m_playerParam->messageQueue->postMessage(MSG_AUDIO_START);
+            m_playerParam->messageQueue->sendMessage(MSG_AUDIO_START);
         }
     } else {
         if (m_playerParam->syncType == AV_SYNC_AUDIO) {
@@ -538,7 +540,7 @@ int MediaPlayer::readPackets() {
     if (m_playerParam->pauseRequest) {
         // 请求开始
         if (m_playerParam->messageQueue) {
-            m_playerParam->messageQueue->postMessage(MSG_REQUEST_START);
+            m_playerParam->messageQueue->sendMessage(MSG_REQUEST_START);
         }
         while ((!m_playerParam->abortRequest) && m_playerParam->pauseRequest) {
             av_usleep(10 * 1000);
@@ -546,7 +548,7 @@ int MediaPlayer::readPackets() {
     }
 
     if (m_playerParam->messageQueue) {
-        m_playerParam->messageQueue->postMessage(MSG_STARTED);
+        m_playerParam->messageQueue->sendMessage(MSG_STARTED);
     }
 
     // 读数据包流程
@@ -615,8 +617,9 @@ int MediaPlayer::readPackets() {
             eof = 0;
             // 定位完成回调通知
             if (m_playerParam->messageQueue) {
-                m_playerParam->messageQueue->postMessage(MSG_SEEK_COMPLETE,
-                                                         (int)av_rescale(seek_target, 1000, AV_TIME_BASE), ret);
+                m_playerParam->messageQueue->sendMessage(MSG_SEEK_COMPLETE,
+                                                         (int) av_rescale(seek_target, 1000,
+                                                                          AV_TIME_BASE), ret);
             }
         }
 
@@ -716,12 +719,13 @@ int MediaPlayer::readPackets() {
     if (ret < 0) {
         if (m_playerParam->messageQueue) {
             const char errorMsg[] = "error when reading packets!";
-            m_playerParam->messageQueue->postMessage(MSG_ERROR, 0, 0,
-                                                     (void *)errorMsg, sizeof(errorMsg) / errorMsg[0]);
+            m_playerParam->messageQueue->sendMessage(MSG_ERROR, 0, 0,
+                                                     (void *) errorMsg,
+                                                     sizeof(errorMsg) / errorMsg[0]);
         }
     } else { // 播放完成
         if (m_playerParam->messageQueue) {
-            m_playerParam->messageQueue->postMessage(MSG_COMPLETED);
+            m_playerParam->messageQueue->sendMessage(MSG_COMPLETED);
         }
     }
     // 停止消息队列
@@ -849,8 +853,9 @@ int MediaPlayer::prepareDecoder(int streamIndex) {
     if (ret < 0) {
         if (m_playerParam->messageQueue) {
             const char errorMsg[] = "failed to open stream!";
-            m_playerParam->messageQueue->postMessage(MSG_ERROR, 0, 0,
-                                                     (void *)errorMsg, sizeof(errorMsg) / errorMsg[0]);
+            m_playerParam->messageQueue->sendMessage(MSG_ERROR, 0, 0,
+                                                     (void *) errorMsg,
+                                                     sizeof(errorMsg) / errorMsg[0]);
         }
         avcodec_free_context(&avctx);
     }
@@ -940,6 +945,7 @@ void MediaPlayer::pcmQueueCallback(uint8_t *stream, int len) {
     }
     audioResampler->pcmQueueCallback(stream, len);
     if (m_playerParam->messageQueue && m_playerParam->syncType != AV_SYNC_VIDEO) {
-        m_playerParam->messageQueue->postMessage(MSG_CURRENT_POSITON, getCurrentPosition(), m_playerParam->videoDuration);
+        m_playerParam->messageQueue->sendMessage(MSG_CURRENT_POSITION, getCurrentPosition(),
+                                                 m_playerParam->videoDuration);
     }
 }

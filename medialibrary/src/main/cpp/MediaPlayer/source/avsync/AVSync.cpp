@@ -230,7 +230,8 @@ void AVSync::refreshVideo(double *remaining_time) {
         if (m_playerParam->videoDuration < 0) {
             pos = 0;
         }
-        m_playerParam->messageQueue->postMessage(MSG_CURRENT_POSITON, pos, m_playerParam->videoDuration);
+        m_playerParam->messageQueue->sendMessage(MSG_CURRENT_POSITION, pos,
+                                                 m_playerParam->videoDuration);
     }
 
     // refresh display

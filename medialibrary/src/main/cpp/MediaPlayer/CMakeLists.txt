@@ -26,7 +26,7 @@ add_library( media_player
              source/avsync/MediaClock.cpp
              source/avsync/AVSync.cpp
 
-             source/player/AVMessageQueue.cpp
+        source/message/FFMessageQueue.cpp
              source/player/MediaPlayer.cpp
              source/player/PlayerParam.cpp
 

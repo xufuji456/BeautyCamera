@@ -1,11 +1,6 @@
-//
-// Created by cain on 2019/1/28.
-//
 
-#ifndef PLAYERMESSAGE_H
-#define PLAYERMESSAGE_H
-
-// Message what
+#ifndef MESSAGE_DEFINE_H
+#define MESSAGE_DEFINE_H
 
 #define MSG_FLUSH                       0x00    // 默认
 #define MSG_ERROR                       0x10    // 出错回调
@@ -19,9 +14,9 @@
 #define MSG_VIDEO_SIZE_CHANGED          0x53    // 视频大小变化
 #define MSG_SAR_CHANGED                 0x54    // 长宽比变化
 #define MSG_AUDIO_START                 0x55    // 开始音频解码
-#define MSG_AUDIO_RENDERING_START       0x56    // 音频渲染开始(播放开始)
+#define MSG_AUDIO_RENDERING_START       0x56    // 音频渲染开始
 #define MSG_VIDEO_START                 0x57    // 开始视频解码
-#define MSG_VIDEO_RENDERING_START       0x58    // 视频渲染开始(渲染开始)
+#define MSG_VIDEO_RENDERING_START       0x58    // 视频渲染开始
 #define MSG_VIDEO_ROTATION_CHANGED      0x59    // 旋转角度变化
 
 #define MSG_BUFFERING_START             0x60    // 缓冲开始
@@ -38,6 +33,6 @@
 #define MSG_REQUEST_PAUSE               0x202   // 请求暂停
 #define MSG_REQUEST_SEEK                0x203   // 请求定位
 
-#define MSG_CURRENT_POSITON             0x300   // 当前时钟
+#define MSG_CURRENT_POSITION            0x300   // 当前时钟
 
-#endif //PLAYERMESSAGE_H
+#endif //MESSAGE_DEFINE_H

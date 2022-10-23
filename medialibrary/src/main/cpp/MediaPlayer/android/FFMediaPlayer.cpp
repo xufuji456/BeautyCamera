@@ -2,7 +2,7 @@
 // Created by cain on 2019/2/1.
 //
 
-#include <player/AVMessageQueue.h>
+#include <message/FFMessageQueue.h>
 #include "FFMediaPlayer.h"
 
 FFMediaPlayer::FFMediaPlayer() {
@@ -176,7 +176,7 @@ status_t FFMediaPlayer::seekTo(float msec) {
     if (mediaPlayer != nullptr) {
         // if in seeking state, put seek message in queue, to process after preview seeking.
         if (mSeeking) {
-            mediaPlayer->getMessageQueue()->postMessage(MSG_REQUEST_SEEK, msec);
+            mediaPlayer->getMessageQueue()->sendMessage(MSG_REQUEST_SEEK, msec);
         } else {
             mediaPlayer->seekTo(msec);
             mSeekingPosition = (long) msec;
@@ -234,7 +234,7 @@ void FFMediaPlayer::setRate(float speed) {
 
 void FFMediaPlayer::notify(int msg, int ext1, int ext2, void *obj, int len) {
     if (mediaPlayer != nullptr) {
-        mediaPlayer->getMessageQueue()->postMessage(msg, ext1, ext2, obj, len);
+        mediaPlayer->getMessageQueue()->sendMessage(msg, ext1, ext2, obj, len);
     }
 }
 
@@ -259,7 +259,7 @@ void FFMediaPlayer::run() {
             continue;
         }
 
-        AVMessage msg;
+        FFMessage msg;
         retval = mediaPlayer->getMessageQueue()->getMessage(&msg);
         if (retval < 0) {
             ALOGE("getMessage error");
@@ -423,7 +423,7 @@ void FFMediaPlayer::run() {
                 break;
             }
 
-            case MSG_CURRENT_POSITON: {
+            case MSG_CURRENT_POSITION: {
                 postEvent(MEDIA_CURRENT, msg.arg1, msg.arg2);
                 break;
             }
@@ -433,6 +433,6 @@ void FFMediaPlayer::run() {
                 break;
             }
         }
-        message_free_resouce(&msg);
+        message_free_ptr(&msg);
     }
 }

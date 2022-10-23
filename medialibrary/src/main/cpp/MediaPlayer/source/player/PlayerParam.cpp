@@ -30,7 +30,7 @@ void PlayerParam::init() {
     m_audioCodecCtx    = nullptr;
     m_videoCodecCtx    = nullptr;
     m_subtitleCodecCtx = nullptr;
-    messageQueue       = new AVMessageQueue();
+    messageQueue       = new FFMessageQueue();
 }
 
 void PlayerParam::reset() {

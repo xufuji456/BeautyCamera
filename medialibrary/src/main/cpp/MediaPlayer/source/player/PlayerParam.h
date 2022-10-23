@@ -20,7 +20,7 @@ extern "C" {
 #include <libavutil/imgutils.h>
 #include <libavutil/avstring.h>
 }
-#include <player/AVMessageQueue.h>
+#include <message/FFMessageQueue.h>
 
 #define VIDEO_QUEUE_SIZE 3
 #define SAMPLE_QUEUE_SIZE 9
@@ -93,7 +93,7 @@ public:
     AVCodecContext *m_videoCodecCtx;
     AVCodecContext *m_subtitleCodecCtx;
 
-    AVMessageQueue *messageQueue;   // 播放器消息队列
+    FFMessageQueue *messageQueue;   // 播放器消息队列
     int64_t videoDuration;          // 视频时长
 
     AVInputFormat *iformat;         // 指定文件封装格式，也就是解复用器

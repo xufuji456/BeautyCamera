@@ -64,7 +64,7 @@ public:
 
     int isPlaying();
 
-    AVMessageQueue *getMessageQueue();
+    FFMessageQueue *getMessageQueue();
 
     void pcmQueueCallback(uint8_t *stream, int len);
 
