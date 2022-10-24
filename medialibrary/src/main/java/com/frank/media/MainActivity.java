@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -64,6 +65,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
             requestPermissions(permissions, 123);
         }
 
+        // 保持屏幕常亮
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         initView();
     }
 
@@ -157,7 +160,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private final IMediaPlayer.OnRenderFirstFrameListener renderFirstFrameListener = new IMediaPlayer.OnRenderFirstFrameListener() {
         @Override
         public void onRenderFirstFrame(IMediaPlayer mp, int video, int audio) {
-            Log.e("FFMediaPlayer", "onRenderFirstFrame, video=" + video + ", audio=" + audio);
+            Log.i("FFMediaPlayer", "onRenderFirstFrame, video=" + video + ", audio=" + audio);
             if (video == 1 || audio == 1) {
                 long playProgress = videoPlayer.getDuration();
                 txtDuration.setText(TimeUtil.getVideoTime(playProgress));

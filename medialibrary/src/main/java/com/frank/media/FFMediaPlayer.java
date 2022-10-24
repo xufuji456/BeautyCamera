@@ -6,9 +6,6 @@ import android.os.Message;
 import androidx.annotation.NonNull;
 import android.util.Log;
 import android.view.Surface;
-import android.view.SurfaceHolder;
-
-import com.frank.media.annotations.AccessedByNative;
 
 import java.io.FileDescriptor;
 import java.io.IOException;
@@ -25,13 +22,8 @@ public class FFMediaPlayer implements IMediaPlayer {
 
     private static final String TAG = FFMediaPlayer.class.getSimpleName();
 
-    @AccessedByNative
     private long mNativeContext;
-    @AccessedByNative
-    private int mNativeSurfaceTexture; // nothing
-    @AccessedByNative
-    private int mListenerContext;   // nothing
-    private SurfaceHolder mSurfaceHolder;
+
     private final EventHandler mEventHandler;
 
     private static native void native_init();
@@ -160,9 +152,7 @@ public class FFMediaPlayer implements IMediaPlayer {
 
     @Override
     public void setScreenOnWhilePlaying(boolean screenOn) {
-        if (mSurfaceHolder != null) {
-            mSurfaceHolder.setKeepScreenOn(screenOn);
-        }
+
     }
 
     @Override
@@ -269,13 +259,15 @@ public class FFMediaPlayer implements IMediaPlayer {
 
             switch (msg.what) {
                 case MEDIA_PREPARED: {
-                    if (mOnPreparedListener != null)
+                    if (mOnPreparedListener != null) {
                         mOnPreparedListener.onPrepared(mMediaPlayer);
+                    }
                     return;
                 }
                 case MEDIA_RENDER_FIRST_FRAME: {
-                    if (mOnRenderFirstFrameListener != null)
+                    if (mOnRenderFirstFrameListener != null) {
                         mOnRenderFirstFrameListener.onRenderFirstFrame(mMediaPlayer, msg.arg1, msg.arg2);
+                    }
                     return;
                 }
                 case MEDIA_PLAYBACK_COMPLETE: {
@@ -294,6 +286,13 @@ public class FFMediaPlayer implements IMediaPlayer {
                         mOnCompletionListener.onCompletion(mMediaPlayer);
                     }
                     return;
+                }
+                case MEDIA_STARTED: {
+                    Log.d(TAG, "on started");
+                    return;
+                }
+                case MEDIA_VIDEO_SIZE_CHANGED: {
+                    Log.d(TAG, "video size changed: width=" + msg.arg1 + ", height=" + msg.arg2);
                 }
                 default: {
                     Log.e(TAG, "Unknown msg, what:" + msg.what);
