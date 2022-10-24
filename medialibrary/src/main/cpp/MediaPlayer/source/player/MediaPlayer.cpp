@@ -332,11 +332,6 @@ int MediaPlayer::readPackets() {
             break;
         }
 
-        // 打开文件回调
-        if (m_playerParam->m_messageQueue) {
-            m_playerParam->m_messageQueue->sendMessage(MSG_OPEN_INPUT);
-        }
-
         av_format_inject_global_side_data(ic);
 
         // 查找媒体流信息
@@ -347,11 +342,6 @@ int MediaPlayer::readPackets() {
                    "%s: could not find codec parameters\n", m_playerParam->url);
             ret = -1;
             break;
-        }
-
-        // 查找媒体流信息回调
-        if (m_playerParam->m_messageQueue) {
-            m_playerParam->m_messageQueue->sendMessage(MSG_FIND_STREAM_INFO);
         }
 
         if (ic->duration != AV_NOPTS_VALUE) {
@@ -424,9 +414,15 @@ int MediaPlayer::readPackets() {
         // 根据媒体流索引准备解码器
         if (audioIndex >= 0) {
             prepareDecoder(audioIndex);
+            if (m_playerParam->m_messageQueue) {
+                m_playerParam->m_messageQueue->sendMessage(MSG_AUDIO_DECODER_OPEN);
+            }
         }
         if (videoIndex >= 0) {
             prepareDecoder(videoIndex);
+            if (m_playerParam->m_messageQueue) {
+                m_playerParam->m_messageQueue->sendMessage(MSG_VIDEO_DECODER_OPEN);
+            }
         }
 
         if (!audioDecoder && !videoDecoder) {
@@ -436,11 +432,6 @@ int MediaPlayer::readPackets() {
             break;
         }
         ret = 0;
-
-        // 准备解码器消息回调
-        if (m_playerParam->m_messageQueue) {
-            m_playerParam->m_messageQueue->sendMessage(MSG_PREPARE_DECODER);
-        }
 
     } while (false);
     mMutex.unlock();
@@ -463,9 +454,6 @@ int MediaPlayer::readPackets() {
         if (m_playerParam->m_messageQueue) {
             m_playerParam->m_messageQueue->sendMessage(MSG_VIDEO_SIZE_CHANGED,
                                                        codecpar->width, codecpar->height);
-            m_playerParam->m_messageQueue->sendMessage(MSG_SAR_CHANGED,
-                                                       codecpar->sample_aspect_ratio.num,
-                                                       codecpar->sample_aspect_ratio.den);
         }
     }
 
@@ -476,7 +464,7 @@ int MediaPlayer::readPackets() {
     if (videoDecoder != nullptr) {
         videoDecoder->start();
         if (m_playerParam->m_messageQueue) {
-            m_playerParam->m_messageQueue->sendMessage(MSG_VIDEO_START);
+            m_playerParam->m_messageQueue->sendMessage(MSG_VIDEO_DECODE_START);
         }
     } else {
         if (m_playerParam->m_syncType == AV_SYNC_VIDEO) {
@@ -487,7 +475,7 @@ int MediaPlayer::readPackets() {
     if (audioDecoder != nullptr) {
         audioDecoder->start();
         if (m_playerParam->m_messageQueue) {
-            m_playerParam->m_messageQueue->sendMessage(MSG_AUDIO_START);
+            m_playerParam->m_messageQueue->sendMessage(MSG_AUDIO_DECODE_START);
         }
     } else {
         if (m_playerParam->m_syncType == AV_SYNC_AUDIO) {

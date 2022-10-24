@@ -8,16 +8,14 @@
 #define MSG_STARTED                     0x30    // 已经开始
 #define MSG_COMPLETED                   0x40    // 播放完成回调
 
-#define MSG_OPEN_INPUT                  0x50    // 打开文件
-#define MSG_FIND_STREAM_INFO            0x51    // 查找媒体流信息
-#define MSG_PREPARE_DECODER             0x52    // 准备解码器
+#define MSG_AUDIO_DECODER_OPEN          0x51    // 打开音频解码器
+#define MSG_VIDEO_DECODER_OPEN          0x52    // 打开视频解码器
 #define MSG_VIDEO_SIZE_CHANGED          0x53    // 视频大小变化
-#define MSG_SAR_CHANGED                 0x54    // 长宽比变化
-#define MSG_AUDIO_START                 0x55    // 开始音频解码
-#define MSG_AUDIO_RENDERING_START       0x56    // 音频渲染开始
-#define MSG_VIDEO_START                 0x57    // 开始视频解码
-#define MSG_VIDEO_RENDERING_START       0x58    // 视频渲染开始
-#define MSG_VIDEO_ROTATION_CHANGED      0x59    // 旋转角度变化
+#define MSG_AUDIO_DECODE_START          0x54    // 开始音频解码
+#define MSG_AUDIO_RENDER_START          0x55    // 音频渲染开始
+#define MSG_VIDEO_DECODE_START          0x56    // 开始视频解码
+#define MSG_VIDEO_RENDER_START          0x57    // 视频渲染开始
+#define MSG_VIDEO_ROTATION_CHANGED      0x58    // 旋转角度变化
 
 #define MSG_BUFFERING_START             0x60    // 缓冲开始
 #define MSG_BUFFERING_END               0x61    // 缓冲完成

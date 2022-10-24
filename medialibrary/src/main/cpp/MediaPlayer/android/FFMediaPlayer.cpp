@@ -313,18 +313,12 @@ void FFMediaPlayer::run() {
                 break;
             }
 
-            case MSG_SAR_CHANGED: {
-                ALOGD("FFMediaPlayer is sar changing: %d, %d\n", msg.arg1, msg.arg2);
-                postEvent(MEDIA_SET_VIDEO_SAR, msg.arg1, msg.arg2);
-                break;
-            }
-
-            case MSG_VIDEO_RENDERING_START: {
+            case MSG_VIDEO_RENDER_START: {
                 ALOGD("FFMediaPlayer is video playing.\n");
                 break;
             }
 
-            case MSG_AUDIO_RENDERING_START: {
+            case MSG_AUDIO_RENDER_START: {
                 ALOGD("FFMediaPlayer is audio playing.\n");
                 break;
             }
@@ -334,23 +328,13 @@ void FFMediaPlayer::run() {
                 break;
             }
 
-            case MSG_AUDIO_START: {
+            case MSG_AUDIO_DECODE_START: {
                 ALOGD("FFMediaPlayer starts audio decoder.\n");
                 break;
             }
 
-            case MSG_VIDEO_START: {
+            case MSG_VIDEO_DECODE_START: {
                 ALOGD("FFMediaPlayer starts video decoder.\n");
-                break;
-            }
-
-            case MSG_OPEN_INPUT: {
-                ALOGD("FFMediaPlayer is opening input file.\n");
-                break;
-            }
-
-            case MSG_FIND_STREAM_INFO: {
-                ALOGD("CanMediaPlayer is finding media stream info.\n");
                 break;
             }
 
