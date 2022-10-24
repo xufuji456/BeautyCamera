@@ -924,4 +924,8 @@ void MediaPlayer::pcmQueueCallback(uint8_t *stream, int len) {
         return;
     }
     audioResampler->pcmQueueCallback(stream, len);
+    if (!m_playerParam->m_firstAudioFrame && m_playerParam->m_messageQueue) {
+        m_playerParam->m_firstAudioFrame = true;
+        m_playerParam->m_messageQueue->sendMessage(MSG_AUDIO_RENDER_START);
+    }
 }

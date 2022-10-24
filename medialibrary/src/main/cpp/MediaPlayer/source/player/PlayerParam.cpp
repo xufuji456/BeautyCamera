@@ -50,4 +50,6 @@ void PlayerParam::init() {
     m_syncType = AV_SYNC_AUDIO;
     m_duration = AV_NOPTS_VALUE;
     m_startTime = AV_NOPTS_VALUE;
+    m_firstAudioFrame = false;
+    m_firstVideoFrame = false;
 }

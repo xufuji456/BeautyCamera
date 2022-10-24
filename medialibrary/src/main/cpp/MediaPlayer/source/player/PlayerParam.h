@@ -1,6 +1,3 @@
-//
-// Created by cain on 2019/1/26.
-//
 
 #ifndef PLAYERPARAM_H
 #define PLAYERPARAM_H
@@ -101,18 +98,21 @@ public:
 
     int m_abortReq;
     int m_pauseReq;
-    AVSyncType m_syncType;
     int64_t m_startTime;
     int64_t m_duration;
     int m_audioDisable;
     int m_videoDisable;
     int m_displayDisable;
+    AVSyncType m_syncType;
 
     int m_seekFlag;
     int m_seekRequest;
     int64_t m_seekPos;
     float m_playbackRate;
     int m_decodeFastFlag;
+
+    bool m_firstVideoFrame;
+    bool m_firstAudioFrame;
 
     int m_loop;
     int m_mute;

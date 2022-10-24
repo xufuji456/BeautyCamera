@@ -46,15 +46,15 @@ int AudioResampler::setResampleParams(AudioRenderSpec *spec, int64_t wanted_chan
     m_audioState->m_audioParamDst.fmt            = AV_SAMPLE_FMT_S16;
     m_audioState->m_audioParamDst.freq           = spec->freq;
     m_audioState->m_audioParamDst.channels       = spec->channels;
-    m_audioState->m_audioParamDst.frame_size     = av_samples_get_buffer_size(NULL, m_audioState->m_audioParamDst.channels, 1,
+    m_audioState->m_audioParamDst.frame_size     = av_samples_get_buffer_size(nullptr, m_audioState->m_audioParamDst.channels, 1,
                                                                           m_audioState->m_audioParamDst.fmt, 1);
     m_audioState->m_audioParamDst.channel_layout = wanted_channel_layout;
-    m_audioState->m_audioParamDst.bytes_per_sec  = av_samples_get_buffer_size(NULL, m_audioState->m_audioParamDst.channels,
+    m_audioState->m_audioParamDst.bytes_per_sec  = av_samples_get_buffer_size(nullptr, m_audioState->m_audioParamDst.channels,
                                                                              m_audioState->m_audioParamDst.freq,
                                                                              m_audioState->m_audioParamDst.fmt, 1);
 
     if (m_audioState->m_audioParamDst.bytes_per_sec <= 0 || m_audioState->m_audioParamDst.frame_size <= 0) {
-        av_log(NULL, AV_LOG_ERROR, "av_samples_get_buffer_size failed\n");
+        av_log(nullptr, AV_LOG_ERROR, "av_samples_get_buffer_size failed\n");
         return -1;
     }
     return 0;
@@ -74,7 +74,7 @@ void AudioResampler::pcmQueueCallback(uint8_t *stream, int len) {
         if (m_audioState->bufferIndex >= m_audioState->m_bufferSize) {
             bufferSize = audioFrameResample();
             if (bufferSize < 0) {
-                m_audioState->m_outputBuffer = NULL;
+                m_audioState->m_outputBuffer = nullptr;
                 m_audioState->m_bufferSize = (unsigned int) (AUDIO_MIN_BUFFER_SIZE / m_audioState->m_audioParamDst.frame_size
                                                              * m_audioState->m_audioParamDst.frame_size);
             } else {
@@ -88,7 +88,7 @@ void AudioResampler::pcmQueueCallback(uint8_t *stream, int len) {
             length = len;
         }
         // copy pcm data to buffer
-        if (m_audioState->m_outputBuffer != NULL && !m_playerParam->m_mute) {
+        if (m_audioState->m_outputBuffer != nullptr && !m_playerParam->m_mute) {
             memcpy(stream, m_audioState->m_outputBuffer + m_audioState->bufferIndex, length);
         } else {
             memset(stream, 0, length);
@@ -159,7 +159,7 @@ int AudioResampler::audioFrameResample() {
             continue;
         }
 
-        data_size = av_samples_get_buffer_size(NULL, av_frame_get_channels(m_frame),
+        data_size = av_samples_get_buffer_size(nullptr, av_frame_get_channels(m_frame),
                                                m_frame->nb_samples,
                                                (AVSampleFormat)m_frame->format, 1);
 
@@ -175,13 +175,13 @@ int AudioResampler::audioFrameResample() {
             || (wanted_nb_samples != m_frame->nb_samples && !m_audioState->m_swrContext)) {
 
             swr_free(&m_audioState->m_swrContext);
-            m_audioState->m_swrContext = swr_alloc_set_opts(NULL, m_audioState->m_audioParamDst.channel_layout,
+            m_audioState->m_swrContext = swr_alloc_set_opts(nullptr, m_audioState->m_audioParamDst.channel_layout,
                                                             m_audioState->m_audioParamDst.fmt, m_audioState->m_audioParamDst.freq,
                                                             dec_channel_layout, (AVSampleFormat)m_frame->format,
-                                                            m_frame->sample_rate, 0, NULL);
+                                                            m_frame->sample_rate, 0, nullptr);
 
             if (!m_audioState->m_swrContext || swr_init(m_audioState->m_swrContext) < 0) {
-                av_log(NULL, AV_LOG_ERROR, "Create resampler error: %d Hz %s %d channels to %d Hz %s %d channels!\n",
+                av_log(nullptr, AV_LOG_ERROR, "Create resampler error: %d Hz %s %d channels to %d Hz %s %d channels!\n",
                        m_frame->sample_rate,
                        av_get_sample_fmt_name((AVSampleFormat)m_frame->format),
                        av_frame_get_channels(m_frame),
@@ -202,16 +202,16 @@ int AudioResampler::audioFrameResample() {
             const uint8_t **in = (const uint8_t **)m_frame->extended_data;
             uint8_t **out = &m_audioState->m_resampleBuffer;
             int out_count = (int64_t)wanted_nb_samples * m_audioState->m_audioParamDst.freq / m_frame->sample_rate + 256;
-            int out_size  = av_samples_get_buffer_size(NULL, m_audioState->m_audioParamDst.channels, out_count, m_audioState->m_audioParamDst.fmt, 0);
+            int out_size  = av_samples_get_buffer_size(nullptr, m_audioState->m_audioParamDst.channels, out_count, m_audioState->m_audioParamDst.fmt, 0);
             int len2;
             if (out_size < 0) {
-                av_log(NULL, AV_LOG_ERROR, "av_samples_get_buffer_size() failed\n");
+                av_log(nullptr, AV_LOG_ERROR, "av_samples_get_buffer_size() failed\n");
                 return -1;
             }
             if (wanted_nb_samples != m_frame->nb_samples) {
                 if (swr_set_compensation(m_audioState->m_swrContext, (wanted_nb_samples - m_frame->nb_samples) * m_audioState->m_audioParamDst.freq / m_frame->sample_rate,
                                          wanted_nb_samples * m_audioState->m_audioParamDst.freq / m_frame->sample_rate) < 0) {
-                    av_log(NULL, AV_LOG_ERROR, "swr_set_compensation() failed\n");
+                    av_log(nullptr, AV_LOG_ERROR, "swr_set_compensation() failed\n");
                     return -1;
                 }
             }
@@ -221,11 +221,11 @@ int AudioResampler::audioFrameResample() {
             }
             len2 = swr_convert(m_audioState->m_swrContext, out, out_count, in, m_frame->nb_samples);
             if (len2 < 0) {
-                av_log(NULL, AV_LOG_ERROR, "swr_convert() failed\n");
+                av_log(nullptr, AV_LOG_ERROR, "swr_convert() failed\n");
                 return -1;
             }
             if (len2 == out_count) {
-                av_log(NULL, AV_LOG_WARNING, "audio buffer is probably too small\n");
+                av_log(nullptr, AV_LOG_WARNING, "audio buffer is probably too small\n");
                 if (swr_init(m_audioState->m_swrContext) < 0) {
                     swr_free(&m_audioState->m_swrContext);
                 }

@@ -253,8 +253,6 @@ double AVSync::calculateDelay(double delay)  {
         }
     }
 
-    av_log(nullptr, AV_LOG_INFO, "video: delay=%0.3f A-V=%f\n", delay, -diff);
-
     return delay;
 }
 
@@ -298,6 +296,10 @@ void AVSync::renderVideo() {
         ret = m_videoRender->onRender(m_frameRGBA->data[0], m_frameRGBA->linesize[0], vp->frame->height);
         if (ret < 0) {
             return;
+        }
+        if (!m_playerParam->m_firstVideoFrame && m_playerParam->m_messageQueue) {
+            m_playerParam->m_firstVideoFrame = true;
+            m_playerParam->m_messageQueue->sendMessage(MSG_VIDEO_RENDER_START);
         }
 
         vp->uploaded = 1;

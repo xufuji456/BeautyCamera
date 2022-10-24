@@ -61,6 +61,12 @@ public interface IMediaPlayer {
 
     void setOnPreparedListener(OnPreparedListener listener);
 
+    interface OnRenderFirstFrameListener {
+        void onRenderFirstFrame(IMediaPlayer mp, int video, int audio);
+    }
+
+    void setOnRenderFirstFrameListener(OnRenderFirstFrameListener listener);
+
     interface OnCompletionListener {
         void onCompletion(IMediaPlayer mp);
     }

@@ -241,9 +241,15 @@ public class FFMediaPlayer implements IMediaPlayer {
         super.finalize();
     }
 
-    private static final int MEDIA_PREPARED = 1;
-    private static final int MEDIA_PLAYBACK_COMPLETE = 2;
-    private static final int MEDIA_ERROR = 100;
+    private static final int MEDIA_PREPARED           = 0x01;
+    private static final int MEDIA_RENDER_FIRST_FRAME = 0x02;
+    private static final int MEDIA_STARTED            = 0x03;
+    private static final int MEDIA_SEEK_COMPLETE      = 0x04;
+    private static final int MEDIA_PLAYBACK_COMPLETE  = 0x05;
+    private static final int MEDIA_TIMED_TEXT         = 0x06;
+    private static final int MEDIA_ERROR              = 0x07;
+    private static final int MEDIA_VIDEO_SIZE_CHANGED = 0x08;
+    private static final int MEDIA_INFO               = 0x09;
 
     private class EventHandler extends Handler {
 
@@ -265,6 +271,11 @@ public class FFMediaPlayer implements IMediaPlayer {
                 case MEDIA_PREPARED: {
                     if (mOnPreparedListener != null)
                         mOnPreparedListener.onPrepared(mMediaPlayer);
+                    return;
+                }
+                case MEDIA_RENDER_FIRST_FRAME: {
+                    if (mOnRenderFirstFrameListener != null)
+                        mOnRenderFirstFrameListener.onRenderFirstFrame(mMediaPlayer, msg.arg1, msg.arg2);
                     return;
                 }
                 case MEDIA_PLAYBACK_COMPLETE: {
@@ -311,6 +322,13 @@ public class FFMediaPlayer implements IMediaPlayer {
     }
 
     private OnPreparedListener mOnPreparedListener;
+
+    @Override
+    public void setOnRenderFirstFrameListener(OnRenderFirstFrameListener listener) {
+        mOnRenderFirstFrameListener = listener;
+    }
+
+    private OnRenderFirstFrameListener mOnRenderFirstFrameListener;
 
     @Override
     public void setOnCompletionListener(OnCompletionListener listener) {

@@ -1,9 +1,6 @@
-//
-// Created by cain on 2019/2/1.
-//
 
-#ifndef CAINMEDIAPLAYER_H
-#define CAINMEDIAPLAYER_H
+#ifndef FF_MEDIAPLAYER_H
+#define FF_MEDIAPLAYER_H
 
 #include <AndroidLog.h>
 #include <Mutex.h>
@@ -12,27 +9,16 @@
 #include <player/MediaPlayer.h>
 
 enum media_event_type {
-    MEDIA_NOP               = 0, // interface test message
-    MEDIA_PREPARED          = 1,
-    MEDIA_PLAYBACK_COMPLETE = 2,
-    MEDIA_BUFFERING_UPDATE  = 3,
-    MEDIA_SEEK_COMPLETE     = 4,
-    MEDIA_SET_VIDEO_SIZE    = 5,
-    MEDIA_STARTED           = 6,
-    MEDIA_TIMED_TEXT        = 99,
-    MEDIA_ERROR             = 100,
-    MEDIA_INFO              = 200,
-    MEDIA_CURRENT           = 300
-};
-
-enum media_error_type {
-    // 0xx
-    MEDIA_ERROR_UNKNOWN = 1,
-    // 1xx
-    MEDIA_ERROR_SERVER_DIED = 100,
-    // 2xx
-    MEDIA_ERROR_NOT_VALID_FOR_PROGRESSIVE_PLAYBACK = 200,
-    // 3xx
+    MEDIA_NOP                = 0,
+    MEDIA_PREPARED           = 1,
+    MEDIA_RENDER_FIRST_FRAME = 2,
+    MEDIA_STARTED            = 3,
+    MEDIA_SEEK_COMPLETE      = 4,
+    MEDIA_PLAYBACK_COMPLETE  = 5,
+    MEDIA_TIMED_TEXT         = 6,
+    MEDIA_ERROR              = 7,
+    MEDIA_VIDEO_SIZE_CHANGED = 8,
+    MEDIA_INFO               = 9
 };
 
 enum media_info_type {
@@ -50,10 +36,8 @@ enum media_info_type {
     // MediaPlayer is temporarily pausing playback internally in order to
     // buffer more data.
     MEDIA_INFO_BUFFERING_START = 701,
-    // MediaPlayer is resuming playback after filling buffers.
-    MEDIA_INFO_BUFFERING_END = 702,
-    // Bandwidth in recent past
-    MEDIA_INFO_NETWORK_BANDWIDTH = 703,
+    MEDIA_BUFFERING_UPDATE     = 702,
+    MEDIA_INFO_BUFFERING_END   = 703,
 
     // 8xx
     // Bad interleaving means that a media has been improperly interleaved or not
@@ -152,4 +136,4 @@ private:
     status_t mPrepareStatus;
 };
 
-#endif //CAINMEDIAPLAYER_H
+#endif //FF_MEDIAPLAYER_H

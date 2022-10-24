@@ -1,6 +1,3 @@
-//
-// Created by cain on 2019/2/1.
-//
 
 #include <message/FFMessageQueue.h>
 #include "FFMediaPlayer.h"
@@ -174,7 +171,6 @@ int FFMediaPlayer::getVideoHeight() {
 
 status_t FFMediaPlayer::seekTo(long msec) {
     if (mediaPlayer != nullptr) {
-        // if in seeking state, put seek message in queue, to process after preview seeking.
         if (mSeeking) {
             mediaPlayer->getMessageQueue()->sendMessage(MSG_REQUEST_SEEK, msec);
         } else {
@@ -253,7 +249,6 @@ void FFMediaPlayer::run() {
             break;
         }
 
-        // 如果此时播放器还没准备好，则睡眠10毫秒，等待播放器初始化
         if (!mediaPlayer || !mediaPlayer->getMessageQueue()) {
             av_usleep(10 * 1000);
             continue;
@@ -309,17 +304,19 @@ void FFMediaPlayer::run() {
 
             case MSG_VIDEO_SIZE_CHANGED: {
                 ALOGD("FFMediaPlayer is video size changing: %d, %d\n", msg.arg1, msg.arg2);
-                postEvent(MEDIA_SET_VIDEO_SIZE, msg.arg1, msg.arg2);
+                postEvent(MEDIA_VIDEO_SIZE_CHANGED, msg.arg1, msg.arg2);
                 break;
             }
 
             case MSG_VIDEO_RENDER_START: {
                 ALOGD("FFMediaPlayer is video playing.\n");
+                postEvent(MEDIA_RENDER_FIRST_FRAME, 1, 0);
                 break;
             }
 
             case MSG_AUDIO_RENDER_START: {
                 ALOGD("FFMediaPlayer is audio playing.\n");
+                postEvent(MEDIA_RENDER_FIRST_FRAME, 0, 1);
                 break;
             }
 
@@ -357,7 +354,7 @@ void FFMediaPlayer::run() {
             }
 
             case MSG_BUFFERING_TIME_UPDATE: {
-                ALOGD("FFMediaPlayer time text update");
+                ALOGD("FFMediaPlayer buffering time update.");
                 break;
             }
 
@@ -369,7 +366,7 @@ void FFMediaPlayer::run() {
             }
 
             case MSG_TIMED_TEXT: {
-                ALOGD("FFMediaPlayer is updating time text");
+                ALOGD("FFMediaPlayer is updating time text.");
                 postEvent(MEDIA_TIMED_TEXT, 0, 0, msg.obj);
                 break;
             }
@@ -378,7 +375,7 @@ void FFMediaPlayer::run() {
                 ALOGD("FFMediaPlayer is preparing...");
                 status_t ret = prepare();
                 if (ret != NO_ERROR) {
-                    ALOGE("FFMediaPlayer prepare error - '%d'", ret);
+                    ALOGE("FFMediaPlayer prepare error:%d", ret);
                 }
                 break;
             }
@@ -403,7 +400,7 @@ void FFMediaPlayer::run() {
             }
 
             default: {
-                ALOGE("FFMediaPlayer unknown MSG_xxx(%d)\n", msg.what);
+                ALOGE("FFMediaPlayer unknown msg:what=%d\n", msg.what);
                 break;
             }
         }

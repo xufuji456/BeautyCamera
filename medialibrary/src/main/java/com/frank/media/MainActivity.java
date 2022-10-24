@@ -18,8 +18,6 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
-import com.frank.media.R;
-
 import java.io.IOException;
 
 public class MainActivity extends Activity implements View.OnClickListener {
@@ -86,6 +84,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     videoPlayer.setDataSource(path);
                     videoPlayer.setSurface(surfaceHolder.getSurface());
                     videoPlayer.setOnPreparedListener(preparedListener);
+                    videoPlayer.setOnRenderFirstFrameListener(renderFirstFrameListener);
                     videoPlayer.setOnErrorListener(errorListener);
                     videoPlayer.setOnCompletionListener(completionListener);
                     videoPlayer.prepareAsync();
@@ -152,12 +151,20 @@ public class MainActivity extends Activity implements View.OnClickListener {
         @Override
         public void onPrepared(IMediaPlayer mp) {
             videoPlayer.start();
+        }
+    };
 
-            long playProgress = videoPlayer.getDuration();
-            txtDuration.setText(TimeUtil.getVideoTime(playProgress));
-            playBar.setMax((int) playProgress);
-            mHandler.sendEmptyMessageDelayed(MSG_PROGRESS, 1000);
-            btnPlayControl.setImageResource(R.drawable.ic_pause);
+    private final IMediaPlayer.OnRenderFirstFrameListener renderFirstFrameListener = new IMediaPlayer.OnRenderFirstFrameListener() {
+        @Override
+        public void onRenderFirstFrame(IMediaPlayer mp, int video, int audio) {
+            Log.e("FFMediaPlayer", "onRenderFirstFrame, video=" + video + ", audio=" + audio);
+            if (video == 1 || audio == 1) {
+                long playProgress = videoPlayer.getDuration();
+                txtDuration.setText(TimeUtil.getVideoTime(playProgress));
+                playBar.setMax((int) playProgress);
+                mHandler.sendEmptyMessageDelayed(MSG_PROGRESS, 1000);
+                btnPlayControl.setImageResource(R.drawable.ic_pause);
+            }
         }
     };
 

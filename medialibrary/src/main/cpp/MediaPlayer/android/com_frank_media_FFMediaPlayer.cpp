@@ -1,8 +1,3 @@
-//
-// Created by cain on 2018/11/29.
-//
-
-#if defined(__ANDROID__)
 
 #include <jni.h>
 #include <Mutex.h>
@@ -22,7 +17,6 @@ const char *CLASS_NAME = "com/frank/media/FFMediaPlayer";
 #define VLOGI(FORMAT, ...) __android_log_vprint(ANDROID_LOG_INFO, PLAYER_TAG, FORMAT, ##__VA_ARGS__)
 #define VLOGE(FORMAT, ...) __android_log_vprint(ANDROID_LOG_ERROR, PLAYER_TAG, FORMAT, ##__VA_ARGS__)
 
-// -------------------------------------------------------------------------------------------------
 struct fields_t {
     jfieldID    context;
     jmethodID   post_event;
@@ -58,7 +52,7 @@ JNIMediaPlayerListener::JNIMediaPlayerListener(JNIEnv *env, jobject thiz, jobjec
     // that posts events to the application thread.
     jclass clazz = env->GetObjectClass(thiz);
     if (clazz == nullptr) {
-        ALOGE("Can't find com/cgfay/media/FFMediaPlayer");
+        ALOGE("Can't find FFMediaPlayer");
         jniThrowException(env, "java/lang/Exception");
         return;
     }
@@ -92,8 +86,6 @@ void JNIMediaPlayerListener::notify(int msg, int ext1, int ext2, void *obj) {
         javaVM->DetachCurrentThread();
     }
 }
-
-// -------------------------------------------------------------------------------------------------
 
 static FFMediaPlayer *getMediaPlayer(JNIEnv *env, jobject thiz) {
     return (FFMediaPlayer *) env->GetLongField(thiz, fields.context);
@@ -477,5 +469,3 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     }
     return JNI_VERSION_1_4;
 }
-
-#endif  /* defined(__ANDROID__) */
