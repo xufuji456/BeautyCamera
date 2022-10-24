@@ -228,6 +228,14 @@ void FFMediaPlayer::setRate(float speed) {
     }
 }
 
+const char *FFMediaPlayer::getMediaFormat() const {
+    return mediaPlayer ? mediaPlayer->getMediaFormat() : nullptr;
+}
+
+AVFormatContext *FFMediaPlayer::getMetadata() const {
+    return mediaPlayer ? mediaPlayer->getMetadata() : nullptr;
+}
+
 void FFMediaPlayer::notify(int msg, int ext1, int ext2, void *obj, int len) {
     if (mediaPlayer != nullptr) {
         mediaPlayer->getMessageQueue()->sendMessage(msg, ext1, ext2, obj, len);

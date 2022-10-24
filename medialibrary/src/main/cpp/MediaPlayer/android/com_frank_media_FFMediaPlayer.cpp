@@ -36,30 +36,25 @@ static JNIEnv *getJNIEnv() {
 
 // -------------------------------------------------------------------------------------------------
 class JNIMediaPlayerListener : public MediaPlayerListener {
+private:
+    jclass mClass;
+    jobject mObject;
+
 public:
     JNIMediaPlayerListener(JNIEnv* env, jobject thiz, jobject weak_thiz);
     ~JNIMediaPlayerListener();
     void notify(int msg, int ext1, int ext2, void *obj) override;
-
-private:
-    JNIMediaPlayerListener();
-    jclass mClass;
-    jobject mObject;
 };
 
 JNIMediaPlayerListener::JNIMediaPlayerListener(JNIEnv *env, jobject thiz, jobject weak_thiz) {
-    // Hold onto the MediaPlayer class for use in calling the static method
-    // that posts events to the application thread.
+
     jclass clazz = env->GetObjectClass(thiz);
     if (clazz == nullptr) {
         ALOGE("Can't find FFMediaPlayer");
         jniThrowException(env, "java/lang/Exception");
         return;
     }
-    mClass = (jclass)env->NewGlobalRef(clazz);
-
-    // We use a weak reference so the MediaPlayer object can be garbage collected.
-    // The reference is only used as a proxy for callbacks.
+    mClass   = (jclass)env->NewGlobalRef(clazz);
     mObject  = env->NewGlobalRef(weak_thiz);
 }
 
@@ -108,18 +103,16 @@ static void process_media_player_call(JNIEnv *env, jobject thiz, int opStatus,
             FFMediaPlayer* mp = getMediaPlayer(env, thiz);
             if (mp != nullptr) mp->notify(MEDIA_ERROR, opStatus, 0);
         }
-    } else {  // Throw exception!
+    } else {
         if ( opStatus == (int) INVALID_OPERATION ) {
             jniThrowException(env, "java/lang/IllegalStateException");
         } else if ( opStatus == (int) PERMISSION_DENIED ) {
             jniThrowException(env, "java/lang/SecurityException");
         } else if ( opStatus != (int) OK ) {
-            if (strlen(message) > 230) {
-                // if the message is too long, don't bother displaying the status code
+            if (strlen(message) > 200) {
                 jniThrowException( env, exception, message);
             } else {
                 char msg[256];
-                // append the status code to the message
                 sprintf(msg, "%s: status=0x%X", message, opStatus);
                 jniThrowException( env, exception, msg);
             }
@@ -127,7 +120,7 @@ static void process_media_player_call(JNIEnv *env, jobject thiz, int opStatus,
     }
 }
 
-void CainMediaPlayer_setDataSource(JNIEnv *env, jobject thiz, jstring path_) {
+void FFMediaPlayer_setDataSource(JNIEnv *env, jobject thiz, jstring path_) {
 
     FFMediaPlayer *mp = getMediaPlayer(env, thiz);
     if (mp == nullptr) {
@@ -152,7 +145,7 @@ void CainMediaPlayer_setDataSource(JNIEnv *env, jobject thiz, jstring path_) {
     env->ReleaseStringUTFChars(path_, path);
 }
 
-void CainMediaPlayer_setDataSourceFD(JNIEnv *env, jobject thiz, jobject fileDescriptor, jlong length) {
+void FFMediaPlayer_setDataSourceFD(JNIEnv *env, jobject thiz, jobject fileDescriptor, jlong length) {
     FFMediaPlayer *mp = getMediaPlayer(env, thiz);
     if (mp == nullptr) {
         jniThrowException(env, "java/lang/IllegalStateException");
@@ -189,8 +182,7 @@ void log_callback(void *ptr, int level, const char *format, va_list args) {
     }
 }
 
-void CainMediaPlayer_init(JNIEnv *env) {
-    // TODO: ffmpeg log callback
+void FFMediaPlayer_init(JNIEnv *env) {
     av_log_set_level(AV_LOG_INFO);
     av_log_set_callback(log_callback);
 
@@ -212,21 +204,17 @@ void CainMediaPlayer_init(JNIEnv *env) {
     env->DeleteLocalRef(clazz);
 }
 
-void CainMediaPlayer_setup(JNIEnv *env, jobject thiz, jobject mediaplayer_this) {
-
-    FFMediaPlayer *mp = new FFMediaPlayer();
-
+void FFMediaPlayer_setup(JNIEnv *env, jobject thiz, jobject mediaplayer_this) {
+    auto *mp = new FFMediaPlayer();
     mp->init();
-
     // create new listener and give it to MediaPlayer
-    JNIMediaPlayerListener *listener = new JNIMediaPlayerListener(env, thiz, mediaplayer_this);
+    auto *listener = new JNIMediaPlayerListener(env, thiz, mediaplayer_this);
     mp->setListener(listener);
-
     // Stow our new C++ MediaPlayer in an opaque field in the Java object.
     setMediaPlayer(env, thiz, (long)mp);
 }
 
-void CainMediaPlayer_release(JNIEnv *env, jobject thiz) {
+void FFMediaPlayer_release(JNIEnv *env, jobject thiz) {
     FFMediaPlayer *mp = getMediaPlayer(env, thiz);
     if (mp != nullptr) {
         mp->disconnect();
@@ -235,7 +223,7 @@ void CainMediaPlayer_release(JNIEnv *env, jobject thiz) {
     }
 }
 
-void CainMediaPlayer_reset(JNIEnv *env, jobject thiz) {
+void FFMediaPlayer_reset(JNIEnv *env, jobject thiz) {
     FFMediaPlayer *mp = getMediaPlayer(env, thiz);
     if (mp == nullptr) {
         jniThrowException(env, "java/lang/IllegalStateException");
@@ -244,15 +232,15 @@ void CainMediaPlayer_reset(JNIEnv *env, jobject thiz) {
     mp->reset();
 }
 
-void CainMediaPlayer_finalize(JNIEnv *env, jobject thiz) {
+void FFMediaPlayer_finalize(JNIEnv *env, jobject thiz) {
     FFMediaPlayer *mp = getMediaPlayer(env, thiz);
     if (mp != nullptr) {
         ALOGW("MediaPlayer finalized without being released");
     }
-    CainMediaPlayer_release(env, thiz);
+    FFMediaPlayer_release(env, thiz);
 }
 
-void CainMediaPlayer_setVideoSurface(JNIEnv *env, jobject thiz, jobject surface) {
+void FFMediaPlayer_setVideoSurface(JNIEnv *env, jobject thiz, jobject surface) {
     FFMediaPlayer *mp = getMediaPlayer(env, thiz);
     if (mp == nullptr) {
         jniThrowException(env, "java/lang/IllegalStateException");
@@ -265,7 +253,7 @@ void CainMediaPlayer_setVideoSurface(JNIEnv *env, jobject thiz, jobject surface)
     mp->setVideoSurface(window);
 }
 
-void CainMediaPlayer_prepare(JNIEnv *env, jobject thiz) {
+void FFMediaPlayer_prepare(JNIEnv *env, jobject thiz) {
     FFMediaPlayer *mp = getMediaPlayer(env, thiz);
     if (mp == nullptr) {
         jniThrowException(env, "java/lang/IllegalStateException");
@@ -275,7 +263,7 @@ void CainMediaPlayer_prepare(JNIEnv *env, jobject thiz) {
     mp->prepare();
 }
 
-void CainMediaPlayer_prepareAsync(JNIEnv *env, jobject thiz) {
+void FFMediaPlayer_prepareAsync(JNIEnv *env, jobject thiz) {
     FFMediaPlayer *mp = getMediaPlayer(env, thiz);
     if (mp == nullptr) {
         jniThrowException(env, "java/lang/IllegalStateException");
@@ -284,7 +272,7 @@ void CainMediaPlayer_prepareAsync(JNIEnv *env, jobject thiz) {
     mp->prepareAsync();
 }
 
-void CainMediaPlayer_start(JNIEnv *env, jobject thiz) {
+void FFMediaPlayer_start(JNIEnv *env, jobject thiz) {
     FFMediaPlayer *mp = getMediaPlayer(env, thiz);
     if (mp == nullptr) {
         jniThrowException(env, "java/lang/IllegalStateException");
@@ -293,7 +281,7 @@ void CainMediaPlayer_start(JNIEnv *env, jobject thiz) {
     mp->start();
 }
 
-void CainMediaPlayer_pause(JNIEnv *env, jobject thiz) {
+void FFMediaPlayer_pause(JNIEnv *env, jobject thiz) {
     FFMediaPlayer *mp = getMediaPlayer(env, thiz);
     if (mp == nullptr) {
         jniThrowException(env, "java/lang/IllegalStateException");
@@ -302,7 +290,7 @@ void CainMediaPlayer_pause(JNIEnv *env, jobject thiz) {
     mp->pause();
 }
 
-void CainMediaPlayer_resume(JNIEnv *env, jobject thiz) {
+void FFMediaPlayer_resume(JNIEnv *env, jobject thiz) {
     FFMediaPlayer *mp = getMediaPlayer(env, thiz);
     if (mp == nullptr) {
         jniThrowException(env, "java/lang/IllegalStateException");
@@ -312,7 +300,7 @@ void CainMediaPlayer_resume(JNIEnv *env, jobject thiz) {
 
 }
 
-void CainMediaPlayer_stop(JNIEnv *env, jobject thiz) {
+void FFMediaPlayer_stop(JNIEnv *env, jobject thiz) {
     FFMediaPlayer *mp = getMediaPlayer(env, thiz);
     if (mp == nullptr) {
         jniThrowException(env, "java/lang/IllegalStateException");
@@ -321,7 +309,7 @@ void CainMediaPlayer_stop(JNIEnv *env, jobject thiz) {
     mp->stop();
 }
 
-void CainMediaPlayer_seekTo(JNIEnv *env, jobject thiz, jlong timeMs) {
+void FFMediaPlayer_seekTo(JNIEnv *env, jobject thiz, jlong timeMs) {
     FFMediaPlayer *mp = getMediaPlayer(env, thiz);
     if (mp == nullptr) {
         jniThrowException(env, "java/lang/IllegalStateException");
@@ -330,7 +318,7 @@ void CainMediaPlayer_seekTo(JNIEnv *env, jobject thiz, jlong timeMs) {
     mp->seekTo(timeMs);
 }
 
-void CainMediaPlayer_setMute(JNIEnv *env, jobject thiz, jboolean mute) {
+void FFMediaPlayer_setMute(JNIEnv *env, jobject thiz, jboolean mute) {
     FFMediaPlayer *mp = getMediaPlayer(env, thiz);
     if (mp == nullptr) {
         jniThrowException(env, "java/lang/IllegalStateException");
@@ -339,7 +327,7 @@ void CainMediaPlayer_setMute(JNIEnv *env, jobject thiz, jboolean mute) {
     mp->setMute(mute);
 }
 
-void CainMediaPlayer_setVolume(JNIEnv *env, jobject thiz, jfloat volume) {
+void FFMediaPlayer_setVolume(JNIEnv *env, jobject thiz, jfloat volume) {
     FFMediaPlayer *mp = getMediaPlayer(env, thiz);
     if (mp == nullptr) {
         jniThrowException(env, "java/lang/IllegalStateException");
@@ -348,7 +336,7 @@ void CainMediaPlayer_setVolume(JNIEnv *env, jobject thiz, jfloat volume) {
     mp->setVolume(volume);
 }
 
-void CainMediaPlayer_setRate(JNIEnv *env, jobject thiz, jfloat speed) {
+void FFMediaPlayer_setRate(JNIEnv *env, jobject thiz, jfloat speed) {
     FFMediaPlayer *mp = getMediaPlayer(env, thiz);
     if (mp == nullptr) {
         jniThrowException(env, "java/lang/IllegalStateException");
@@ -357,7 +345,7 @@ void CainMediaPlayer_setRate(JNIEnv *env, jobject thiz, jfloat speed) {
     mp->setRate(speed);
 }
 
-jlong CainMediaPlayer_getCurrentPosition(JNIEnv *env, jobject thiz) {
+jlong FFMediaPlayer_getCurrentPosition(JNIEnv *env, jobject thiz) {
 
     FFMediaPlayer *mp = getMediaPlayer(env, thiz);
     if (mp == nullptr) {
@@ -367,7 +355,7 @@ jlong CainMediaPlayer_getCurrentPosition(JNIEnv *env, jobject thiz) {
     return mp->getCurrentPosition();
 }
 
-jlong CainMediaPlayer_getDuration(JNIEnv *env, jobject thiz) {
+jlong FFMediaPlayer_getDuration(JNIEnv *env, jobject thiz) {
     FFMediaPlayer *mp = getMediaPlayer(env, thiz);
     if (mp == nullptr) {
         jniThrowException(env, "java/lang/IllegalStateException");
@@ -376,7 +364,7 @@ jlong CainMediaPlayer_getDuration(JNIEnv *env, jobject thiz) {
     return mp->getDuration();
 }
 
-jboolean CainMediaPlayer_isPlaying(JNIEnv *env, jobject thiz) {
+jboolean FFMediaPlayer_isPlaying(JNIEnv *env, jobject thiz) {
     FFMediaPlayer *mp = getMediaPlayer(env, thiz);
     if (mp == nullptr) {
         jniThrowException(env, "java/lang/IllegalStateException");
@@ -385,7 +373,7 @@ jboolean CainMediaPlayer_isPlaying(JNIEnv *env, jobject thiz) {
     return (jboolean)(mp->isPlaying() ? JNI_TRUE : JNI_FALSE);
 }
 
-jint CainMediaPlayer_getRotate(JNIEnv *env, jobject thiz) {
+jint FFMediaPlayer_getRotate(JNIEnv *env, jobject thiz) {
     FFMediaPlayer *mp = getMediaPlayer(env, thiz);
     if (mp == nullptr) {
         jniThrowException(env, "java/lang/IllegalStateException");
@@ -394,7 +382,7 @@ jint CainMediaPlayer_getRotate(JNIEnv *env, jobject thiz) {
     return mp->getRotate();
 }
 
-jint CainMediaPlayer_getVideoWidth(JNIEnv *env, jobject thiz) {
+jint FFMediaPlayer_getVideoWidth(JNIEnv *env, jobject thiz) {
     FFMediaPlayer *mp = getMediaPlayer(env, thiz);
     if (mp == nullptr) {
         jniThrowException(env, "java/lang/IllegalStateException");
@@ -403,7 +391,7 @@ jint CainMediaPlayer_getVideoWidth(JNIEnv *env, jobject thiz) {
     return mp->getVideoWidth();
 }
 
-jint CainMediaPlayer_getVideoHeight(JNIEnv *env, jobject thiz) {
+jint FFMediaPlayer_getVideoHeight(JNIEnv *env, jobject thiz) {
     FFMediaPlayer *mp = getMediaPlayer(env, thiz);
     if (mp == nullptr) {
         jniThrowException(env, "java/lang/IllegalStateException");
@@ -412,31 +400,40 @@ jint CainMediaPlayer_getVideoHeight(JNIEnv *env, jobject thiz) {
     return mp->getVideoHeight();
 }
 
+jstring FFMediaPlayer_getMediaFormat(JNIEnv *env, jobject thiz) {
+    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    if (mp == nullptr) {
+        return nullptr;
+    }
+    return env->NewStringUTF(mp->getMediaFormat());
+}
+
 static const JNINativeMethod gMethods[] = {
-        {"_setDataSource", "(Ljava/lang/String;)V", (void *)CainMediaPlayer_setDataSource},
-        {"_setDataSource", "(Ljava/io/FileDescriptor;J)V", (void *)CainMediaPlayer_setDataSourceFD},
-        {"_setVideoSurface", "(Landroid/view/Surface;)V", (void *) CainMediaPlayer_setVideoSurface},
-        {"_prepare", "()V", (void *) CainMediaPlayer_prepare},
-        {"_prepareAsync", "()V", (void *) CainMediaPlayer_prepareAsync},
-        {"_start", "()V", (void *) CainMediaPlayer_start},
-        {"_stop", "()V", (void *) CainMediaPlayer_stop},
-        {"_resume", "()V", (void *) CainMediaPlayer_resume},
-        {"_getRotate", "()I", (void *) CainMediaPlayer_getRotate},
-        {"_getVideoWidth", "()I", (void *) CainMediaPlayer_getVideoWidth},
-        {"_getVideoHeight", "()I", (void *) CainMediaPlayer_getVideoHeight},
-        {"_seekTo", "(J)V", (void *) CainMediaPlayer_seekTo},
-        {"_pause", "()V", (void *) CainMediaPlayer_pause},
-        {"_isPlaying", "()Z", (void *) CainMediaPlayer_isPlaying},
-        {"_getCurrentPosition", "()J", (void *) CainMediaPlayer_getCurrentPosition},
-        {"_getDuration", "()J", (void *) CainMediaPlayer_getDuration},
-        {"_release", "()V", (void *) CainMediaPlayer_release},
-        {"_reset", "()V", (void *) CainMediaPlayer_reset},
-        {"_setVolume", "(F)V", (void *) CainMediaPlayer_setVolume},
-        {"_setMute", "(Z)V", (void *) CainMediaPlayer_setMute},
-        {"_setRate", "(F)V", (void *) CainMediaPlayer_setRate},
-        {"native_init", "()V", (void *)CainMediaPlayer_init},
-        {"native_setup", "(Ljava/lang/Object;)V", (void *) CainMediaPlayer_setup},
-        {"native_finalize", "()V", (void *) CainMediaPlayer_finalize},
+        {"_setDataSource", "(Ljava/lang/String;)V", (void *)FFMediaPlayer_setDataSource},
+        {"_setDataSource", "(Ljava/io/FileDescriptor;J)V", (void *)FFMediaPlayer_setDataSourceFD},
+        {"_setVideoSurface", "(Landroid/view/Surface;)V", (void *) FFMediaPlayer_setVideoSurface},
+        {"_prepare", "()V", (void *) FFMediaPlayer_prepare},
+        {"_prepareAsync", "()V", (void *) FFMediaPlayer_prepareAsync},
+        {"_start", "()V", (void *) FFMediaPlayer_start},
+        {"_stop", "()V", (void *) FFMediaPlayer_stop},
+        {"_resume", "()V", (void *) FFMediaPlayer_resume},
+        {"_getRotate", "()I", (void *) FFMediaPlayer_getRotate},
+        {"_getVideoWidth", "()I", (void *) FFMediaPlayer_getVideoWidth},
+        {"_getVideoHeight", "()I", (void *) FFMediaPlayer_getVideoHeight},
+        {"_seekTo", "(J)V", (void *) FFMediaPlayer_seekTo},
+        {"_pause", "()V", (void *) FFMediaPlayer_pause},
+        {"_isPlaying", "()Z", (void *) FFMediaPlayer_isPlaying},
+        {"_getCurrentPosition", "()J", (void *) FFMediaPlayer_getCurrentPosition},
+        {"_getDuration", "()J", (void *) FFMediaPlayer_getDuration},
+        {"_release", "()V", (void *) FFMediaPlayer_release},
+        {"_reset", "()V", (void *) FFMediaPlayer_reset},
+        {"_setVolume", "(F)V", (void *) FFMediaPlayer_setVolume},
+        {"_setMute", "(Z)V", (void *) FFMediaPlayer_setMute},
+        {"_setRate", "(F)V", (void *) FFMediaPlayer_setRate},
+        {"native_getMediaFormat", "()Ljava/lang/String;", (void *) FFMediaPlayer_getMediaFormat},
+        {"native_init", "()V", (void *)FFMediaPlayer_init},
+        {"native_setup", "(Ljava/lang/Object;)V", (void *) FFMediaPlayer_setup},
+        {"native_finalize", "()V", (void *) FFMediaPlayer_finalize},
 };
 
 // 注册CainMediaPlayer的Native方法

@@ -55,6 +55,8 @@ public interface IMediaPlayer {
 
     void setMute(boolean mute);
 
+    String getMediaFormat();
+
     interface OnPreparedListener {
         void onPrepared(IMediaPlayer mp);
     }

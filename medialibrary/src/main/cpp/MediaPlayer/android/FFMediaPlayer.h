@@ -39,15 +39,8 @@ enum media_info_type {
     MEDIA_BUFFERING_UPDATE     = 702,
     MEDIA_INFO_BUFFERING_END   = 703,
 
-    // 8xx
-    // Bad interleaving means that a media has been improperly interleaved or not
-    // interleaved at all, e.g has all the video samples first then all the audio
-    // ones. Video is playing but a lot of disk seek may be happening.
-    MEDIA_INFO_BAD_INTERLEAVING = 800,
     // The media is not seekable (e.g live stream).
     MEDIA_INFO_NOT_SEEKABLE = 801,
-    // New media metadata is available.
-    MEDIA_INFO_METADATA_UPDATE = 802,
     // Audio can not be played.
     MEDIA_INFO_PLAY_AUDIO_ERROR = 804,
     // Video can not be played.
@@ -64,6 +57,27 @@ public:
 };
 
 class FFMediaPlayer : public Runnable {
+    
+private:
+    Mutex mMutex;
+    Condition mCondition;
+    Thread *msgThread;
+    bool abortRequest;
+    NativeWindowVideoRender *videoRender;
+    MediaPlayer *mediaPlayer;
+    MediaPlayerListener *mListener;
+
+    bool mSeeking;
+    long mSeekingPosition;
+    bool mPrepareSync;
+    status_t mPrepareStatus;
+
+private:
+    void postEvent(int what, int arg1, int arg2, void *obj = nullptr);
+
+protected:
+    void run() override;
+
 public:
     FFMediaPlayer();
 
@@ -113,27 +127,12 @@ public:
 
     void setRate(float speed);
 
-    void notify(int msg, int ext1, int ext2, void *obj = NULL, int len = 0);
+    void notify(int msg, int ext1, int ext2, void *obj = nullptr, int len = 0);
 
-protected:
-    void run() override;
+    const char *getMediaFormat() const;
 
-private:
-    void postEvent(int what, int arg1, int arg2, void *obj = NULL);
-    
-private:
-    Mutex mMutex;
-    Condition mCondition;
-    Thread *msgThread;
-    bool abortRequest;
-    NativeWindowVideoRender *videoRender;
-    MediaPlayer *mediaPlayer;
-    MediaPlayerListener *mListener;
+    AVFormatContext *getMetadata() const;
 
-    bool mSeeking;
-    long mSeekingPosition;
-    bool mPrepareSync;
-    status_t mPrepareStatus;
 };
 
 #endif //FF_MEDIAPLAYER_H

@@ -63,6 +63,10 @@ public:
 
     FFMessageQueue *getMessageQueue();
 
+    const char *getMediaFormat() const;
+
+    AVFormatContext *getMetadata() const;
+
     void pcmQueueCallback(uint8_t *stream, int len);
 
 protected:
@@ -71,11 +75,9 @@ protected:
 private:
     int readPackets();
 
-    // prepare decoder with stream_index
-    int prepareDecoder(int streamIndex);
+    int openDecoder(int streamIndex);
 
-    // open an audio output device
-    int openAudioDevice(int64_t wanted_channel_layout, int wanted_nb_channels,
+    int openAudioRender(int64_t wanted_channel_layout, int wanted_nb_channels,
                         int wanted_sample_rate);
 
 private:

@@ -301,6 +301,16 @@ FFMessageQueue *MediaPlayer::getMessageQueue() {
     return m_playerParam->m_messageQueue;
 }
 
+const char *MediaPlayer::getMediaFormat() const {
+    if (!m_playerParam->m_formatCtx || !m_playerParam->m_formatCtx->iformat)
+        return nullptr;
+    return m_playerParam->m_formatCtx->iformat->name;
+}
+
+AVFormatContext *MediaPlayer::getMetadata() const {
+    return m_playerParam->m_formatCtx;
+}
+
 void MediaPlayer::run() {
     readPackets();
 }
@@ -413,13 +423,13 @@ int MediaPlayer::readPackets() {
 
         // 根据媒体流索引准备解码器
         if (audioIndex >= 0) {
-            prepareDecoder(audioIndex);
+            openDecoder(audioIndex);
             if (m_playerParam->m_messageQueue) {
                 m_playerParam->m_messageQueue->sendMessage(MSG_AUDIO_DECODER_OPEN);
             }
         }
         if (videoIndex >= 0) {
-            prepareDecoder(videoIndex);
+            openDecoder(videoIndex);
             if (m_playerParam->m_messageQueue) {
                 m_playerParam->m_messageQueue->sendMessage(MSG_VIDEO_DECODER_OPEN);
             }
@@ -485,8 +495,8 @@ int MediaPlayer::readPackets() {
 
     if (audioDecoder != nullptr) {
         AVCodecContext *avctx = audioDecoder->getCodecContext();
-        ret = openAudioDevice(avctx->channel_layout, avctx->channels,
-                        avctx->sample_rate);
+        ret = openAudioRender(avctx->channel_layout, avctx->channels,
+                              avctx->sample_rate);
         if (ret < 0) {
             av_log(nullptr, AV_LOG_WARNING, "could not open audio device\n");
             // 如果音频设备打开失败，则调整时钟的同步类型
@@ -716,7 +726,7 @@ int MediaPlayer::readPackets() {
     return ret;
 }
 
-int MediaPlayer::prepareDecoder(int streamIndex) {
+int MediaPlayer::openDecoder(int streamIndex) {
     AVCodecContext *avctx;
     AVCodec *codec = nullptr;
     AVDictionary *opts = nullptr;
@@ -851,7 +861,7 @@ void audioPCMQueueCallback(void *opaque, uint8_t *stream, int len) {
     mediaPlayer->pcmQueueCallback(stream, len);
 }
 
-int MediaPlayer::openAudioDevice(int64_t wanted_channel_layout, int wanted_nb_channels,
+int MediaPlayer::openAudioRender(int64_t wanted_channel_layout, int wanted_nb_channels,
                                  int wanted_sample_rate) {
     AudioRenderSpec wanted_spec, spec;
     const int next_nb_channels[] = {0, 0, 1, 6, 2, 6, 4, 6};

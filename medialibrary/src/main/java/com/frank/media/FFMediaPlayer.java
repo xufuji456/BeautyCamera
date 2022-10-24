@@ -48,6 +48,7 @@ public class FFMediaPlayer implements IMediaPlayer {
     private native void _setRate(float rate);
     private native void _setMute(boolean mute);
     private native void _setVolume(float volume);
+    private native String native_getMediaFormat();
     private native void _reset();
     private native void _stop() throws IllegalStateException;
     private native void _release();
@@ -223,6 +224,11 @@ public class FFMediaPlayer implements IMediaPlayer {
 
     public void setRate(float rate) {
         _setRate(rate);
+    }
+
+    @Override
+    public String getMediaFormat() {
+        return native_getMediaFormat();
     }
 
     @Override
