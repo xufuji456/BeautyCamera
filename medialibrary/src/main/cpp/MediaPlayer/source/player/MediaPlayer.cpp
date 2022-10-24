@@ -442,7 +442,7 @@ int MediaPlayer::readPackets() {
         mCondition.signal();
         if (m_playerParam->m_messageQueue) {
             const char errorMsg[] = "prepare decoder failed!";
-            m_playerParam->m_messageQueue->sendMessage(MSG_ERROR, 0, 0,
+            m_playerParam->m_messageQueue->sendMessage(MSG_ON_ERROR, 0, 0,
                                                        (void *) errorMsg,
                                                      sizeof(errorMsg) / errorMsg[0]);
         }
@@ -458,7 +458,7 @@ int MediaPlayer::readPackets() {
     }
 
     if (m_playerParam->m_messageQueue) {
-        m_playerParam->m_messageQueue->sendMessage(MSG_PREPARED);
+        m_playerParam->m_messageQueue->sendMessage(MSG_ON_PREPARED);
     }
 
     if (videoDecoder != nullptr) {
@@ -528,7 +528,7 @@ int MediaPlayer::readPackets() {
     }
 
     if (m_playerParam->m_messageQueue) {
-        m_playerParam->m_messageQueue->sendMessage(MSG_STARTED);
+        m_playerParam->m_messageQueue->sendMessage(MSG_ON_START);
     }
 
     // 读数据包流程
@@ -699,13 +699,13 @@ int MediaPlayer::readPackets() {
     if (ret < 0) {
         if (m_playerParam->m_messageQueue) {
             const char errorMsg[] = "error when reading packets!";
-            m_playerParam->m_messageQueue->sendMessage(MSG_ERROR, 0, 0,
+            m_playerParam->m_messageQueue->sendMessage(MSG_ON_ERROR, 0, 0,
                                                        (void *) errorMsg,
                                                      sizeof(errorMsg) / errorMsg[0]);
         }
     } else { // 播放完成
         if (m_playerParam->m_messageQueue) {
-            m_playerParam->m_messageQueue->sendMessage(MSG_COMPLETED);
+            m_playerParam->m_messageQueue->sendMessage(MSG_ON_COMPLETE);
         }
     }
     // 停止消息队列
@@ -833,7 +833,7 @@ int MediaPlayer::prepareDecoder(int streamIndex) {
     if (ret < 0) {
         if (m_playerParam->m_messageQueue) {
             const char errorMsg[] = "failed to open stream!";
-            m_playerParam->m_messageQueue->sendMessage(MSG_ERROR, 0, 0,
+            m_playerParam->m_messageQueue->sendMessage(MSG_ON_ERROR, 0, 0,
                                                        (void *) errorMsg,
                                                      sizeof(errorMsg) / errorMsg[0]);
         }
@@ -924,8 +924,4 @@ void MediaPlayer::pcmQueueCallback(uint8_t *stream, int len) {
         return;
     }
     audioResampler->pcmQueueCallback(stream, len);
-    if (m_playerParam->m_messageQueue && m_playerParam->m_syncType != AV_SYNC_VIDEO) {
-        m_playerParam->m_messageQueue->sendMessage(MSG_CURRENT_POSITION, getCurrentPosition(),
-                                                   m_playerParam->m_videoDuration);
-    }
 }

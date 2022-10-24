@@ -275,7 +275,7 @@ void FFMediaPlayer::run() {
                 break;
             }
 
-            case MSG_ERROR: {
+            case MSG_ON_ERROR: {
                 ALOGD("FFMediaPlayer occurs error: %d\n", msg.arg1);
                 if (mPrepareSync) {
                     mPrepareSync = false;
@@ -285,7 +285,7 @@ void FFMediaPlayer::run() {
                 break;
             }
 
-            case MSG_PREPARED: {
+            case MSG_ON_PREPARED: {
                 ALOGD("FFMediaPlayer is prepared.\n");
                 if (mPrepareSync) {
                     mPrepareSync = false;
@@ -295,13 +295,13 @@ void FFMediaPlayer::run() {
                 break;
             }
 
-            case MSG_STARTED: {
+            case MSG_ON_START: {
                 ALOGD("FFMediaPlayer is started!");
                 postEvent(MEDIA_STARTED, 0, 0);
                 break;
             }
 
-            case MSG_COMPLETED: {
+            case MSG_ON_COMPLETE: {
                 ALOGD("FFMediaPlayer is playback completed.\n");
                 postEvent(MEDIA_PLAYBACK_COMPLETE, 0, 0);
                 break;
@@ -368,11 +368,6 @@ void FFMediaPlayer::run() {
                 break;
             }
 
-            case MSG_PLAYBACK_STATE_CHANGED: {
-                ALOGD("FFMediaPlayer's playback state is changed.");
-                break;
-            }
-
             case MSG_TIMED_TEXT: {
                 ALOGD("FFMediaPlayer is updating time text");
                 postEvent(MEDIA_TIMED_TEXT, 0, 0, msg.obj);
@@ -404,11 +399,6 @@ void FFMediaPlayer::run() {
                 mSeeking = true;
                 mSeekingPosition = (long) msg.arg1;
                 mediaPlayer->seekTo(mSeekingPosition);
-                break;
-            }
-
-            case MSG_CURRENT_POSITION: {
-                postEvent(MEDIA_CURRENT, msg.arg1, msg.arg2);
                 break;
             }
 

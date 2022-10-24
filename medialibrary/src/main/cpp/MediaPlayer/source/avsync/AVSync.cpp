@@ -209,31 +209,6 @@ void AVSync::refreshVideo(double *remaining_time) {
         break;
     }
 
-    if (m_playerParam->m_messageQueue && m_playerParam->m_syncType == AV_SYNC_VIDEO) {
-        int64_t start_time = m_videoDecoder->getFormatContext()->start_time;
-        int64_t start_diff = 0;
-        if (start_time > 0 && start_time != AV_NOPTS_VALUE) {
-            start_diff = av_rescale(start_time, 1000, AV_TIME_BASE);
-        }
-
-        int64_t pos = 0;
-        double clock = getMasterClock();
-        if (isnan(clock)) {
-            pos = m_playerParam->m_seekPos;
-        } else {
-            pos = (int64_t)(clock * 1000);
-        }
-        if (pos < 0 || pos < start_diff) {
-            pos = 0;
-        }
-        pos = (long) (pos - start_diff);
-        if (m_playerParam->m_videoDuration < 0) {
-            pos = 0;
-        }
-        m_playerParam->m_messageQueue->sendMessage(MSG_CURRENT_POSITION, pos,
-                                                   m_playerParam->m_videoDuration);
-    }
-
     // refresh display
     if (!m_playerParam->m_displayDisable && m_forceRefresh && m_videoDecoder
         && m_videoDecoder->getFrameQueue()->getShowIndex()) {
