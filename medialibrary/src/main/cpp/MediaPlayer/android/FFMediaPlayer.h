@@ -99,8 +99,6 @@ public:
 
     void start();
 
-    void stop();
-
     void pause();
 
     void resume();
@@ -119,7 +117,7 @@ public:
 
     long getDuration();
 
-    status_t reset();
+    int selectTrack(int trackId, bool selected);
 
     status_t setVolume(float volume);
 
@@ -132,6 +130,10 @@ public:
     const char *getMediaFormat() const;
 
     AVFormatContext *getMetadata() const;
+
+    void stop();
+
+    status_t reset();
 
 };
 

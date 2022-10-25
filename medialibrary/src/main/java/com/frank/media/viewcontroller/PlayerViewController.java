@@ -40,7 +40,6 @@ public class PlayerViewController implements View.OnClickListener {
 
     private SeekBar playBar;
     private Button btnSpeed;
-    private Button    btnAudioTrack;
     private TextView txtDuration;
     private TextView  txtCurPosition;
     private ImageView btnPlayControl;
@@ -75,10 +74,10 @@ public class PlayerViewController implements View.OnClickListener {
     public void initView(View view) {
         playBar        = view.findViewById(R.id.play_bar);
         btnSpeed       = view.findViewById(R.id.btn_speed);
-        btnAudioTrack  = view.findViewById(R.id.btn_audio_track);
         txtDuration    = view.findViewById(R.id.txt_duration);
         txtCurPosition = view.findViewById(R.id.txt_cur_position);
         btnPlayControl = view.findViewById(R.id.btn_play_pause);
+        Button btnAudioTrack  = view.findViewById(R.id.btn_audio_track);
 
         SurfaceView surfaceView = view.findViewById(R.id.surface_player);
         surfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {

@@ -80,6 +80,10 @@ public:
 
     AVFormatContext *m_formatCtx;
 
+    int m_videoIndex;
+    int m_audioIndex;
+    int m_subtitleIndex;
+
     AVStream *m_audioStream;
     AVStream *m_videoStream;
     AVStream *m_subtitleStream;
@@ -117,9 +121,6 @@ public:
     int m_loop;
     int m_mute;
     int m_frameDrop;
-    int m_videoIndex;
-    int m_audioIndex;
-    int m_subtitleIndex;
     int m_reorderVideoPts;
 };
 

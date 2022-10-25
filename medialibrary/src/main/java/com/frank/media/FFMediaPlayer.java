@@ -50,6 +50,7 @@ public class FFMediaPlayer implements IMediaPlayer {
     private native void native_seekTo(long msec) throws IllegalStateException;
     private native long native_getCurrentPosition();
     private native long native_getDuration();
+    private native int  native_selectTrack(int trackId, boolean selected);
     private native void native_setRate(float rate);
     private native void native_setMute(boolean mute);
     private native void native_setVolume(float volume);
@@ -248,6 +249,11 @@ public class FFMediaPlayer implements IMediaPlayer {
             trackList.add(mediaTrack);
         }
         return trackList;
+    }
+
+    @Override
+    public void selectTrack(int trackId) {
+        native_selectTrack(trackId, true);
     }
 
     @Override

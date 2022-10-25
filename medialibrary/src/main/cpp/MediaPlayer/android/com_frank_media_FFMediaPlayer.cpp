@@ -341,6 +341,15 @@ void FFMediaPlayer_setRate(JNIEnv *env, jobject thiz, jfloat speed) {
     mp->setRate(speed);
 }
 
+int FFMediaPlayer_selectTrack(JNIEnv *env, jobject thiz, int trackId, jboolean selected) {
+    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    if (mp == nullptr) {
+        jniThrowException(env, "java/lang/IllegalStateException");
+        return -1;
+    }
+    return mp->selectTrack(trackId, selected);
+}
+
 jlong FFMediaPlayer_getCurrentPosition(JNIEnv *env, jobject thiz) {
 
     FFMediaPlayer *mp = getMediaPlayer(env, thiz);
@@ -469,8 +478,7 @@ static const JNINativeMethod gMethods[] = {
         {"native_isPlaying", "()Z", (void *) FFMediaPlayer_isPlaying},
         {"native_getCurrentPosition", "()J", (void *) FFMediaPlayer_getCurrentPosition},
         {"native_getDuration", "()J", (void *) FFMediaPlayer_getDuration},
-        {"native_release", "()V", (void *) FFMediaPlayer_release},
-        {"native_reset", "()V", (void *) FFMediaPlayer_reset},
+        {"native_selectTrack", "(IZ)I", (void *) FFMediaPlayer_selectTrack},
         {"native_setVolume", "(F)V", (void *) FFMediaPlayer_setVolume},
         {"native_setMute", "(Z)V", (void *) FFMediaPlayer_setMute},
         {"native_setRate", "(F)V", (void *) FFMediaPlayer_setRate},
@@ -479,6 +487,8 @@ static const JNINativeMethod gMethods[] = {
         {"native_getMediaTrack", "(IILcom/frank/media/mediainfo/MediaTrack;)V", (void *) FFMediaPlayer_getMediaTrack},
         {"native_init", "()V", (void *)FFMediaPlayer_init},
         {"native_setup", "(Ljava/lang/Object;)V", (void *) FFMediaPlayer_setup},
+        {"native_reset", "()V", (void *) FFMediaPlayer_reset},
+        {"native_release", "()V", (void *) FFMediaPlayer_release},
         {"native_finalize", "()V", (void *) FFMediaPlayer_finalize},
 };
 

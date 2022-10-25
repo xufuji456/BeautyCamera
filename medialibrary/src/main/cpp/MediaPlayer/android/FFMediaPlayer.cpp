@@ -123,12 +123,6 @@ void FFMediaPlayer::start() {
     }
 }
 
-void FFMediaPlayer::stop() {
-    if (mediaPlayer) {
-        mediaPlayer->stop();
-    }
-}
-
 void FFMediaPlayer::pause() {
     if (mediaPlayer) {
         mediaPlayer->pause();
@@ -199,14 +193,11 @@ long FFMediaPlayer::getDuration() {
     return -1;
 }
 
-status_t FFMediaPlayer::reset() {
-    mPrepareSync = false;
+int FFMediaPlayer::selectTrack(int trackId, bool selected) {
     if (mediaPlayer != nullptr) {
-        mediaPlayer->reset();
-        delete mediaPlayer;
-        mediaPlayer = nullptr;
+        return mediaPlayer->selectTrack(trackId, selected);
     }
-    return NO_ERROR;
+    return -1;
 }
 
 status_t FFMediaPlayer::setVolume(float volume) {
@@ -234,6 +225,22 @@ const char *FFMediaPlayer::getMediaFormat() const {
 
 AVFormatContext *FFMediaPlayer::getMetadata() const {
     return mediaPlayer ? mediaPlayer->getMetadata() : nullptr;
+}
+
+void FFMediaPlayer::stop() {
+    if (mediaPlayer) {
+        mediaPlayer->stop();
+    }
+}
+
+status_t FFMediaPlayer::reset() {
+    mPrepareSync = false;
+    if (mediaPlayer != nullptr) {
+        mediaPlayer->reset();
+        delete mediaPlayer;
+        mediaPlayer = nullptr;
+    }
+    return NO_ERROR;
 }
 
 void FFMediaPlayer::notify(int msg, int ext1, int ext2, void *obj, int len) {

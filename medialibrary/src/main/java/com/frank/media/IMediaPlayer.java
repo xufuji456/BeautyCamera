@@ -63,6 +63,8 @@ public interface IMediaPlayer {
 
     List<MediaTrack> getMediaTrack(MediaType mediaType);
 
+    void selectTrack(int trackId);
+
     interface OnPreparedListener {
         void onPrepared(IMediaPlayer mp);
     }

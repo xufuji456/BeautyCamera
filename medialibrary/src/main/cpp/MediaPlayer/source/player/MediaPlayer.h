@@ -18,6 +18,40 @@
 
 
 class MediaPlayer : public Runnable {
+
+private:
+    Mutex mMutex;
+    Condition mCondition;
+    Thread *readThread;
+
+    PlayerParam *m_playerParam;
+
+    AudioDecoder *audioDecoder;
+    VideoDecoder *videoDecoder;
+    bool mExit;
+
+    int64_t mDuration;
+    int lastPaused;
+    int eof;
+    int attachmentRequest;
+
+    AudioRender *audioRender;
+    AudioResampler *audioResampler;
+
+    AVSync *mediaSync;
+
+private:
+    int readPackets();
+
+    int openDecoder(int streamIndex);
+
+    void closeDecoder(int streamIndex);
+
+    int openAudioRender(int64_t wanted_channel_layout, int wanted_nb_channels,
+                        int wanted_sample_rate);
+
+    void run() override;
+
 public:
     MediaPlayer();
 
@@ -39,9 +73,9 @@ public:
 
     void resume();
 
-    void stop();
-
     void seekTo(long timeMs);
+
+    int selectTrack(int trackId, bool selected);
 
     void setVolume(float volume);
 
@@ -69,37 +103,7 @@ public:
 
     void pcmQueueCallback(uint8_t *stream, int len);
 
-protected:
-    void run() override;
-
-private:
-    int readPackets();
-
-    int openDecoder(int streamIndex);
-
-    int openAudioRender(int64_t wanted_channel_layout, int wanted_nb_channels,
-                        int wanted_sample_rate);
-
-private:
-    Mutex mMutex;
-    Condition mCondition;
-    Thread *readThread;
-
-    PlayerParam *m_playerParam;
-
-    AudioDecoder *audioDecoder;
-    VideoDecoder *videoDecoder;
-    bool mExit;
-
-    int64_t mDuration;
-    int lastPaused;
-    int eof;
-    int attachmentRequest;
-
-    AudioRender *audioRender;
-    AudioResampler *audioResampler;
-
-    AVSync *mediaSync;
+    void stop();
 
 };
 

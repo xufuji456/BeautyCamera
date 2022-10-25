@@ -162,23 +162,6 @@ void MediaPlayer::resume() {
     mCondition.signal();
 }
 
-void MediaPlayer::stop() {
-    mMutex.lock();
-    m_playerParam->m_abortReq = 1;
-    mCondition.signal();
-    mMutex.unlock();
-    mMutex.lock();
-    while (!mExit) {
-        mCondition.wait(mMutex);
-    }
-    mMutex.unlock();
-    if (readThread != nullptr) {
-        readThread->join();
-        delete readThread;
-        readThread = nullptr;
-    }
-}
-
 void MediaPlayer::seekTo(long timeMs) {
     if (mDuration <= 0) {
         return;
@@ -200,6 +183,64 @@ void MediaPlayer::seekTo(long timeMs) {
         m_playerParam->m_seekFlag &= ~AVSEEK_FLAG_BYTE;
         m_playerParam->m_seekRequest = 1;
         mCondition.signal();
+    }
+}
+
+int MediaPlayer::selectTrack(int streamId, bool selected) {
+    PlayerParam *is = m_playerParam;
+    AVFormatContext *ic = is->m_formatCtx;
+    if (streamId < 0 || streamId >= ic->nb_streams) {
+        av_log(nullptr, AV_LOG_ERROR, "invalid stream %d >= (%d)\n", streamId, ic->nb_streams);
+        return -1;
+    }
+
+    AVCodecParameters *codecpar = ic->streams[streamId]->codecpar;
+    long current_pos = getCurrentPosition();
+
+    if (selected) {
+        if (streamId == is->m_videoIndex || streamId == is->m_audioIndex || streamId == is->m_subtitleIndex) {
+            av_log(nullptr, AV_LOG_ERROR, "stream has been selected\n");
+            return 0;
+        }
+        switch (codecpar->codec_type) {
+            case AVMEDIA_TYPE_VIDEO:
+                if (streamId != is->m_videoIndex && is->m_videoIndex >= 0)
+                    closeDecoder(is->m_videoIndex);
+                break;
+            case AVMEDIA_TYPE_AUDIO:
+                if (streamId != is->m_audioIndex && is->m_audioIndex >= 0)
+                    closeDecoder(is->m_audioIndex);
+                break;
+            case AVMEDIA_TYPE_SUBTITLE:
+                if (streamId != is->m_subtitleIndex && is->m_subtitleIndex >= 0)
+                    closeDecoder(is->m_subtitleIndex);
+                break;
+            default:
+                av_log(nullptr, AV_LOG_ERROR, "select invalid stream: %d, type: %d\n", streamId, codecpar->codec_type);
+                return -1;
+        }
+        int ret = openDecoder(streamId);
+        seekTo(current_pos);
+        return ret;
+    } else {
+        switch (codecpar->codec_type) {
+            case AVMEDIA_TYPE_VIDEO:
+                if (streamId == is->m_videoIndex)
+                    closeDecoder(is->m_videoIndex);
+                break;
+            case AVMEDIA_TYPE_AUDIO:
+                if (streamId == is->m_audioIndex)
+                    closeDecoder(is->m_audioIndex);
+                break;
+            case AVMEDIA_TYPE_SUBTITLE:
+                if (streamId == is->m_subtitleIndex)
+                    closeDecoder(is->m_subtitleIndex);
+                break;
+            default:
+                av_log(nullptr, AV_LOG_ERROR, "unselect invalid stream: %d, type: %d\n", streamId, codecpar->codec_type);
+                return -1;
+        }
+        return 0;
     }
 }
 
@@ -309,6 +350,23 @@ const char *MediaPlayer::getMediaFormat() const {
 
 AVFormatContext *MediaPlayer::getMetadata() const {
     return m_playerParam->m_formatCtx;
+}
+
+void MediaPlayer::stop() {
+    mMutex.lock();
+    m_playerParam->m_abortReq = 1;
+    mCondition.signal();
+    mMutex.unlock();
+    mMutex.lock();
+    while (!mExit) {
+        mCondition.wait(mMutex);
+    }
+    mMutex.unlock();
+    if (readThread != nullptr) {
+        readThread->join();
+        delete readThread;
+        readThread = nullptr;
+    }
 }
 
 void MediaPlayer::run() {
@@ -691,17 +749,11 @@ int MediaPlayer::readPackets() {
         }
     }
 
-    if (audioDecoder) {
-        audioDecoder->stop();
+    if (m_playerParam->m_audioIndex >= 0) {
+        closeDecoder(m_playerParam->m_audioIndex);
     }
-    if (videoDecoder) {
-        videoDecoder->stop();
-    }
-    if (audioRender) {
-        audioRender->stop();
-    }
-    if (mediaSync) {
-        mediaSync->stop();
+    if (m_playerParam->m_videoIndex >= 0) {
+        closeDecoder(m_playerParam->m_videoIndex);
     }
     mExit = true;
     mCondition.signal();
@@ -727,11 +779,11 @@ int MediaPlayer::readPackets() {
 }
 
 int MediaPlayer::openDecoder(int streamIndex) {
+    int ret;
     AVCodecContext *avctx;
     AVCodec *codec = nullptr;
     AVDictionary *opts = nullptr;
-    AVDictionaryEntry *t = nullptr;
-    int ret = 0;
+    AVDictionaryEntry *t;
     const char *forcedCodecName = nullptr;
 
     if (streamIndex < 0 || streamIndex >= m_playerParam->m_formatCtx->nb_streams) {
@@ -854,6 +906,33 @@ int MediaPlayer::openDecoder(int streamIndex) {
     av_dict_free(&opts);
 
     return ret;
+}
+
+void MediaPlayer::closeDecoder(int streamIndex) {
+    if (streamIndex < 0 || streamIndex >= m_playerParam->m_formatCtx->nb_streams)
+        return;
+    AVStream *stream = m_playerParam->m_formatCtx->streams[streamIndex];
+    switch (stream->codecpar->codec_type) {
+        case AVMEDIA_TYPE_AUDIO:
+            if (audioDecoder) {
+                audioDecoder->stop();
+            }
+            m_playerParam->m_audioIndex  = -1;
+            m_playerParam->m_audioStream = nullptr;
+            break;
+        case AVMEDIA_TYPE_VIDEO:
+            if (videoDecoder) {
+                videoDecoder->stop();
+            }
+            m_playerParam->m_videoIndex  = -1;
+            m_playerParam->m_videoStream = nullptr;
+            break;
+        case AVMEDIA_TYPE_SUBTITLE:
+            av_log(nullptr, AV_LOG_INFO, "not implementation...");
+            break;
+        default:
+            break;
+    }
 }
 
 void audioPCMQueueCallback(void *opaque, uint8_t *stream, int len) {
