@@ -58,6 +58,8 @@ public:
 
     void setVideoRender(VideoRender *videoRender);
 
+    void setAudioDecoder(AudioDecoder *audioDecoder);
+
     void setMaxDuration(double maxDuration);
 
     void refreshVideoTimer();

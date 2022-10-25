@@ -161,7 +161,9 @@ public class PlayerViewController implements View.OnClickListener {
                     .setItems(tracks, (dialogInterface, i) -> {
                         String msg = "select:" + audioTrackList.get(i).language;
                         Toast.makeText(mContext, msg, Toast.LENGTH_SHORT).show();
-                    }).show();
+                        videoPlayer.selectTrack(audioTrackList.get(i).trackId);
+                    })
+                    .show();
         }
     }
 

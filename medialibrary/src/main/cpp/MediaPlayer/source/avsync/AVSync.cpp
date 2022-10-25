@@ -33,11 +33,6 @@ AVSync::~AVSync() {
 void AVSync::reset() {
     stop();
 
-    m_videoRender  = nullptr;
-    m_videoDecoder = nullptr;
-    m_audioDecoder = nullptr;
-    m_playerParam  = nullptr;
-
     if (m_buffer) {
         av_freep(&m_buffer);
         m_buffer = nullptr;
@@ -69,6 +64,10 @@ void AVSync::start(VideoDecoder *videoDecoder, AudioDecoder *audioDecoder) {
 void AVSync::setVideoRender(VideoRender *render) {
     Mutex::Autolock lock(m_syncMutex);
     this->m_videoRender = render;
+}
+
+void AVSync::setAudioDecoder(AudioDecoder *audioDecoder) {
+    this->m_audioDecoder = audioDecoder;
 }
 
 void AVSync::setMaxDuration(double maxDuration) {

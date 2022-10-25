@@ -53,7 +53,6 @@ MediaPlayer::MediaPlayer() {
     videoDecoder = nullptr;
     attachmentRequest = 0;
 
-    audioRender = new OpenSLAudioRender();
     mediaSync = new AVSync(m_playerParam);
     audioResampler = nullptr;
     readThread = nullptr;
@@ -373,6 +372,36 @@ void MediaPlayer::run() {
     readPackets();
 }
 
+void startAudioDecoder(PlayerParam *playerParam, AudioDecoder *audioDecoder) {
+    if (audioDecoder != nullptr) {
+        audioDecoder->start();
+        if (playerParam->m_messageQueue) {
+            playerParam->m_messageQueue->sendMessage(MSG_AUDIO_DECODE_START);
+        }
+    } else {
+        if (playerParam->m_syncType == AV_SYNC_AUDIO) {
+            playerParam->m_syncType = AV_SYNC_EXTERNAL;
+        }
+    }
+}
+
+void MediaPlayer::startAudioRender(PlayerParam *playerParam) {
+    if (playerParam->m_audioCodecCtx != nullptr) {
+        AVCodecContext *avctx = playerParam->m_audioCodecCtx;
+        int ret = openAudioRender(avctx->channel_layout, avctx->channels,
+                              avctx->sample_rate);
+        if (ret < 0) {
+            av_log(nullptr, AV_LOG_WARNING, "could not open audio device\n");
+            // audio render fail, use external as master clock
+            if (playerParam->m_syncType == AV_SYNC_AUDIO) {
+                playerParam->m_syncType = AV_SYNC_EXTERNAL;
+            }
+        } else {
+            audioRender->start();
+        }
+    }
+}
+
 int MediaPlayer::readPackets() {
     int ret = 0;
     AVFormatContext *ic;
@@ -537,37 +566,6 @@ int MediaPlayer::readPackets() {
     } else {
         if (m_playerParam->m_syncType == AV_SYNC_VIDEO) {
             m_playerParam->m_syncType = AV_SYNC_AUDIO;
-        }
-    }
-
-    if (audioDecoder != nullptr) {
-        audioDecoder->start();
-        if (m_playerParam->m_messageQueue) {
-            m_playerParam->m_messageQueue->sendMessage(MSG_AUDIO_DECODE_START);
-        }
-    } else {
-        if (m_playerParam->m_syncType == AV_SYNC_AUDIO) {
-            m_playerParam->m_syncType = AV_SYNC_EXTERNAL;
-        }
-    }
-
-    if (audioDecoder != nullptr) {
-        AVCodecContext *avctx = audioDecoder->getCodecContext();
-        ret = openAudioRender(avctx->channel_layout, avctx->channels,
-                              avctx->sample_rate);
-        if (ret < 0) {
-            av_log(nullptr, AV_LOG_WARNING, "could not open audio device\n");
-            // 如果音频设备打开失败，则调整时钟的同步类型
-            if (m_playerParam->m_syncType == AV_SYNC_AUDIO) {
-                if (videoDecoder != nullptr) {
-                    m_playerParam->m_syncType = AV_SYNC_VIDEO;
-                } else {
-                    m_playerParam->m_syncType = AV_SYNC_EXTERNAL;
-                }
-            }
-        } else {
-            // 启动音频输出设备
-            audioRender->start();
         }
     }
 
@@ -873,9 +871,11 @@ int MediaPlayer::openDecoder(int streamIndex) {
                 m_playerParam->m_audioStream   = m_playerParam->m_formatCtx->streams[streamIndex];
                 m_playerParam->m_audioCodecCtx = avctx;
                 audioDecoder = new AudioDecoder(m_playerParam);
+                startAudioDecoder(m_playerParam, audioDecoder);
+                startAudioRender(m_playerParam);
+                mediaSync->setAudioDecoder(audioDecoder);
                 break;
             }
-
             case AVMEDIA_TYPE_VIDEO: {
                 m_playerParam->m_videoIndex    = streamIndex;
                 m_playerParam->m_videoStream   = m_playerParam->m_formatCtx->streams[streamIndex];
@@ -884,14 +884,12 @@ int MediaPlayer::openDecoder(int streamIndex) {
                 attachmentRequest = 1;
                 break;
             }
-
             default:{
                 break;
             }
         }
     } while (false);
 
-    // 准备失败，则需要释放创建的解码上下文
     if (ret < 0) {
         if (m_playerParam->m_messageQueue) {
             const char errorMsg[] = "failed to open stream!";
@@ -902,7 +900,6 @@ int MediaPlayer::openDecoder(int streamIndex) {
         avcodec_free_context(&avctx);
     }
 
-    // 释放参数
     av_dict_free(&opts);
 
     return ret;
@@ -914,8 +911,19 @@ void MediaPlayer::closeDecoder(int streamIndex) {
     AVStream *stream = m_playerParam->m_formatCtx->streams[streamIndex];
     switch (stream->codecpar->codec_type) {
         case AVMEDIA_TYPE_AUDIO:
+            if (audioResampler) {
+                delete audioResampler;
+                audioResampler = nullptr;
+            }
+            if (audioRender) {
+                audioRender->stop();
+                delete audioRender;
+                audioRender = nullptr;
+            }
             if (audioDecoder) {
                 audioDecoder->stop();
+                delete audioDecoder;
+                audioDecoder = nullptr;
             }
             m_playerParam->m_audioIndex  = -1;
             m_playerParam->m_audioStream = nullptr;
@@ -923,6 +931,8 @@ void MediaPlayer::closeDecoder(int streamIndex) {
         case AVMEDIA_TYPE_VIDEO:
             if (videoDecoder) {
                 videoDecoder->stop();
+                delete videoDecoder;
+                videoDecoder = nullptr;
             }
             m_playerParam->m_videoIndex  = -1;
             m_playerParam->m_videoStream = nullptr;
@@ -969,6 +979,7 @@ int MediaPlayer::openAudioRender(int64_t wanted_channel_layout, int wanted_nb_ch
     wanted_spec.opaque = this;
 
     // Audio Render
+    audioRender = new OpenSLAudioRender();
     while (audioRender->open(&wanted_spec, &spec) < 0) {
         av_log(nullptr, AV_LOG_WARNING, "Failed to open audio device: (%d channels, %d Hz)!\n",
                wanted_spec.channels, wanted_spec.freq);
@@ -998,13 +1009,10 @@ int MediaPlayer::openAudioRender(int64_t wanted_channel_layout, int wanted_nb_ch
     }
 
     // 初始化音频重采样器
-    if (!audioResampler) {
-        audioResampler = new AudioResampler(m_playerParam, audioDecoder, mediaSync);
-    }
-    // 设置需要重采样的参数
+    audioResampler = new AudioResampler(m_playerParam, audioDecoder, mediaSync);
     audioResampler->setResampleParams(&spec, wanted_channel_layout);
 
-    return spec.size;
+    return 0;
 }
 
 void MediaPlayer::pcmQueueCallback(uint8_t *stream, int len) {

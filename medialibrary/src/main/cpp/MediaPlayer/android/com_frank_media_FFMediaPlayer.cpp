@@ -444,7 +444,7 @@ void FFMediaPlayer_getMediaTrack(JNIEnv *env, jobject thiz, int mediaType, int i
             AVStream *stream = formatCtx->streams[i];
             jfieldID trackId = env->GetFieldID(trackClass, "trackId", "I");
             jmethodID languageId = env->GetMethodID(trackClass, "setLanguage", "(Ljava/lang/String;)V");
-            env->SetIntField(mediaTrack, trackId, stream->id);
+            env->SetIntField(mediaTrack, trackId, stream->index);
             if (stream->metadata) {
                 for (i = 0; i < stream->metadata->count; i++) {
                     AVDictionaryEntry *entry = stream->metadata->elements + i;

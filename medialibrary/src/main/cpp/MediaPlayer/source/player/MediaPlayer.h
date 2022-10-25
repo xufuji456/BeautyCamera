@@ -35,7 +35,7 @@ private:
     int eof;
     int attachmentRequest;
 
-    AudioRender *audioRender;
+    AudioRender *audioRender{};
     AudioResampler *audioResampler;
 
     AVSync *mediaSync;
@@ -49,6 +49,8 @@ private:
 
     int openAudioRender(int64_t wanted_channel_layout, int wanted_nb_channels,
                         int wanted_sample_rate);
+
+    void startAudioRender(PlayerParam *playerParam);
 
     void run() override;
 
