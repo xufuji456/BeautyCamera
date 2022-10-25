@@ -7,9 +7,14 @@ import androidx.annotation.NonNull;
 import android.util.Log;
 import android.view.Surface;
 
+import com.frank.media.mediainfo.MediaTrack;
+import com.frank.media.mediainfo.MediaType;
+
 import java.io.FileDescriptor;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FFMediaPlayer implements IMediaPlayer {
 
@@ -49,6 +54,8 @@ public class FFMediaPlayer implements IMediaPlayer {
     private native void _setMute(boolean mute);
     private native void _setVolume(float volume);
     private native String native_getMediaFormat();
+    private native int native_getTrackCount(int mediaType);
+    private native void native_getMediaTrack(int mediaType, int index, MediaTrack mediaTrack);
     private native void _reset();
     private native void _stop() throws IllegalStateException;
     private native void _release();
@@ -229,6 +236,19 @@ public class FFMediaPlayer implements IMediaPlayer {
     @Override
     public String getMediaFormat() {
         return native_getMediaFormat();
+    }
+
+    @Override
+    public List<MediaTrack> getMediaTrack(MediaType mediaType) {
+        List<MediaTrack> trackList = new ArrayList<>();
+        int type = mediaType.ordinal();
+        int trackCount = native_getTrackCount(type);
+        for (int i=0; i<trackCount; i++) {
+            MediaTrack mediaTrack = new MediaTrack();
+            native_getMediaTrack(type, i, mediaTrack);
+            trackList.add(mediaTrack);
+        }
+        return trackList;
     }
 
     @Override

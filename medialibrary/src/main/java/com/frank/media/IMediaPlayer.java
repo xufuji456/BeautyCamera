@@ -3,8 +3,12 @@ package com.frank.media;
 import androidx.annotation.NonNull;
 import android.view.Surface;
 
+import com.frank.media.mediainfo.MediaTrack;
+import com.frank.media.mediainfo.MediaType;
+
 import java.io.FileDescriptor;
 import java.io.IOException;
+import java.util.List;
 
 public interface IMediaPlayer {
 
@@ -56,6 +60,8 @@ public interface IMediaPlayer {
     void setMute(boolean mute);
 
     String getMediaFormat();
+
+    List<MediaTrack> getMediaTrack(MediaType mediaType);
 
     interface OnPreparedListener {
         void onPrepared(IMediaPlayer mp);

@@ -408,6 +408,54 @@ jstring FFMediaPlayer_getMediaFormat(JNIEnv *env, jobject thiz) {
     return env->NewStringUTF(mp->getMediaFormat());
 }
 
+int FFMediaPlayer_getTrackCount(JNIEnv *env, jobject thiz, int mediaType) {
+    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    if (mp == nullptr || mp->getMetadata() == nullptr) {
+        return 0;
+    }
+    int count = 0;
+    AVFormatContext *formatCtx = mp->getMetadata();
+    for (int i = 0; i < formatCtx->nb_streams; i++) {
+        if (mediaType == formatCtx->streams[i]->codecpar->codec_type) {
+            count++;
+        }
+    }
+    return count;
+}
+
+void FFMediaPlayer_getMediaTrack(JNIEnv *env, jobject thiz, int mediaType, int index, jobject mediaTrack) {
+    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    if (mp == nullptr || mp->getMetadata() == nullptr) {
+        return;
+    }
+    int count = 0;
+    jclass trackClass = env->GetObjectClass(mediaTrack);
+    AVFormatContext *formatCtx = mp->getMetadata();
+    for (int i = 0; i < formatCtx->nb_streams; i++) {
+        if (mediaType != formatCtx->streams[i]->codecpar->codec_type) {
+            continue;
+        }
+        if (count == index) {
+            AVStream *stream = formatCtx->streams[i];
+            jfieldID trackId = env->GetFieldID(trackClass, "trackId", "I");
+            jmethodID languageId = env->GetMethodID(trackClass, "setLanguage", "(Ljava/lang/String;)V");
+            env->SetIntField(mediaTrack, trackId, stream->id);
+            if (stream->metadata) {
+                for (i = 0; i < stream->metadata->count; i++) {
+                    AVDictionaryEntry *entry = stream->metadata->elements + i;
+                    if (strcmp("language", entry->key) == 0) {
+                        jstring value = env->NewStringUTF(entry->value);
+                        env->CallVoidMethod(mediaTrack, languageId, value);
+                    }
+                }
+            }
+            break;
+        } else {
+            count++;
+        }
+    }
+}
+
 static const JNINativeMethod gMethods[] = {
         {"_setDataSource", "(Ljava/lang/String;)V", (void *)FFMediaPlayer_setDataSource},
         {"_setDataSource", "(Ljava/io/FileDescriptor;J)V", (void *)FFMediaPlayer_setDataSourceFD},
@@ -431,6 +479,8 @@ static const JNINativeMethod gMethods[] = {
         {"_setMute", "(Z)V", (void *) FFMediaPlayer_setMute},
         {"_setRate", "(F)V", (void *) FFMediaPlayer_setRate},
         {"native_getMediaFormat", "()Ljava/lang/String;", (void *) FFMediaPlayer_getMediaFormat},
+        {"native_getTrackCount", "(I)I", (void *) FFMediaPlayer_getTrackCount},
+        {"native_getMediaTrack", "(IILcom/frank/media/mediainfo/MediaTrack;)V", (void *) FFMediaPlayer_getMediaTrack},
         {"native_init", "()V", (void *)FFMediaPlayer_init},
         {"native_setup", "(Ljava/lang/Object;)V", (void *) FFMediaPlayer_setup},
         {"native_finalize", "()V", (void *) FFMediaPlayer_finalize},

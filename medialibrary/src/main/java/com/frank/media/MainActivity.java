@@ -19,11 +19,15 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
+import com.frank.media.mediainfo.MediaTrack;
+import com.frank.media.mediainfo.MediaType;
+
 import java.io.IOException;
+import java.util.List;
 
 public class MainActivity extends Activity implements View.OnClickListener {
 
-    private final static String path = "sdcard/beyond.mp4";
+    private final static String path = "sdcard/angry_birds.mp4";
 
     private FFMediaPlayer videoPlayer;
 
@@ -139,6 +143,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
             } else {
                 videoPlayer.start();
                 btnPlayControl.setImageResource(R.drawable.ic_pause);
+            }
+
+            List<MediaTrack> audioTrackList = videoPlayer.getMediaTrack(MediaType.MEDIA_TYPE_SUBTITLE);
+            for (int i=0; i<audioTrackList.size(); i++) {
+                MediaTrack mediaTrack = audioTrackList.get(i);
+                Log.e("MainActivity", "trackId=" + mediaTrack.trackId + ", language=" + mediaTrack.language);
             }
         } else if (view.getId() == R.id.btn_speed) {
             currentSpeed += 0.5f;

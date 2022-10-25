@@ -1,11 +1,8 @@
-//
-// Created by cain on 2018/12/28.
-//
 
 #ifndef NATIVE_LOG_H
 #define NATIVE_LOG_H
 
-#define JNI_TAG "CainPlayer"
+#define JNI_TAG "FFMediaPlayer"
 
 #if defined(__ANDROID__)
 
