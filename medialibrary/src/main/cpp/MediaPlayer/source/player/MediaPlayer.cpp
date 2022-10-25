@@ -911,14 +911,17 @@ void MediaPlayer::closeDecoder(int streamIndex) {
     AVStream *stream = m_playerParam->m_formatCtx->streams[streamIndex];
     switch (stream->codecpar->codec_type) {
         case AVMEDIA_TYPE_AUDIO:
-            if (audioResampler) {
-                delete audioResampler;
-                audioResampler = nullptr;
+            if (audioDecoder) {
+                audioDecoder->flush();
             }
             if (audioRender) {
                 audioRender->stop();
                 delete audioRender;
                 audioRender = nullptr;
+            }
+            if (audioResampler) {
+                delete audioResampler;
+                audioResampler = nullptr;
             }
             if (audioDecoder) {
                 audioDecoder->stop();
