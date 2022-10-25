@@ -46,7 +46,20 @@
             android:layout_height="36dp"
             android:layout_centerHorizontal="true"
             android:layout_below="@+id/play_bar"
+            android:layout_marginTop="16dp"
+            android:background="?android:attr/selectableItemBackground"/>
+
+        <Button
+            android:id="@+id/btn_audio_track"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/play_bar"
             android:layout_marginTop="10dp"
+            android:layout_toStartOf="@+id/btn_play_pause"
+            android:layout_marginEnd="20dp"
+            android:textColor="@color/blue"
+            android:text="track"
             android:background="?android:attr/selectableItemBackground"/>
 
         <Button
@@ -55,7 +68,7 @@
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_below="@+id/play_bar"
-            android:layout_marginTop="3dp"
+            android:layout_marginTop="10dp"
             android:layout_toEndOf="@+id/btn_play_pause"
             android:layout_marginStart="20dp"
             android:textColor="@color/blue"

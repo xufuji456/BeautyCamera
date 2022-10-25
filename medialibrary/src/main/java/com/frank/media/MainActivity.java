@@ -2,7 +2,10 @@ package com.frank.media;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -16,6 +19,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -33,6 +37,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     private SeekBar   playBar;
     private Button    btnSpeed;
+    private Button    btnAudioTrack;
     private TextView  txtDuration;
     private TextView  txtCurPosition;
     private ImageView btnPlayControl;
@@ -77,6 +82,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private void initView() {
         playBar        = findViewById(R.id.play_bar);
         btnSpeed       = findViewById(R.id.btn_speed);
+        btnAudioTrack  = findViewById(R.id.btn_audio_track);
         txtDuration    = findViewById(R.id.txt_duration);
         txtCurPosition = findViewById(R.id.txt_cur_position);
         btnPlayControl = findViewById(R.id.btn_play_pause);
@@ -131,6 +137,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         });
 
         btnSpeed.setOnClickListener(this);
+        btnAudioTrack.setOnClickListener(this);
         btnPlayControl.setOnClickListener(this);
     }
 
@@ -144,12 +151,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 videoPlayer.start();
                 btnPlayControl.setImageResource(R.drawable.ic_pause);
             }
-
-            List<MediaTrack> audioTrackList = videoPlayer.getMediaTrack(MediaType.MEDIA_TYPE_SUBTITLE);
-            for (int i=0; i<audioTrackList.size(); i++) {
-                MediaTrack mediaTrack = audioTrackList.get(i);
-                Log.e("MainActivity", "trackId=" + mediaTrack.trackId + ", language=" + mediaTrack.language);
-            }
         } else if (view.getId() == R.id.btn_speed) {
             currentSpeed += 0.5f;
             if (currentSpeed > 2.0f) {
@@ -157,6 +158,18 @@ public class MainActivity extends Activity implements View.OnClickListener {
             }
             videoPlayer.setRate(currentSpeed);
             btnSpeed.setText(String.format("%s", currentSpeed));
+        } else if (view.getId() == R.id.btn_audio_track) {
+            List<MediaTrack> audioTrackList = videoPlayer.getMediaTrack(MediaType.MEDIA_TYPE_AUDIO);
+            String[] tracks = new String[audioTrackList.size()];
+            for (int i=0; i<audioTrackList.size(); i++) {
+                tracks[i] = audioTrackList.get(i).language;
+            }
+            AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+            dialog.setTitle("选择音轨")
+                    .setItems(tracks, (dialogInterface, i) -> {
+                        String msg = "select:" + audioTrackList.get(i).language;
+                        Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
+                    }).show();
         }
     }
 

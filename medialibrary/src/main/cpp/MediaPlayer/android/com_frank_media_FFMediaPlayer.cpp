@@ -92,13 +92,9 @@ static FFMediaPlayer *setMediaPlayer(JNIEnv *env, jobject thiz, long mediaPlayer
     return old;
 }
 
-// If exception is NULL and opStatus is not OK, this method sends an error
-// event to the client application; otherwise, if exception is not NULL and
-// opStatus is not OK, this method throws the given exception to the client
-// application.
 static void process_media_player_call(JNIEnv *env, jobject thiz, int opStatus,
         const char* exception, const char *message) {
-    if (exception == nullptr) {  // Don't throw exception. Instead, send an event.
+    if (exception == nullptr) {
         if (opStatus != (int) OK) {
             FFMediaPlayer* mp = getMediaPlayer(env, thiz);
             if (mp != nullptr) mp->notify(MEDIA_ERROR, opStatus, 0);
@@ -457,27 +453,27 @@ void FFMediaPlayer_getMediaTrack(JNIEnv *env, jobject thiz, int mediaType, int i
 }
 
 static const JNINativeMethod gMethods[] = {
-        {"_setDataSource", "(Ljava/lang/String;)V", (void *)FFMediaPlayer_setDataSource},
-        {"_setDataSource", "(Ljava/io/FileDescriptor;J)V", (void *)FFMediaPlayer_setDataSourceFD},
-        {"_setVideoSurface", "(Landroid/view/Surface;)V", (void *) FFMediaPlayer_setVideoSurface},
-        {"_prepare", "()V", (void *) FFMediaPlayer_prepare},
-        {"_prepareAsync", "()V", (void *) FFMediaPlayer_prepareAsync},
-        {"_start", "()V", (void *) FFMediaPlayer_start},
-        {"_stop", "()V", (void *) FFMediaPlayer_stop},
-        {"_resume", "()V", (void *) FFMediaPlayer_resume},
-        {"_getRotate", "()I", (void *) FFMediaPlayer_getRotate},
-        {"_getVideoWidth", "()I", (void *) FFMediaPlayer_getVideoWidth},
-        {"_getVideoHeight", "()I", (void *) FFMediaPlayer_getVideoHeight},
-        {"_seekTo", "(J)V", (void *) FFMediaPlayer_seekTo},
-        {"_pause", "()V", (void *) FFMediaPlayer_pause},
-        {"_isPlaying", "()Z", (void *) FFMediaPlayer_isPlaying},
-        {"_getCurrentPosition", "()J", (void *) FFMediaPlayer_getCurrentPosition},
-        {"_getDuration", "()J", (void *) FFMediaPlayer_getDuration},
-        {"_release", "()V", (void *) FFMediaPlayer_release},
-        {"_reset", "()V", (void *) FFMediaPlayer_reset},
-        {"_setVolume", "(F)V", (void *) FFMediaPlayer_setVolume},
-        {"_setMute", "(Z)V", (void *) FFMediaPlayer_setMute},
-        {"_setRate", "(F)V", (void *) FFMediaPlayer_setRate},
+        {"native_setDataSource", "(Ljava/lang/String;)V", (void *)FFMediaPlayer_setDataSource},
+        {"native_setDataSource", "(Ljava/io/FileDescriptor;J)V", (void *)FFMediaPlayer_setDataSourceFD},
+        {"native_setVideoSurface", "(Landroid/view/Surface;)V", (void *) FFMediaPlayer_setVideoSurface},
+        {"native_prepare", "()V", (void *) FFMediaPlayer_prepare},
+        {"native_prepareAsync", "()V", (void *) FFMediaPlayer_prepareAsync},
+        {"native_start", "()V", (void *) FFMediaPlayer_start},
+        {"native_stop", "()V", (void *) FFMediaPlayer_stop},
+        {"native_resume", "()V", (void *) FFMediaPlayer_resume},
+        {"native_getRotate", "()I", (void *) FFMediaPlayer_getRotate},
+        {"native_getVideoWidth", "()I", (void *) FFMediaPlayer_getVideoWidth},
+        {"native_getVideoHeight", "()I", (void *) FFMediaPlayer_getVideoHeight},
+        {"native_seekTo", "(J)V", (void *) FFMediaPlayer_seekTo},
+        {"native_pause", "()V", (void *) FFMediaPlayer_pause},
+        {"native_isPlaying", "()Z", (void *) FFMediaPlayer_isPlaying},
+        {"native_getCurrentPosition", "()J", (void *) FFMediaPlayer_getCurrentPosition},
+        {"native_getDuration", "()J", (void *) FFMediaPlayer_getDuration},
+        {"native_release", "()V", (void *) FFMediaPlayer_release},
+        {"native_reset", "()V", (void *) FFMediaPlayer_reset},
+        {"native_setVolume", "(F)V", (void *) FFMediaPlayer_setVolume},
+        {"native_setMute", "(Z)V", (void *) FFMediaPlayer_setMute},
+        {"native_setRate", "(F)V", (void *) FFMediaPlayer_setRate},
         {"native_getMediaFormat", "()Ljava/lang/String;", (void *) FFMediaPlayer_getMediaFormat},
         {"native_getTrackCount", "(I)I", (void *) FFMediaPlayer_getTrackCount},
         {"native_getMediaTrack", "(IILcom/frank/media/mediainfo/MediaTrack;)V", (void *) FFMediaPlayer_getMediaTrack},
@@ -486,8 +482,7 @@ static const JNINativeMethod gMethods[] = {
         {"native_finalize", "()V", (void *) FFMediaPlayer_finalize},
 };
 
-// 注册CainMediaPlayer的Native方法
-static int register_com_cgfay_media_CainMediaPlayer(JNIEnv *env) {
+static int register_com_frank_media_FFMediaPlayer(JNIEnv *env) {
     int numMethods = (sizeof(gMethods) / sizeof( (gMethods)[0]));
     jclass clazz = env->FindClass(CLASS_NAME);
     if (clazz == nullptr) {
@@ -511,7 +506,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     if (vm->GetEnv((void **) &env, JNI_VERSION_1_4) != JNI_OK) {
         return -1;
     }
-    if (register_com_cgfay_media_CainMediaPlayer(env) != JNI_OK) {
+    if (register_com_frank_media_FFMediaPlayer(env) != JNI_OK) {
         return -1;
     }
     return JNI_VERSION_1_4;

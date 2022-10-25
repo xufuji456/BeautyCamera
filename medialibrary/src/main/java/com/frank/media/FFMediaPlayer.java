@@ -33,32 +33,32 @@ public class FFMediaPlayer implements IMediaPlayer {
 
     private static native void native_init();
     private native void native_setup(Object player);
-    private native void _setDataSource(@NonNull String path)
+    private native void native_setDataSource(@NonNull String path)
             throws IOException, IllegalArgumentException, SecurityException, IllegalStateException;
-    private native void _setDataSource(FileDescriptor fd, long length)
+    private native void native_setDataSource(FileDescriptor fd, long length)
             throws IOException, IllegalArgumentException, IllegalStateException;
-    private native void _setVideoSurface(Surface surface);
-    private native void _prepare() throws IOException, IllegalStateException;
-    public native void _prepareAsync() throws IllegalStateException;
-    private native void _start() throws IllegalStateException;
-    private native void _pause() throws IllegalStateException;
-    private native void _resume() throws IllegalStateException;
-    private native int _getRotate();
-    private native int _getVideoWidth();
-    private native int _getVideoHeight();
-    private native boolean _isPlaying();
-    private native void _seekTo(long msec) throws IllegalStateException;
-    private native long _getCurrentPosition();
-    private native long _getDuration();
-    private native void _setRate(float rate);
-    private native void _setMute(boolean mute);
-    private native void _setVolume(float volume);
+    private native void native_setVideoSurface(Surface surface);
+    private native void native_prepare() throws IOException, IllegalStateException;
+    private native void native_prepareAsync() throws IllegalStateException;
+    private native void native_start() throws IllegalStateException;
+    private native void native_pause() throws IllegalStateException;
+    private native void native_resume() throws IllegalStateException;
+    private native int  native_getRotate();
+    private native int  native_getVideoWidth();
+    private native int  native_getVideoHeight();
+    private native boolean native_isPlaying();
+    private native void native_seekTo(long msec) throws IllegalStateException;
+    private native long native_getCurrentPosition();
+    private native long native_getDuration();
+    private native void native_setRate(float rate);
+    private native void native_setMute(boolean mute);
+    private native void native_setVolume(float volume);
     private native String native_getMediaFormat();
-    private native int native_getTrackCount(int mediaType);
+    private native int  native_getTrackCount(int mediaType);
     private native void native_getMediaTrack(int mediaType, int index, MediaTrack mediaTrack);
-    private native void _reset();
-    private native void _stop() throws IllegalStateException;
-    private native void _release();
+    private native void native_reset();
+    private native void native_stop() throws IllegalStateException;
+    private native void native_release();
     private native void native_finalize();
 
     public FFMediaPlayer() {
@@ -76,7 +76,7 @@ public class FFMediaPlayer implements IMediaPlayer {
 
     @Override
     public void setSurface(Surface surface) {
-        _setVideoSurface(surface);
+        native_setVideoSurface(surface);
         setScreenOnWhilePlaying(true);
     }
 
@@ -103,7 +103,7 @@ public class FFMediaPlayer implements IMediaPlayer {
 
     public void setDataSource(@NonNull String path)
             throws IOException, IllegalArgumentException, SecurityException, IllegalStateException {
-        _setDataSource(path);
+        native_setDataSource(path);
     }
 
     @Override
@@ -115,12 +115,12 @@ public class FFMediaPlayer implements IMediaPlayer {
     @Override
     public void setDataSource(FileDescriptor fd, long length)
             throws IOException, IllegalArgumentException, IllegalStateException {
-        _setDataSource(fd, length);
+        native_setDataSource(fd, length);
     }
 
     @Override
     public void prepare() throws IOException, IllegalStateException {
-        _prepare();
+        native_prepare();
     }
 
     /**
@@ -135,27 +135,27 @@ public class FFMediaPlayer implements IMediaPlayer {
      */
     @Override
     public void prepareAsync() throws IllegalStateException {
-        _prepareAsync();
+        native_prepareAsync();
     }
 
     @Override
     public void start() throws IllegalStateException {
-        _start();
+        native_start();
     }
 
     @Override
     public void stop() throws IllegalStateException {
-        _stop();
+        native_stop();
     }
 
     @Override
     public void pause() throws IllegalStateException {
-        _pause();
+        native_pause();
     }
 
     @Override
     public void resume() throws IllegalStateException {
-        _resume();
+        native_resume();
     }
 
     @Override
@@ -165,17 +165,17 @@ public class FFMediaPlayer implements IMediaPlayer {
 
     @Override
     public int getRotate() {
-        return _getRotate();
+        return native_getRotate();
     }
 
     @Override
     public int getVideoWidth() {
-        return _getVideoWidth();
+        return native_getVideoWidth();
     }
 
     @Override
     public int getVideoHeight() {
-        return _getVideoHeight();
+        return native_getVideoHeight();
     }
 
     /**
@@ -185,22 +185,22 @@ public class FFMediaPlayer implements IMediaPlayer {
      */
     @Override
     public boolean isPlaying() {
-        return _isPlaying();
+        return native_isPlaying();
     }
 
     @Override
     public void seekTo(long msec) throws IllegalStateException {
-        _seekTo(msec);
+        native_seekTo(msec);
     }
 
     @Override
     public long getCurrentPosition() {
-        return _getCurrentPosition();
+        return native_getCurrentPosition();
     }
 
     @Override
     public long getDuration() {
-        return _getDuration();
+        return native_getDuration();
     }
 
     @Override
@@ -209,28 +209,27 @@ public class FFMediaPlayer implements IMediaPlayer {
         mOnPreparedListener = null;
         mOnCompletionListener = null;
         mOnErrorListener = null;
-        _release();
+        native_release();
     }
 
     @Override
     public void reset() {
-        _reset();
-        // make sure none of the listeners get called anymore
         mEventHandler.removeCallbacksAndMessages(null);
+        native_reset();
     }
 
     @Override
     public void setVolume(float volume) {
-        _setVolume(volume);
+        native_setVolume(volume);
     }
 
     @Override
     public void setMute(boolean mute) {
-        _setMute(mute);
+        native_setMute(mute);
     }
 
     public void setRate(float rate) {
-        _setRate(rate);
+        native_setRate(rate);
     }
 
     @Override
