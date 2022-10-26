@@ -1,6 +1,3 @@
-//
-// Created by cain on 2019/2/2.
-//
 
 #ifndef ERRORS_H
 #define ERRORS_H
@@ -8,19 +5,11 @@
 #include <sys/types.h>
 #include <cerrno>
 
-#ifdef HAVE_MS_C_RUNTIME
-typedef int         status_t;
-#else
 typedef int32_t     status_t;
-#endif
-
-#ifdef _WIN32
-# undef NO_ERROR
-#endif
 
 enum {
-    OK                = 0,    // Everything's swell.
-    NO_ERROR          = 0,    // No errors.
+    OK                = 0,
+    NO_ERROR          = 0,
 
     UNKNOWN_ERROR       = 0x80000000,
 
@@ -49,9 +38,5 @@ enum {
     UNKNOWN_TRANSACTION = 0x80000006,
 #endif
 };
-
-#ifdef _WIN32
-# define NO_ERROR 0L
-#endif
 
 #endif //ERRORS_H

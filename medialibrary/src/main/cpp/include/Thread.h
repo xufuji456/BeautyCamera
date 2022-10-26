@@ -1,6 +1,3 @@
-//
-// Created by cain on 2018/12/28.
-//
 
 #ifndef THREAD_H
 #define THREAD_H
@@ -51,7 +48,7 @@ public:
 protected:
     static void *threadEntry(void *arg);
 
-    int schedPriority(ThreadPriority priority);
+    int setPriority(ThreadPriority priority);
 
     virtual void run();
 
@@ -62,10 +59,10 @@ protected:
     Mutex mMutex;
     Condition mCondition;
     Runnable *mRunnable;
-    ThreadPriority mPriority; // thread priority
-    pthread_t mId;  // thread id
-    bool mRunning;  // thread running
-    bool mNeedJoin; // if call detach function, then do not call join function
+    ThreadPriority mPriority;
+    pthread_t mId;
+    bool mRunning;
+    bool mNeedJoin;
 };
 
 inline Thread::Thread() {
@@ -110,7 +107,6 @@ inline void Thread::start() {
         pthread_create(&mId, NULL, threadEntry, this);
         mNeedJoin = true;
     }
-    // wait thread to run
     mMutex.lock();
     while (!isActive()) {
         mCondition.wait(mMutex);
@@ -120,7 +116,7 @@ inline void Thread::start() {
 
 inline void Thread::join() {
     if (mId == -1 || !isActive()) {
-        mId == -1;
+        mId = -1;
         mNeedJoin = false;
         return;
     }
@@ -159,9 +155,8 @@ inline void* Thread::threadEntry(void *arg) {
         thread->mRunning = true;
         thread->mCondition.signal();
 
-        thread->schedPriority(thread->mPriority);
+        thread->setPriority(thread->mPriority);
 
-        // when runnable is exit，run runnable else run()
         if (thread->mRunnable) {
             thread->mRunnable->run();
         } else {
@@ -177,7 +172,7 @@ inline void* Thread::threadEntry(void *arg) {
     return NULL;
 }
 
-inline int Thread::schedPriority(ThreadPriority priority) {
+inline int Thread::setPriority(ThreadPriority priority) {
     if (priority == Priority_Default) {
         return 0;
     }
@@ -205,7 +200,7 @@ inline int Thread::schedPriority(ThreadPriority priority) {
 }
 
 inline void Thread::run() {
-    // do nothing
+
 }
 
 inline void Thread::lock() {

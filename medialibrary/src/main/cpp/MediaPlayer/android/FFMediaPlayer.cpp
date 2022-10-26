@@ -340,12 +340,12 @@ void FFMediaPlayer::run() {
             }
             case MSG_BUFFERING_START: {
                 ALOGD("CanMediaPlayer is buffering start.\n");
-                postEvent(MEDIA_INFO, MEDIA_INFO_BUFFERING_START, msg.arg1);
+                postEvent(MEDIA_INFO, MEDIA_BUFFERING_START, msg.arg1);
                 break;
             }
             case MSG_BUFFERING_END: {
                 ALOGD("FFMediaPlayer is buffering finish.\n");
-                postEvent(MEDIA_INFO, MEDIA_INFO_BUFFERING_END, msg.arg1);
+                postEvent(MEDIA_INFO, MEDIA_BUFFERING_END, msg.arg1);
                 break;
             }
             case MSG_BUFFERING_UPDATE: {

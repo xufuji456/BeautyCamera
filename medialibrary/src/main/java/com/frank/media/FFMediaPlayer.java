@@ -280,6 +280,9 @@ public class FFMediaPlayer implements IMediaPlayer {
     private static final int MEDIA_ERROR              = 0x07;
     private static final int MEDIA_VIDEO_SIZE_CHANGED = 0x08;
     private static final int MEDIA_INFO               = 0x09;
+    private static final int MEDIA_BUFFERING_START    = 0x0A;
+    private static final int MEDIA_BUFFERING_UPDATE   = 0x0B;
+    private static final int MEDIA_BUFFERING_END      = 0x0C;
 
     private class EventHandler extends Handler {
 
