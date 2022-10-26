@@ -21,7 +21,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 
 import com.frank.media.player.FFMediaPlayer;
-import com.frank.media.player.IMediaPlayer;
+import com.frank.media.listener.IMediaPlayer;
 import com.frank.media.R;
 import com.frank.media.mediainfo.MediaInfo;
 import com.frank.media.util.BitmapUtil;

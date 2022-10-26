@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import android.util.Log;
 import android.view.Surface;
 
+import com.frank.media.listener.IMediaPlayer;
 import com.frank.media.mediainfo.MediaInfo;
 import com.frank.media.mediainfo.MediaTrack;
 import com.frank.media.mediainfo.MediaType;
@@ -201,21 +202,6 @@ public class FFMediaPlayer implements IMediaPlayer {
     }
 
     @Override
-    public void release() {
-        setScreenOnWhilePlaying(false);
-        mOnPreparedListener = null;
-        mOnCompletionListener = null;
-        mOnErrorListener = null;
-        native_release();
-    }
-
-    @Override
-    public void reset() {
-        mEventHandler.removeCallbacksAndMessages(null);
-        native_reset();
-    }
-
-    @Override
     public void setVolume(float volume) {
         native_setVolume(volume);
     }
@@ -225,6 +211,7 @@ public class FFMediaPlayer implements IMediaPlayer {
         native_setMute(mute);
     }
 
+    @Override
     public void setRate(float rate) {
         native_setRate(rate);
     }
@@ -257,6 +244,21 @@ public class FFMediaPlayer implements IMediaPlayer {
     @Override
     public Bitmap getCurrentFrame() {
         return null;
+    }
+
+    @Override
+    public void reset() {
+        mEventHandler.removeCallbacksAndMessages(null);
+        native_reset();
+    }
+
+    @Override
+    public void release() {
+        setScreenOnWhilePlaying(false);
+        mOnPreparedListener = null;
+        mOnCompletionListener = null;
+        mOnErrorListener = null;
+        native_release();
     }
 
     @Override

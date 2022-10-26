@@ -1,4 +1,4 @@
-package com.frank.media.player;
+package com.frank.media.listener;
 
 import androidx.annotation.NonNull;
 
@@ -51,13 +51,11 @@ public interface IMediaPlayer {
 
     long getDuration();
 
-    void reset();
-
-    void release();
-
     void setVolume(float volume);
 
     void setMute(boolean mute);
+
+    void setRate(float rate);
 
     MediaInfo getMediaInfo(MediaType mediaType);
 
@@ -66,6 +64,10 @@ public interface IMediaPlayer {
     Bitmap getCurrentFrame();
 
     void selectTrack(int trackId);
+
+    void reset();
+
+    void release();
 
     interface OnPreparedListener {
         void onPrepared(IMediaPlayer mp);
