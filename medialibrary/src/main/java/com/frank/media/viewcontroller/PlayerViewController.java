@@ -20,7 +20,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
-import com.frank.media.player.FFMediaPlayer;
+import com.frank.media.factory.PlayerFactory;
 import com.frank.media.listener.IMediaPlayer;
 import com.frank.media.R;
 import com.frank.media.mediainfo.MediaInfo;
@@ -41,7 +41,7 @@ public class PlayerViewController implements View.OnClickListener {
 
     private View mVideoView;
     private final Context mContext;
-    private FFMediaPlayer videoPlayer;
+    private IMediaPlayer videoPlayer;
 
     private SeekBar   playBar;
     private Button    btnSpeed;
@@ -115,7 +115,7 @@ public class PlayerViewController implements View.OnClickListener {
 
     private void initPlayer(Surface surface) {
         try {
-            videoPlayer = new FFMediaPlayer();
+            videoPlayer = PlayerFactory.createPlayer(PlayerFactory.PLAYER_TYPE_SYSTEM);
             videoPlayer.setDataSource(path);
             videoPlayer.setSurface(surface);
             videoPlayer.setOnPreparedListener(preparedListener);
@@ -260,7 +260,9 @@ public class PlayerViewController implements View.OnClickListener {
             builder.append("sampleRate: ").append(audioInfo.sampleRate).append("\n");
             builder.append("channels: ").append(audioInfo.channels).append("\n");
         }
-        txtMediaInfo.setText(builder.toString());
+        if (!builder.toString().isEmpty()) {
+            txtMediaInfo.setText(builder.toString());
+        }
     }
 
     private final IMediaPlayer.OnPreparedListener preparedListener = new IMediaPlayer.OnPreparedListener() {
