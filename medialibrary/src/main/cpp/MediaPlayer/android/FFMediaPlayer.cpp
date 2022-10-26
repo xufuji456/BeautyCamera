@@ -257,26 +257,25 @@ void FFMediaPlayer::postEvent(int what, int arg1, int arg2, void *obj) {
 
 void FFMediaPlayer::run() {
 
-    int retval;
+    int ret;
     while (true) {
 
         if (abortRequest) {
             break;
         }
-
         if (!mediaPlayer || !mediaPlayer->getMessageQueue()) {
             av_usleep(10 * 1000);
             continue;
         }
 
         FFMessage msg;
-        retval = mediaPlayer->getMessageQueue()->getMessage(&msg);
-        if (retval < 0) {
+        ret = mediaPlayer->getMessageQueue()->getMessage(&msg);
+        if (ret < 0) {
             ALOGE("getMessage error");
             break;
         }
 
-        assert(retval > 0);
+        assert(ret > 0);
 
         switch (msg.what) {
             case MSG_FLUSH: {
@@ -284,7 +283,6 @@ void FFMediaPlayer::run() {
                 postEvent(MEDIA_NOP, 0, 0);
                 break;
             }
-
             case MSG_ON_ERROR: {
                 ALOGD("FFMediaPlayer occurs error: %d\n", msg.arg1);
                 if (mPrepareSync) {
@@ -294,7 +292,6 @@ void FFMediaPlayer::run() {
                 postEvent(MEDIA_ERROR, msg.arg1, 0);
                 break;
             }
-
             case MSG_ON_PREPARED: {
                 ALOGD("FFMediaPlayer is prepared.\n");
                 if (mPrepareSync) {
@@ -304,108 +301,90 @@ void FFMediaPlayer::run() {
                 postEvent(MEDIA_PREPARED, 0, 0);
                 break;
             }
-
             case MSG_ON_START: {
                 ALOGD("FFMediaPlayer is started!");
                 postEvent(MEDIA_STARTED, 0, 0);
                 break;
             }
-
             case MSG_ON_COMPLETE: {
                 ALOGD("FFMediaPlayer is playback completed.\n");
                 postEvent(MEDIA_PLAYBACK_COMPLETE, 0, 0);
                 break;
             }
-
             case MSG_VIDEO_SIZE_CHANGED: {
                 ALOGD("FFMediaPlayer is video size changing: %d, %d\n", msg.arg1, msg.arg2);
                 postEvent(MEDIA_VIDEO_SIZE_CHANGED, msg.arg1, msg.arg2);
                 break;
             }
-
             case MSG_VIDEO_RENDER_START: {
                 ALOGD("FFMediaPlayer is video playing.\n");
                 postEvent(MEDIA_RENDER_FIRST_FRAME, 1, 0);
                 break;
             }
-
             case MSG_AUDIO_RENDER_START: {
                 ALOGD("FFMediaPlayer is audio playing.\n");
                 postEvent(MEDIA_RENDER_FIRST_FRAME, 0, 1);
                 break;
             }
-
             case MSG_VIDEO_ROTATION_CHANGED: {
                 ALOGD("FFMediaPlayer's video rotation is changing: %d\n", msg.arg1);
                 break;
             }
-
             case MSG_AUDIO_DECODE_START: {
                 ALOGD("FFMediaPlayer starts audio decoder.\n");
                 break;
             }
-
             case MSG_VIDEO_DECODE_START: {
                 ALOGD("FFMediaPlayer starts video decoder.\n");
                 break;
             }
-
             case MSG_BUFFERING_START: {
                 ALOGD("CanMediaPlayer is buffering start.\n");
                 postEvent(MEDIA_INFO, MEDIA_INFO_BUFFERING_START, msg.arg1);
                 break;
             }
-
             case MSG_BUFFERING_END: {
                 ALOGD("FFMediaPlayer is buffering finish.\n");
                 postEvent(MEDIA_INFO, MEDIA_INFO_BUFFERING_END, msg.arg1);
                 break;
             }
-
             case MSG_BUFFERING_UPDATE: {
                 ALOGD("FFMediaPlayer is buffering: %d, %d", msg.arg1, msg.arg2);
                 postEvent(MEDIA_BUFFERING_UPDATE, msg.arg1, msg.arg2);
                 break;
             }
-
             case MSG_BUFFERING_TIME_UPDATE: {
                 ALOGD("FFMediaPlayer buffering time update.");
                 break;
             }
-
             case MSG_SEEK_COMPLETE: {
                 ALOGD("FFMediaPlayer seeks completed!\n");
                 mSeeking = false;
                 postEvent(MEDIA_SEEK_COMPLETE, 0, 0);
                 break;
             }
-
             case MSG_TIMED_TEXT: {
                 ALOGD("FFMediaPlayer is updating time text.");
                 postEvent(MEDIA_TIMED_TEXT, 0, 0, msg.obj);
                 break;
             }
-
             case MSG_REQUEST_PREPARE: {
                 ALOGD("FFMediaPlayer is preparing...");
-                status_t ret = prepare();
-                if (ret != NO_ERROR) {
-                    ALOGE("FFMediaPlayer prepare error:%d", ret);
+                status_t result = prepare();
+                if (result != NO_ERROR) {
+                    ALOGE("FFMediaPlayer prepare error:%d", result);
                 }
                 break;
             }
-
             case MSG_REQUEST_START: {
                 ALOGD("FFMediaPlayer is waiting to start.");
                 break;
             }
-
             case MSG_REQUEST_PAUSE: {
                 ALOGD("FFMediaPlayer is pausing...");
                 pause();
                 break;
             }
-
             case MSG_REQUEST_SEEK: {
                 ALOGD("FFMediaPlayer is seeking...");
                 mSeeking = true;
@@ -413,7 +392,6 @@ void FFMediaPlayer::run() {
                 mediaPlayer->seekTo(mSeekingPosition);
                 break;
             }
-
             default: {
                 ALOGE("FFMediaPlayer unknown msg:what=%d\n", msg.what);
                 break;

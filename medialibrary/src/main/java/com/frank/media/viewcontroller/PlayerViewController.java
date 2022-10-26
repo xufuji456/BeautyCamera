@@ -3,11 +3,14 @@ package com.frank.media.viewcontroller;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.graphics.SurfaceTexture;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.TextureView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -35,6 +38,8 @@ import java.util.List;
 public class PlayerViewController implements View.OnClickListener {
 
     private final Context mContext;
+
+    private View mVideoView;
 
     private FFMediaPlayer videoPlayer;
 
@@ -79,37 +84,8 @@ public class PlayerViewController implements View.OnClickListener {
         btnPlayControl = view.findViewById(R.id.btn_play_pause);
         Button btnAudioTrack  = view.findViewById(R.id.btn_audio_track);
 
-        SurfaceView surfaceView = view.findViewById(R.id.surface_player);
-        surfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
-            @Override
-            public void surfaceCreated(@NonNull SurfaceHolder surfaceHolder) {
-
-                try {
-                    videoPlayer = new FFMediaPlayer();
-                    videoPlayer.setDataSource(path);
-                    videoPlayer.setSurface(surfaceHolder.getSurface());
-                    videoPlayer.setOnPreparedListener(preparedListener);
-                    videoPlayer.setOnRenderFirstFrameListener(renderFirstFrameListener);
-                    videoPlayer.setOnErrorListener(errorListener);
-                    videoPlayer.setOnCompletionListener(completionListener);
-                    videoPlayer.prepareAsync();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            @Override
-            public void surfaceChanged(@NonNull SurfaceHolder surfaceHolder, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void surfaceDestroyed(@NonNull SurfaceHolder surfaceHolder) {
-                videoPlayer.stop();
-                videoPlayer.release();
-                videoPlayer = null;
-            }
-        });
+        mVideoView = view.findViewById(R.id.surface_player);
+        setVideoViewListener(mVideoView);
 
         playBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -131,6 +107,72 @@ public class PlayerViewController implements View.OnClickListener {
         btnSpeed.setOnClickListener(this);
         btnAudioTrack.setOnClickListener(this);
         btnPlayControl.setOnClickListener(this);
+    }
+
+    private void initPlayer(Surface surface) {
+        try {
+            videoPlayer = new FFMediaPlayer();
+            videoPlayer.setDataSource(path);
+            videoPlayer.setSurface(surface);
+            videoPlayer.setOnPreparedListener(preparedListener);
+            videoPlayer.setOnRenderFirstFrameListener(renderFirstFrameListener);
+            videoPlayer.setOnErrorListener(errorListener);
+            videoPlayer.setOnCompletionListener(completionListener);
+            videoPlayer.prepareAsync();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void releasePlayer() {
+        videoPlayer.stop();
+        videoPlayer.release();
+        videoPlayer = null;
+    }
+
+    private void setVideoViewListener(View videoView) {
+        if (videoView instanceof TextureView) {
+            ((TextureView)videoView).setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
+                @Override
+                public void onSurfaceTextureAvailable(@NonNull SurfaceTexture surfaceTexture, int i, int i1) {
+                    Surface surface = new Surface(surfaceTexture);
+                    initPlayer(surface);
+                }
+
+                @Override
+                public void onSurfaceTextureSizeChanged(@NonNull SurfaceTexture surfaceTexture, int i, int i1) {
+
+                }
+
+                @Override
+                public boolean onSurfaceTextureDestroyed(@NonNull SurfaceTexture surfaceTexture) {
+                    releasePlayer();
+                    return false;
+                }
+
+                @Override
+                public void onSurfaceTextureUpdated(@NonNull SurfaceTexture surfaceTexture) {
+
+                }
+            });
+        } else if (videoView instanceof SurfaceView) {
+            ((SurfaceView)videoView).getHolder().addCallback(new SurfaceHolder.Callback() {
+                @Override
+                public void surfaceCreated(@NonNull SurfaceHolder surfaceHolder) {
+                    initPlayer(surfaceHolder.getSurface());
+                }
+
+                @Override
+                public void surfaceChanged(@NonNull SurfaceHolder surfaceHolder, int i, int i1, int i2) {
+
+                }
+
+                @Override
+                public void surfaceDestroyed(@NonNull SurfaceHolder surfaceHolder) {
+                    releasePlayer();
+                }
+            });
+        }
     }
 
     @Override
