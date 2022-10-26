@@ -55,6 +55,8 @@ public class PlayerViewController implements View.OnClickListener, PlayerManager
     private final static int MSG_PROGRESS = 54321;
 
     private final static String path = "sdcard/angry_birds.mp4";
+    private final static String prevPath = "sdcard/what.mp4";
+    private final static String nextPath = "sdcard/beyond.mp4";
 
     @SuppressLint("HandlerLeak")
     private final Handler mHandler = new Handler() {
@@ -86,6 +88,8 @@ public class PlayerViewController implements View.OnClickListener, PlayerManager
         btnPlayControl = view.findViewById(R.id.btn_play_pause);
         Button btnAudioTrack  = view.findViewById(R.id.btn_audio_track);
         Button btnScreenShot  = view.findViewById(R.id.btn_screen_shot);
+        ImageView btnPlayPrev = view.findViewById(R.id.btn_previous);
+        ImageView btnPlayNext = view.findViewById(R.id.btn_next);
 
         mVideoView = view.findViewById(R.id.surface_player);
         setVideoViewListener(mVideoView);
@@ -110,6 +114,8 @@ public class PlayerViewController implements View.OnClickListener, PlayerManager
         btnSpeed.setOnClickListener(this);
         btnAudioTrack.setOnClickListener(this);
         btnScreenShot.setOnClickListener(this);
+        btnPlayPrev.setOnClickListener(this);
+        btnPlayNext.setOnClickListener(this);
         btnPlayControl.setOnClickListener(this);
 
         mPlayerManager = new XuPlayerManager(path, PlayerFactory.PLAYER_TYPE_FFMPEG, this);
@@ -202,6 +208,10 @@ public class PlayerViewController implements View.OnClickListener, PlayerManager
                 Bitmap bitmap = getCurrentFrame();
                 BitmapUtil.savePhoto(bitmap, BitmapUtil.path, mContext);
             }).start();
+        } else if (view.getId() == R.id.btn_previous) {
+            mPlayerManager.switchNext(prevPath);
+        } else if (view.getId() == R.id.btn_next) {
+            mPlayerManager.switchNext(nextPath);
         }
     }
 
@@ -276,6 +286,7 @@ public class PlayerViewController implements View.OnClickListener, PlayerManager
     @Override
     public void onCompletion() {
         Log.i("FFMediaPlayer", "onCompletion...");
+        mPlayerManager.switchNext(nextPath);
     }
 
 }

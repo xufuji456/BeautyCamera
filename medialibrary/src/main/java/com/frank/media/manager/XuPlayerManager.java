@@ -23,12 +23,19 @@ public class XuPlayerManager implements IMediaPlayer.OnPreparedListener,
         IMediaPlayer.OnRenderFirstFrameListener,
         IMediaPlayer.OnCompletionListener {
 
-    public IMediaPlayer mPlayer;
-    public PlayerManagerCallback mCallback;
+    private Surface mSurface;
+    private IMediaPlayer mPlayer;
+    private final PlayerManagerCallback mCallback;
+    private @PlayerFactory.PlayerType int mPlayerType;
 
     public XuPlayerManager(String path, @PlayerFactory.PlayerType int playerType, PlayerManagerCallback callback) {
         mCallback = callback;
-        mPlayer = PlayerFactory.createPlayer(playerType);
+        mPlayerType = playerType;
+        initPlayer(path);
+    }
+
+    private void initPlayer(String path) {
+        mPlayer = PlayerFactory.createPlayer(mPlayerType);
         if (mPlayer == null)
             throw new NullPointerException("no player created...");
         try {
@@ -39,6 +46,7 @@ public class XuPlayerManager implements IMediaPlayer.OnPreparedListener,
     }
 
     public void setSurface(Surface surface) {
+        mSurface = surface;
         mPlayer.setSurface(surface);
         mPlayer.setOnPreparedListener(this);
         mPlayer.setOnRenderFirstFrameListener(this);
@@ -95,6 +103,8 @@ public class XuPlayerManager implements IMediaPlayer.OnPreparedListener,
     }
 
     public long getCurrentPosition() {
+        if (mPlayer == null)
+            return 0;
        return mPlayer.getCurrentPosition();
     }
 
@@ -136,6 +146,18 @@ public class XuPlayerManager implements IMediaPlayer.OnPreparedListener,
 
     public void release() {
         mPlayer.release();
+    }
+
+    public void switchNext(String path) {
+        if (mPlayer != null) {
+            mPlayer.pause();
+            mPlayer.stop();
+            mPlayer.release();
+            mPlayer = null;
+        }
+        initPlayer(path);
+        setSurface(mSurface);
+        prepareAsync();
     }
 
     @Override

@@ -8,7 +8,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@color/blue"
-        android:layout_marginTop="6dp"
+        android:layout_marginTop="18dp"
         android:layout_centerHorizontal="true"/>
 
     <SurfaceView
@@ -71,14 +71,38 @@
             android:background="?android:attr/selectableItemBackground"
             android:visibility="gone"/>
 
+        <ImageView
+            android:id="@+id/btn_previous"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/play_bar"
+            android:layout_marginTop="16dp"
+            android:layout_toStartOf="@+id/btn_play_pause"
+            android:layout_marginEnd="28dp"
+            android:src="@drawable/ic_previous"
+            android:background="?android:attr/selectableItemBackground"/>
+
+        <ImageView
+            android:id="@+id/btn_next"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/play_bar"
+            android:layout_marginTop="16dp"
+            android:layout_toEndOf="@+id/btn_play_pause"
+            android:layout_marginStart="28dp"
+            android:src="@drawable/ic_next"
+            android:background="?android:attr/selectableItemBackground"/>
+
         <Button
             android:id="@+id/btn_screen_shot"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_below="@+id/play_bar"
-            android:layout_marginTop="10dp"
-            android:layout_toStartOf="@+id/btn_play_pause"
+            android:layout_marginTop="30dp"
+            android:layout_toStartOf="@+id/btn_previous"
             android:layout_marginEnd="20dp"
             android:textColor="@color/blue"
             android:text="截图"
@@ -90,8 +114,8 @@
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_below="@+id/play_bar"
-            android:layout_marginTop="10dp"
-            android:layout_toEndOf="@+id/btn_play_pause"
+            android:layout_marginTop="30dp"
+            android:layout_toEndOf="@+id/btn_next"
             android:layout_marginStart="20dp"
             android:textColor="@color/blue"
             android:text="倍速"
