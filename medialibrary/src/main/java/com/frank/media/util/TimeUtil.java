@@ -1,4 +1,4 @@
-package com.frank.media;
+package com.frank.media.util;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

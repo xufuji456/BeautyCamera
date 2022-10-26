@@ -59,7 +59,21 @@
             android:layout_toStartOf="@+id/btn_play_pause"
             android:layout_marginEnd="20dp"
             android:textColor="@color/blue"
-            android:text="track"
+            android:text="音轨"
+            android:background="?android:attr/selectableItemBackground"
+            android:visibility="gone"/>
+
+        <Button
+            android:id="@+id/btn_screen_shot"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/play_bar"
+            android:layout_marginTop="10dp"
+            android:layout_toStartOf="@+id/btn_play_pause"
+            android:layout_marginEnd="20dp"
+            android:textColor="@color/blue"
+            android:text="截图"
             android:background="?android:attr/selectableItemBackground"/>
 
         <Button
@@ -72,7 +86,7 @@
             android:layout_toEndOf="@+id/btn_play_pause"
             android:layout_marginStart="20dp"
             android:textColor="@color/blue"
-            android:text="speed"
+            android:text="倍速"
             android:background="?android:attr/selectableItemBackground"/>
 
     </RelativeLayout>

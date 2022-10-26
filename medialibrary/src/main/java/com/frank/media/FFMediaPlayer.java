@@ -1,5 +1,6 @@
 package com.frank.media;
 
+import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -254,6 +255,11 @@ public class FFMediaPlayer implements IMediaPlayer {
     @Override
     public void selectTrack(int trackId) {
         native_selectTrack(trackId, true);
+    }
+
+    @Override
+    public Bitmap getCurrentFrame() {
+        return null;
     }
 
     @Override

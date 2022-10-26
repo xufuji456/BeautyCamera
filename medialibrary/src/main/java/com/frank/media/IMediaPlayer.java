@@ -1,6 +1,8 @@
 package com.frank.media;
 
 import androidx.annotation.NonNull;
+
+import android.graphics.Bitmap;
 import android.view.Surface;
 
 import com.frank.media.mediainfo.MediaTrack;
@@ -62,6 +64,8 @@ public interface IMediaPlayer {
     String getMediaFormat();
 
     List<MediaTrack> getMediaTrack(MediaType mediaType);
+
+    Bitmap getCurrentFrame();
 
     void selectTrack(int trackId);
 

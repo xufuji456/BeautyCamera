@@ -3,6 +3,7 @@ package com.frank.media.viewcontroller;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.SurfaceTexture;
 import android.os.Handler;
 import android.os.Message;
@@ -16,14 +17,14 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
 import com.frank.media.FFMediaPlayer;
 import com.frank.media.IMediaPlayer;
 import com.frank.media.R;
-import com.frank.media.TimeUtil;
+import com.frank.media.util.BitmapUtil;
+import com.frank.media.util.TimeUtil;
 import com.frank.media.mediainfo.MediaTrack;
 import com.frank.media.mediainfo.MediaType;
 
@@ -83,6 +84,7 @@ public class PlayerViewController implements View.OnClickListener {
         txtCurPosition = view.findViewById(R.id.txt_cur_position);
         btnPlayControl = view.findViewById(R.id.btn_play_pause);
         Button btnAudioTrack  = view.findViewById(R.id.btn_audio_track);
+        Button btnScreenShot  = view.findViewById(R.id.btn_screen_shot);
 
         mVideoView = view.findViewById(R.id.surface_player);
         setVideoViewListener(mVideoView);
@@ -106,6 +108,7 @@ public class PlayerViewController implements View.OnClickListener {
 
         btnSpeed.setOnClickListener(this);
         btnAudioTrack.setOnClickListener(this);
+        btnScreenShot.setOnClickListener(this);
         btnPlayControl.setOnClickListener(this);
     }
 
@@ -201,11 +204,26 @@ public class PlayerViewController implements View.OnClickListener {
             AlertDialog.Builder dialog = new AlertDialog.Builder(mContext);
             dialog.setTitle("选择音轨")
                     .setItems(tracks, (dialogInterface, i) -> {
-                        String msg = "select:" + audioTrackList.get(i).language;
-                        Toast.makeText(mContext, msg, Toast.LENGTH_SHORT).show();
                         videoPlayer.selectTrack(audioTrackList.get(i).trackId);
                     })
                     .show();
+        } else if (view.getId() == R.id.btn_screen_shot) {
+            new Thread(() -> {
+                Bitmap bitmap = getCurrentFrame();
+                BitmapUtil.savePhoto(bitmap, BitmapUtil.path, mContext);
+            }).start();
+        }
+    }
+
+    private Bitmap getCurrentFrame() {
+        if (mVideoView instanceof TextureView) {
+            return ((TextureView) mVideoView).getBitmap();
+        } else if (mVideoView instanceof SurfaceView) {
+            Surface surface = ((SurfaceView) mVideoView).getHolder().getSurface();
+            return BitmapUtil.copyBitmapFromPixel(surface, videoPlayer.getVideoWidth(),
+                    videoPlayer.getVideoHeight(), videoPlayer.getRotate());
+        } else {
+            return videoPlayer.getCurrentFrame();
         }
     }
 

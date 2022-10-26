@@ -10,7 +10,7 @@ import com.frank.media.viewcontroller.PlayerViewController;
 
 public class MainActivity extends Activity {
 
-    private final String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE};
+    private final String[] permissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
     private PlayerViewController viewController;
 
