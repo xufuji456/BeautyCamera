@@ -21,15 +21,15 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 
 import com.frank.media.factory.PlayerFactory;
-import com.frank.media.listener.IMediaPlayer;
 import com.frank.media.R;
+import com.frank.media.listener.PlayerManagerCallback;
+import com.frank.media.manager.XuPlayerManager;
 import com.frank.media.mediainfo.MediaInfo;
 import com.frank.media.util.BitmapUtil;
 import com.frank.media.util.TimeUtil;
 import com.frank.media.mediainfo.MediaTrack;
 import com.frank.media.mediainfo.MediaType;
 
-import java.io.IOException;
 import java.util.List;
 
 /**
@@ -37,11 +37,11 @@ import java.util.List;
  * @date 2022/10/25 2:59 下午
  * @desc
  */
-public class PlayerViewController implements View.OnClickListener {
+public class PlayerViewController implements View.OnClickListener, PlayerManagerCallback {
 
     private View mVideoView;
     private final Context mContext;
-    private IMediaPlayer videoPlayer;
+    private XuPlayerManager mPlayerManager;
 
     private SeekBar   playBar;
     private Button    btnSpeed;
@@ -62,9 +62,9 @@ public class PlayerViewController implements View.OnClickListener {
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             if (msg.what == MSG_PROGRESS) {
-                if (videoPlayer == null)
+                if (mPlayerManager == null)
                     return;
-                long currentPosition = videoPlayer.getCurrentPosition();
+                long currentPosition = mPlayerManager.getCurrentPosition();
                 txtCurPosition.setText(TimeUtil.getVideoTime(currentPosition));
                 playBar.setProgress((int) currentPosition);
 
@@ -103,7 +103,7 @@ public class PlayerViewController implements View.OnClickListener {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                videoPlayer.seekTo(seekBar.getProgress());
+                mPlayerManager.seekTo(seekBar.getProgress());
             }
         });
 
@@ -111,27 +111,14 @@ public class PlayerViewController implements View.OnClickListener {
         btnAudioTrack.setOnClickListener(this);
         btnScreenShot.setOnClickListener(this);
         btnPlayControl.setOnClickListener(this);
-    }
 
-    private void initPlayer(Surface surface) {
-        try {
-            videoPlayer = PlayerFactory.createPlayer(PlayerFactory.PLAYER_TYPE_SYSTEM);
-            videoPlayer.setDataSource(path);
-            videoPlayer.setSurface(surface);
-            videoPlayer.setOnPreparedListener(preparedListener);
-            videoPlayer.setOnRenderFirstFrameListener(renderFirstFrameListener);
-            videoPlayer.setOnErrorListener(errorListener);
-            videoPlayer.setOnCompletionListener(completionListener);
-            videoPlayer.prepareAsync();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        mPlayerManager = new XuPlayerManager(path, PlayerFactory.PLAYER_TYPE_FFMPEG, this);
     }
 
     private void releasePlayer() {
-        videoPlayer.stop();
-        videoPlayer.release();
-        videoPlayer = null;
+        mPlayerManager.stop();
+        mPlayerManager.release();
+        mPlayerManager = null;
     }
 
     private void setVideoViewListener(View videoView) {
@@ -140,7 +127,8 @@ public class PlayerViewController implements View.OnClickListener {
                 @Override
                 public void onSurfaceTextureAvailable(@NonNull SurfaceTexture surfaceTexture, int i, int i1) {
                     Surface surface = new Surface(surfaceTexture);
-                    initPlayer(surface);
+                    mPlayerManager.setSurface(surface);
+                    mPlayerManager.prepareAsync();
                 }
 
                 @Override
@@ -163,7 +151,8 @@ public class PlayerViewController implements View.OnClickListener {
             ((SurfaceView)videoView).getHolder().addCallback(new SurfaceHolder.Callback() {
                 @Override
                 public void surfaceCreated(@NonNull SurfaceHolder surfaceHolder) {
-                    initPlayer(surfaceHolder.getSurface());
+                    mPlayerManager.setSurface(surfaceHolder.getSurface());
+                    mPlayerManager.prepareAsync();
                 }
 
                 @Override
@@ -182,11 +171,11 @@ public class PlayerViewController implements View.OnClickListener {
     @Override
     public void onClick(View view) {
         if (view.getId() == R.id.btn_play_pause) {
-            if (videoPlayer.isPlaying()) {
-                videoPlayer.pause();
+            if (mPlayerManager.isPlaying()) {
+                mPlayerManager.pause();
                 btnPlayControl.setImageResource(R.drawable.ic_play);
             } else {
-                videoPlayer.start();
+                mPlayerManager.start();
                 btnPlayControl.setImageResource(R.drawable.ic_pause);
             }
         } else if (view.getId() == R.id.btn_speed) {
@@ -194,10 +183,10 @@ public class PlayerViewController implements View.OnClickListener {
             if (currentSpeed > 2.0f) {
                 currentSpeed = 0.5f;
             }
-            videoPlayer.setRate(currentSpeed);
+            mPlayerManager.setRate(currentSpeed);
             btnSpeed.setText(String.format("%s", currentSpeed));
         } else if (view.getId() == R.id.btn_audio_track) {
-            List<MediaTrack> audioTrackList = videoPlayer.getMediaTrack(MediaType.MEDIA_TYPE_AUDIO);
+            List<MediaTrack> audioTrackList = mPlayerManager.getMediaTrack(MediaType.MEDIA_TYPE_AUDIO);
             String[] tracks = new String[audioTrackList.size()];
             for (int i=0; i<audioTrackList.size(); i++) {
                 tracks[i] = audioTrackList.get(i).language;
@@ -205,7 +194,7 @@ public class PlayerViewController implements View.OnClickListener {
             AlertDialog.Builder dialog = new AlertDialog.Builder(mContext);
             dialog.setTitle(mContext.getString(R.string.select_track))
                     .setItems(tracks, (dialogInterface, i) -> {
-                        videoPlayer.selectTrack(audioTrackList.get(i).trackId);
+                        mPlayerManager.selectTrack(audioTrackList.get(i).trackId);
                     })
                     .show();
         } else if (view.getId() == R.id.btn_screen_shot) {
@@ -221,35 +210,35 @@ public class PlayerViewController implements View.OnClickListener {
             return ((TextureView) mVideoView).getBitmap();
         } else if (mVideoView instanceof SurfaceView) {
             Surface surface = ((SurfaceView) mVideoView).getHolder().getSurface();
-            return BitmapUtil.copyBitmapFromPixel(surface, videoPlayer.getVideoWidth(),
-                    videoPlayer.getVideoHeight(), videoPlayer.getRotate());
+            return BitmapUtil.copyBitmapFromPixel(surface, mPlayerManager.getVideoWidth(),
+                    mPlayerManager.getVideoHeight(), mPlayerManager.getRotate());
         } else {
-            return videoPlayer.getCurrentFrame();
+            return mPlayerManager.getCurrentFrame();
         }
     }
 
     public void onResume() {
-        if (videoPlayer != null) {
-            videoPlayer.resume();
+        if (mPlayerManager != null) {
+            mPlayerManager.resume();
         }
     }
 
     public void onPause() {
-        if (videoPlayer != null) {
-            videoPlayer.pause();
+        if (mPlayerManager != null) {
+            mPlayerManager.pause();
         }
     }
 
     public void onStop() {
-        if (videoPlayer != null) {
-            videoPlayer.stop();
+        if (mPlayerManager != null) {
+            mPlayerManager.stop();
         }
     }
 
     private void showMediaInfo() {
         StringBuilder builder = new StringBuilder();
-        MediaInfo audioInfo = videoPlayer.getMediaInfo(MediaType.MEDIA_TYPE_AUDIO);
-        MediaInfo videoInfo = videoPlayer.getMediaInfo(MediaType.MEDIA_TYPE_VIDEO);
+        MediaInfo audioInfo   = mPlayerManager.getMediaInfo(MediaType.MEDIA_TYPE_AUDIO);
+        MediaInfo videoInfo   = mPlayerManager.getMediaInfo(MediaType.MEDIA_TYPE_VIDEO);
         if (videoInfo != null) {
             builder.append("videoCodec: ").append(videoInfo.videoCodec).append("\n");
             builder.append("resolution: ").append(videoInfo.width).append("x").append(videoInfo.height).append("\n");
@@ -265,41 +254,34 @@ public class PlayerViewController implements View.OnClickListener {
         }
     }
 
-    private final IMediaPlayer.OnPreparedListener preparedListener = new IMediaPlayer.OnPreparedListener() {
-        @Override
-        public void onPrepared(IMediaPlayer mp) {
-            videoPlayer.start();
-        }
-    };
+    @Override
+    public void onPrepared() {
+        Log.i("FFMediaPlayer", "onPrepared");
+        mPlayerManager.start();
+    }
 
-    private final IMediaPlayer.OnRenderFirstFrameListener renderFirstFrameListener = new IMediaPlayer.OnRenderFirstFrameListener() {
-        @Override
-        public void onRenderFirstFrame(IMediaPlayer mp, int video, int audio) {
-            Log.i("FFMediaPlayer", "onRenderFirstFrame, video=" + video + ", audio=" + audio);
-            if (video == 1 || audio == 1) {
-                long playProgress = videoPlayer.getDuration();
-                txtDuration.setText(TimeUtil.getVideoTime(playProgress));
-                playBar.setMax((int) playProgress);
-                mHandler.sendEmptyMessageDelayed(MSG_PROGRESS, 1000);
-                btnPlayControl.setImageResource(R.drawable.ic_pause);
-                showMediaInfo();
-            }
-        }
-    };
+    @Override
+    public boolean onError(int what, int extra) {
+        Log.i("FFMediaPlayer", "onError, what=" + what);
+        return false;
+    }
 
-    private final IMediaPlayer.OnErrorListener errorListener = new IMediaPlayer.OnErrorListener() {
-        @Override
-        public boolean onError(IMediaPlayer mp, int what, int extra) {
-            Log.i("FFMediaPlayer", "onError, what=" + what);
-            return false;
+    @Override
+    public void onRenderFirstFrame(int video, int audio) {
+        Log.i("FFMediaPlayer", "onRenderFirstFrame, video=" + video + ", audio=" + audio);
+        if (video == 1 || audio == 1) {
+            long playProgress = mPlayerManager.getDuration();
+            txtDuration.setText(TimeUtil.getVideoTime(playProgress));
+            playBar.setMax((int) playProgress);
+            mHandler.sendEmptyMessageDelayed(MSG_PROGRESS, 1000);
+            btnPlayControl.setImageResource(R.drawable.ic_pause);
+            showMediaInfo();
         }
-    };
+    }
 
-    private final IMediaPlayer.OnCompletionListener completionListener = new IMediaPlayer.OnCompletionListener() {
-        @Override
-        public void onCompletion(IMediaPlayer mp) {
-            Log.i("FFMediaPlayer", "onCompletion...");
-        }
-    };
+    @Override
+    public void onCompletion() {
+        Log.i("FFMediaPlayer", "onCompletion...");
+    }
 
 }
