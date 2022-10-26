@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import android.graphics.Bitmap;
 import android.view.Surface;
 
+import com.frank.media.mediainfo.MediaInfo;
 import com.frank.media.mediainfo.MediaTrack;
 import com.frank.media.mediainfo.MediaType;
 
@@ -61,7 +62,7 @@ public interface IMediaPlayer {
 
     void setMute(boolean mute);
 
-    String getMediaFormat();
+    MediaInfo getMediaInfo(MediaType mediaType);
 
     List<MediaTrack> getMediaTrack(MediaType mediaType);
 

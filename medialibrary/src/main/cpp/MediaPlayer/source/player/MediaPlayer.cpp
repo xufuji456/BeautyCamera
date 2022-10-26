@@ -341,10 +341,16 @@ FFMessageQueue *MediaPlayer::getMessageQueue() {
     return m_playerParam->m_messageQueue;
 }
 
-const char *MediaPlayer::getMediaFormat() const {
-    if (!m_playerParam->m_formatCtx || !m_playerParam->m_formatCtx->iformat)
+AVStream *MediaPlayer::getAVStream(int mediaType) const {
+    if (mediaType == AVMEDIA_TYPE_AUDIO) {
+        return m_playerParam->m_audioStream;
+    } else if (mediaType == AVMEDIA_TYPE_VIDEO) {
+        return m_playerParam->m_videoStream;
+    } else if (mediaType == AVMEDIA_TYPE_SUBTITLE) {
+        return m_playerParam->m_subtitleStream;
+    } else {
         return nullptr;
-    return m_playerParam->m_formatCtx->iformat->name;
+    }
 }
 
 AVFormatContext *MediaPlayer::getMetadata() const {

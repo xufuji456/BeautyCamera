@@ -99,7 +99,7 @@ public:
 
     FFMessageQueue *getMessageQueue();
 
-    const char *getMediaFormat() const;
+    AVStream *getAVStream(int mediaType) const;
 
     AVFormatContext *getMetadata() const;
 

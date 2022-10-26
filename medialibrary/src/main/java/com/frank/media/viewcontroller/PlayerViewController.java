@@ -23,6 +23,7 @@ import androidx.annotation.NonNull;
 import com.frank.media.FFMediaPlayer;
 import com.frank.media.IMediaPlayer;
 import com.frank.media.R;
+import com.frank.media.mediainfo.MediaInfo;
 import com.frank.media.util.BitmapUtil;
 import com.frank.media.util.TimeUtil;
 import com.frank.media.mediainfo.MediaTrack;
@@ -38,17 +39,16 @@ import java.util.List;
  */
 public class PlayerViewController implements View.OnClickListener {
 
-    private final Context mContext;
-
     private View mVideoView;
-
+    private final Context mContext;
     private FFMediaPlayer videoPlayer;
 
-    private SeekBar playBar;
-    private Button btnSpeed;
-    private TextView txtDuration;
+    private SeekBar   playBar;
+    private Button    btnSpeed;
+    private TextView  txtDuration;
     private TextView  txtCurPosition;
     private ImageView btnPlayControl;
+    private TextView  txtMediaInfo;
 
     private float currentSpeed = 1.0f;
 
@@ -81,6 +81,7 @@ public class PlayerViewController implements View.OnClickListener {
         playBar        = view.findViewById(R.id.play_bar);
         btnSpeed       = view.findViewById(R.id.btn_speed);
         txtDuration    = view.findViewById(R.id.txt_duration);
+        txtMediaInfo   = view.findViewById(R.id.txt_media_info);
         txtCurPosition = view.findViewById(R.id.txt_cur_position);
         btnPlayControl = view.findViewById(R.id.btn_play_pause);
         Button btnAudioTrack  = view.findViewById(R.id.btn_audio_track);
@@ -202,7 +203,7 @@ public class PlayerViewController implements View.OnClickListener {
                 tracks[i] = audioTrackList.get(i).language;
             }
             AlertDialog.Builder dialog = new AlertDialog.Builder(mContext);
-            dialog.setTitle("选择音轨")
+            dialog.setTitle(mContext.getString(R.string.select_track))
                     .setItems(tracks, (dialogInterface, i) -> {
                         videoPlayer.selectTrack(audioTrackList.get(i).trackId);
                     })
@@ -245,6 +246,23 @@ public class PlayerViewController implements View.OnClickListener {
         }
     }
 
+    private void showMediaInfo() {
+        StringBuilder builder = new StringBuilder();
+        MediaInfo audioInfo = videoPlayer.getMediaInfo(MediaType.MEDIA_TYPE_AUDIO);
+        MediaInfo videoInfo = videoPlayer.getMediaInfo(MediaType.MEDIA_TYPE_VIDEO);
+        if (videoInfo != null) {
+            builder.append("videoCodec: ").append(videoInfo.videoCodec).append("\n");
+            builder.append("resolution: ").append(videoInfo.width).append("x").append(videoInfo.height).append("\n");
+            builder.append("frameRate: ").append(videoInfo.frameRate).append("\n");
+        }
+        if (audioInfo != null) {
+            builder.append("audioCodec: ").append(audioInfo.audioCodec).append("\n");
+            builder.append("sampleRate: ").append(audioInfo.sampleRate).append("\n");
+            builder.append("channels: ").append(audioInfo.channels).append("\n");
+        }
+        txtMediaInfo.setText(builder.toString());
+    }
+
     private final IMediaPlayer.OnPreparedListener preparedListener = new IMediaPlayer.OnPreparedListener() {
         @Override
         public void onPrepared(IMediaPlayer mp) {
@@ -262,6 +280,7 @@ public class PlayerViewController implements View.OnClickListener {
                 playBar.setMax((int) playProgress);
                 mHandler.sendEmptyMessageDelayed(MSG_PROGRESS, 1000);
                 btnPlayControl.setImageResource(R.drawable.ic_pause);
+                showMediaInfo();
             }
         }
     };

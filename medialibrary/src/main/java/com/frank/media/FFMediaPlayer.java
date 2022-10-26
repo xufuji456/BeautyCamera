@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import android.util.Log;
 import android.view.Surface;
 
+import com.frank.media.mediainfo.MediaInfo;
 import com.frank.media.mediainfo.MediaTrack;
 import com.frank.media.mediainfo.MediaType;
 
@@ -55,7 +56,7 @@ public class FFMediaPlayer implements IMediaPlayer {
     private native void native_setRate(float rate);
     private native void native_setMute(boolean mute);
     private native void native_setVolume(float volume);
-    private native String native_getMediaFormat();
+    private native void native_getMediaInfo(int mediaType, MediaInfo mediaInfo);
     private native int  native_getTrackCount(int mediaType);
     private native void native_getMediaTrack(int mediaType, int index, MediaTrack mediaTrack);
     private native void native_reset();
@@ -235,8 +236,10 @@ public class FFMediaPlayer implements IMediaPlayer {
     }
 
     @Override
-    public String getMediaFormat() {
-        return native_getMediaFormat();
+    public MediaInfo getMediaInfo(MediaType mediaType) {
+        MediaInfo mediaInfo = new MediaInfo();
+        native_getMediaInfo(mediaType.ordinal(), mediaInfo);
+        return mediaInfo;
     }
 
     @Override

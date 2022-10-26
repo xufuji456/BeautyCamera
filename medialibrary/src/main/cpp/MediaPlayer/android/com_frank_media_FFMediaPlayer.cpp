@@ -405,14 +405,6 @@ jint FFMediaPlayer_getVideoHeight(JNIEnv *env, jobject thiz) {
     return mp->getVideoHeight();
 }
 
-jstring FFMediaPlayer_getMediaFormat(JNIEnv *env, jobject thiz) {
-    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
-    if (mp == nullptr) {
-        return nullptr;
-    }
-    return env->NewStringUTF(mp->getMediaFormat());
-}
-
 int FFMediaPlayer_getTrackCount(JNIEnv *env, jobject thiz, int mediaType) {
     FFMediaPlayer *mp = getMediaPlayer(env, thiz);
     if (mp == nullptr || mp->getMetadata() == nullptr) {
@@ -461,6 +453,41 @@ void FFMediaPlayer_getMediaTrack(JNIEnv *env, jobject thiz, int mediaType, int i
     }
 }
 
+void FFMediaPlayer_getMediaInfo(JNIEnv *env, jobject thiz, int mediaType, jobject mediaInfo) {
+    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    if (mp == nullptr || mp->getAVStream(mediaType) == nullptr) {
+        return;
+    }
+    jfieldID codecId = nullptr;
+    jclass infoClass = env->GetObjectClass(mediaInfo);
+    AVStream *stream = mp->getAVStream(mediaType);
+    if (mediaType == AVMEDIA_TYPE_VIDEO) {
+        jfieldID widthId = env->GetFieldID(infoClass, "width", "I");
+        jfieldID heightId = env->GetFieldID(infoClass, "height", "I");
+        jfieldID frameRateId = env->GetFieldID(infoClass, "frameRate", "F");
+        codecId = env->GetFieldID(infoClass, "videoCodec", "Ljava/lang/String;");
+        env->SetIntField(mediaInfo, widthId, stream->codecpar->width);
+        env->SetIntField(mediaInfo, heightId, stream->codecpar->height);
+        env->SetFloatField(mediaInfo, frameRateId, (float)av_q2d(stream->avg_frame_rate));
+    } else if (mediaType == AVMEDIA_TYPE_AUDIO) {
+        jfieldID sampleRateId = env->GetFieldID(infoClass, "sampleRate", "I");
+        jfieldID channelsId = env->GetFieldID(infoClass, "channels", "I");
+        codecId = env->GetFieldID(infoClass, "audioCodec", "Ljava/lang/String;");
+        env->SetIntField(mediaInfo, sampleRateId, stream->codecpar->sample_rate);
+        env->SetIntField(mediaInfo, channelsId, stream->codecpar->channels);
+    }
+    if (codecId) {
+        const char *name = avcodec_get_name(stream->codecpar->codec_id);
+        env->SetObjectField(mediaInfo, codecId, env->NewStringUTF(name));
+    }
+    AVFormatContext *formatContext = mp->getMetadata();
+    if (formatContext->iformat && formatContext->iformat->name) {
+        jfieldID format = env->GetFieldID(infoClass, "format", "Ljava/lang/String;");
+        jstring formatStr = env->NewStringUTF(formatContext->iformat->name);
+        env->SetObjectField(mediaInfo, format, formatStr);
+    }
+}
+
 static const JNINativeMethod gMethods[] = {
         {"native_setDataSource", "(Ljava/lang/String;)V", (void *)FFMediaPlayer_setDataSource},
         {"native_setDataSource", "(Ljava/io/FileDescriptor;J)V", (void *)FFMediaPlayer_setDataSourceFD},
@@ -482,7 +509,7 @@ static const JNINativeMethod gMethods[] = {
         {"native_setVolume", "(F)V", (void *) FFMediaPlayer_setVolume},
         {"native_setMute", "(Z)V", (void *) FFMediaPlayer_setMute},
         {"native_setRate", "(F)V", (void *) FFMediaPlayer_setRate},
-        {"native_getMediaFormat", "()Ljava/lang/String;", (void *) FFMediaPlayer_getMediaFormat},
+        {"native_getMediaInfo", "(ILcom/frank/media/mediainfo/MediaInfo;)V", (void *) FFMediaPlayer_getMediaInfo},
         {"native_getTrackCount", "(I)I", (void *) FFMediaPlayer_getTrackCount},
         {"native_getMediaTrack", "(IILcom/frank/media/mediainfo/MediaTrack;)V", (void *) FFMediaPlayer_getMediaTrack},
         {"native_init", "()V", (void *)FFMediaPlayer_init},

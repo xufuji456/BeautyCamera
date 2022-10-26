@@ -219,8 +219,8 @@ void FFMediaPlayer::setRate(float speed) {
     }
 }
 
-const char *FFMediaPlayer::getMediaFormat() const {
-    return mediaPlayer ? mediaPlayer->getMediaFormat() : nullptr;
+AVStream *FFMediaPlayer::getAVStream(int mediaType) const {
+    return mediaPlayer ? mediaPlayer->getAVStream(mediaType) : nullptr;
 }
 
 AVFormatContext *FFMediaPlayer::getMetadata() const {

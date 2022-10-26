@@ -3,6 +3,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <TextView
+        android:id="@+id/txt_media_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/blue"
+        android:layout_marginTop="6dp"
+        android:layout_centerHorizontal="true"/>
+
     <SurfaceView
         android:id="@+id/surface_player"
         android:layout_width="320dp"

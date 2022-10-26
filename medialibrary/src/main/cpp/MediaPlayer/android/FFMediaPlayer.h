@@ -127,7 +127,7 @@ public:
 
     void notify(int msg, int ext1, int ext2, void *obj = nullptr, int len = 0);
 
-    const char *getMediaFormat() const;
+    AVStream *getAVStream(int mediaType) const;
 
     AVFormatContext *getMetadata() const;
 
