@@ -1,12 +1,6 @@
 
 #include "MediaPlayer.h"
 
-/**
- * FFmpeg操作锁管理回调
- * @param mtx
- * @param op
- * @return
- */
 static int lockmgrCallback(void **mtx, enum AVLockOp op) {
     switch (op) {
         case AV_LOCK_CREATE: {

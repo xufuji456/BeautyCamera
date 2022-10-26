@@ -1,4 +1,4 @@
-package com.frank.media;
+package com.frank.media.player;
 
 import android.graphics.Bitmap;
 import android.os.Handler;
@@ -36,7 +36,7 @@ public class FFMediaPlayer implements IMediaPlayer {
     private static native void native_init();
     private native void native_setup(Object player);
     private native void native_setDataSource(@NonNull String path)
-            throws IOException, IllegalArgumentException, SecurityException, IllegalStateException;
+            throws IOException, IllegalArgumentException, IllegalStateException;
     private native void native_setDataSource(FileDescriptor fd, long length)
             throws IOException, IllegalArgumentException, IllegalStateException;
     private native void native_setVideoSurface(Surface surface);
@@ -107,12 +107,6 @@ public class FFMediaPlayer implements IMediaPlayer {
     public void setDataSource(@NonNull String path)
             throws IOException, IllegalArgumentException, SecurityException, IllegalStateException {
         native_setDataSource(path);
-    }
-
-    @Override
-    public void setDataSource(FileDescriptor fd)
-            throws IOException, IllegalArgumentException, IllegalStateException {
-        setDataSource(fd, Long.MAX_VALUE);
     }
 
     @Override

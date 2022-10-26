@@ -1,4 +1,4 @@
-package com.frank.media;
+package com.frank.media.player;
 
 import androidx.annotation.NonNull;
 
@@ -18,9 +18,6 @@ public interface IMediaPlayer {
     void setSurface(Surface surface);
 
     void setDataSource(@NonNull String path)
-            throws IOException, IllegalArgumentException, SecurityException, IllegalStateException;
-
-    void setDataSource(FileDescriptor fd)
             throws IOException, IllegalArgumentException, IllegalStateException;
 
     void setDataSource(FileDescriptor fd, long length)

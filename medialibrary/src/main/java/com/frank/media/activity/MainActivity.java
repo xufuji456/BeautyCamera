@@ -1,4 +1,4 @@
-package com.frank.media;
+package com.frank.media.activity;
 
 import android.Manifest;
 import android.app.Activity;
@@ -6,6 +6,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.WindowManager;
 
+import com.frank.media.R;
 import com.frank.media.viewcontroller.PlayerViewController;
 
 public class MainActivity extends Activity {

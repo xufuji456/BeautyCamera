@@ -9,7 +9,7 @@ extern "C" {
 #include <libavcodec/jni.h>
 }
 
-const char *CLASS_NAME = "com/frank/media/FFMediaPlayer";
+const char *CLASS_NAME = "com/frank/media/player/FFMediaPlayer";
 
 #include <android/log.h>
 #define PLAYER_TAG "FFmpegPlayer"
@@ -33,7 +33,6 @@ static JNIEnv *getJNIEnv() {
     return env;
 }
 
-// -------------------------------------------------------------------------------------------------
 class JNIMediaPlayerListener : public MediaPlayerListener {
 private:
     jclass mClass;
