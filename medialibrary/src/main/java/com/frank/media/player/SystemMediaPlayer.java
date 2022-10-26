@@ -40,6 +40,7 @@ public class SystemMediaPlayer implements IMediaPlayer {
     @Override
     public void setSurface(Surface surface) {
         mMediaPlayer.setSurface(surface);
+        setListener();
     }
 
     @Override
@@ -61,13 +62,11 @@ public class SystemMediaPlayer implements IMediaPlayer {
 
     @Override
     public void prepare() throws IOException, IllegalStateException {
-        setListener();
         mMediaPlayer.prepare();
     }
 
     @Override
     public void prepareAsync() throws IllegalStateException {
-        setListener();
         mMediaPlayer.prepareAsync();
     }
 

@@ -217,14 +217,8 @@ public class PlayerViewController implements View.OnClickListener, PlayerManager
         }
     }
 
-    public void onResume() {
-        if (mPlayerManager != null) {
-            mPlayerManager.resume();
-        }
-    }
-
     public void onPause() {
-        if (mPlayerManager != null) {
+        if (mPlayerManager != null && mPlayerManager.isPlaying()) {
             mPlayerManager.pause();
         }
     }
