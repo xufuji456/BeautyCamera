@@ -28,7 +28,7 @@ VideoDecoder::~VideoDecoder() {
 }
 
 void VideoDecoder::setMasterClock(MediaClock *clock) {
-    Mutex::Autolock lock(m_decodeMutex);
+    Mutex::AutoLock lock(m_decodeMutex);
     this->m_masterClock = clock;
 }
 
@@ -72,22 +72,22 @@ void VideoDecoder::flush() {
 }
 
 int VideoDecoder::getFrameSize() {
-    Mutex::Autolock lock(m_decodeMutex);
+    Mutex::AutoLock lock(m_decodeMutex);
     return m_frameQueue ? m_frameQueue->getFrameSize() : 0;
 }
 
 int VideoDecoder::getRotate() {
-    Mutex::Autolock lock(m_decodeMutex);
+    Mutex::AutoLock lock(m_decodeMutex);
     return m_rotate;
 }
 
 FrameQueue *VideoDecoder::getFrameQueue() {
-    Mutex::Autolock lock(m_decodeMutex);
+    Mutex::AutoLock lock(m_decodeMutex);
     return m_frameQueue;
 }
 
 AVFormatContext *VideoDecoder::getFormatContext() {
-    Mutex::Autolock lock(m_decodeMutex);
+    Mutex::AutoLock lock(m_decodeMutex);
     return m_playerParam->m_formatCtx;
 }
 

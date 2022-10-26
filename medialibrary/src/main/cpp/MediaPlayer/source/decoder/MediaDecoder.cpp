@@ -70,7 +70,7 @@ int MediaDecoder::getMemorySize() {
 }
 
 int MediaDecoder::hasEnoughPackets(AVStream *stream) {
-    Mutex::Autolock lock(m_decodeMutex);
+    Mutex::AutoLock lock(m_decodeMutex);
     return (m_packetQueue == nullptr) || (m_packetQueue->isAbort())
            || (stream->disposition & AV_DISPOSITION_ATTACHED_PIC)
            || (m_packetQueue->getPacketSize() > MIN_FRAMES)

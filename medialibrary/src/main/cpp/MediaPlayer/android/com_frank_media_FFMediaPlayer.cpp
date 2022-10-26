@@ -2,7 +2,6 @@
 #include <jni.h>
 #include <Mutex.h>
 #include <Condition.h>
-#include <Errors.h>
 #include "../../nativehelp/JNIHelp.h"
 #include <FFMediaPlayer.h>
 
@@ -95,16 +94,14 @@ static FFMediaPlayer *setMediaPlayer(JNIEnv *env, jobject thiz, long mediaPlayer
 static void process_media_player_call(JNIEnv *env, jobject thiz, int opStatus,
         const char* exception, const char *message) {
     if (exception == nullptr) {
-        if (opStatus != (int) OK) {
+        if (opStatus < 0) {
             FFMediaPlayer* mp = getMediaPlayer(env, thiz);
             if (mp != nullptr) mp->notify(MEDIA_ERROR, opStatus, 0);
         }
     } else {
-        if ( opStatus == (int) INVALID_OPERATION ) {
+        if (opStatus == -1) {
             jniThrowException(env, "java/lang/IllegalStateException");
-        } else if ( opStatus == (int) PERMISSION_DENIED ) {
-            jniThrowException(env, "java/lang/SecurityException");
-        } else if ( opStatus != (int) OK ) {
+        } else if (opStatus < 0) {
             if (strlen(message) > 200) {
                 jniThrowException( env, exception, message);
             } else {
@@ -134,7 +131,7 @@ void FFMediaPlayer_setDataSource(JNIEnv *env, jobject thiz, jstring path_) {
         return;
     }
 
-    status_t opStatus = mp->setDataSource(path);
+    int opStatus = mp->setDataSource(path);
     process_media_player_call(env, thiz, opStatus, "java/io/IOException",
             "setDataSource failed." );
 
@@ -160,7 +157,7 @@ void FFMediaPlayer_setDataSourceFD(JNIEnv *env, jobject thiz, jobject fileDescri
     sprintf(str, "pipe:%d", myfd);
     strcat(path, str);
 
-    status_t opStatus = mp->setDataSource(path);
+    int opStatus = mp->setDataSource(path);
     process_media_player_call( env, thiz, opStatus, "java/io/IOException",
             "setDataSourceFD failed.");
 }

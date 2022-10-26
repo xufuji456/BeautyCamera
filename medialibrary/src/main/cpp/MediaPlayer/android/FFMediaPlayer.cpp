@@ -9,7 +9,7 @@ FFMediaPlayer::FFMediaPlayer() {
     mediaPlayer = nullptr;
     mListener = nullptr;
     mPrepareSync = false;
-    mPrepareStatus = NO_ERROR;
+    mPrepareStatus = 0;
     mSeeking = false;
     mSeekingPosition = 0;
 }
@@ -62,59 +62,55 @@ void FFMediaPlayer::disconnect() {
 
 }
 
-status_t FFMediaPlayer::setDataSource(const char *url) {
+int FFMediaPlayer::setDataSource(const char *url) {
     if (url == nullptr) {
-        return BAD_VALUE;
+        return -1;
     }
     if (mediaPlayer == nullptr) {
         mediaPlayer = new MediaPlayer();
     }
     mediaPlayer->setDataSource(url);
     mediaPlayer->setVideoRender(videoRender);
-    return NO_ERROR;
+    return 0;
 }
 
-status_t FFMediaPlayer::setVideoSurface(void *surface) {
+int FFMediaPlayer::setVideoSurface(void *surface) {
     if (mediaPlayer == nullptr) {
-        return NO_INIT;
+        return -1;
     }
     if (surface != nullptr) {
         videoRender->setSurface(surface);
-        return NO_ERROR;
+        return 0;
     }
-    return BAD_VALUE;
+    return -1;
 }
 
-status_t FFMediaPlayer::setListener(MediaPlayerListener *listener) {
+void FFMediaPlayer::setListener(MediaPlayerListener *listener) {
     if (mListener != nullptr) {
         delete mListener;
         mListener = nullptr;
     }
     mListener = listener;
-    return NO_ERROR;
 }
 
-status_t FFMediaPlayer::prepare() {
+int FFMediaPlayer::prepare() {
     if (mediaPlayer == nullptr) {
-        return NO_INIT;
+        return -1;
     }
     if (mPrepareSync) {
         return -EALREADY;
     }
     mPrepareSync = true;
-    status_t ret = mediaPlayer->prepare();
-    if (ret != NO_ERROR) {
-        return ret;
-    }
+    int ret = mediaPlayer->prepare();
     mPrepareSync = false;
-    return mPrepareStatus;
+    return ret < 0 ? ret : mPrepareStatus;
 }
 
-status_t FFMediaPlayer::prepareAsync() {
+int FFMediaPlayer::prepareAsync() {
     if (mediaPlayer != nullptr) {
         return mediaPlayer->prepareAsync();
     }
-    return INVALID_OPERATION;
+    return -1;
 }
 
 void FFMediaPlayer::start() {
@@ -163,7 +159,7 @@ int FFMediaPlayer::getVideoHeight() {
     return 0;
 }
 
-status_t FFMediaPlayer::seekTo(long msec) {
+void FFMediaPlayer::seekTo(long msec) {
     if (mediaPlayer != nullptr) {
         if (mSeeking) {
             mediaPlayer->getMessageQueue()->sendMessage(MSG_REQUEST_SEEK, msec);
@@ -173,7 +169,6 @@ status_t FFMediaPlayer::seekTo(long msec) {
             mSeeking = true;
         }
     }
-    return NO_ERROR;
 }
 
 long FFMediaPlayer::getCurrentPosition() {
@@ -200,11 +195,10 @@ int FFMediaPlayer::selectTrack(int trackId, bool selected) {
     return -1;
 }
 
-status_t FFMediaPlayer::setVolume(float volume) {
+void FFMediaPlayer::setVolume(float volume) {
     if (mediaPlayer != nullptr) {
         mediaPlayer->setVolume(volume);
     }
-    return NO_ERROR;
 }
 
 void FFMediaPlayer::setMute(bool mute) {
@@ -233,14 +227,13 @@ void FFMediaPlayer::stop() {
     }
 }
 
-status_t FFMediaPlayer::reset() {
+void FFMediaPlayer::reset() {
     mPrepareSync = false;
     if (mediaPlayer != nullptr) {
         mediaPlayer->reset();
         delete mediaPlayer;
         mediaPlayer = nullptr;
     }
-    return NO_ERROR;
 }
 
 void FFMediaPlayer::notify(int msg, int ext1, int ext2, void *obj, int len) {
@@ -296,7 +289,7 @@ void FFMediaPlayer::run() {
                 ALOGD("FFMediaPlayer is prepared.\n");
                 if (mPrepareSync) {
                     mPrepareSync = false;
-                    mPrepareStatus = NO_ERROR;
+                    mPrepareStatus = 0;
                 }
                 postEvent(MEDIA_PREPARED, 0, 0);
                 break;
@@ -370,8 +363,8 @@ void FFMediaPlayer::run() {
             }
             case MSG_REQUEST_PREPARE: {
                 ALOGD("FFMediaPlayer is preparing...");
-                status_t result = prepare();
-                if (result != NO_ERROR) {
+                int result = prepare();
+                if (result < 0) {
                     ALOGE("FFMediaPlayer prepare error:%d", result);
                 }
                 break;

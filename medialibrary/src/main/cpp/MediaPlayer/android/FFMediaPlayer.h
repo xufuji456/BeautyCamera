@@ -44,7 +44,7 @@ private:
     bool mSeeking;
     long mSeekingPosition;
     bool mPrepareSync;
-    status_t mPrepareStatus;
+    int  mPrepareStatus;
 
 private:
     void postEvent(int what, int arg1, int arg2, void *obj = nullptr);
@@ -61,15 +61,15 @@ public:
 
     void disconnect();
 
-    status_t setDataSource(const char *url);
+    int setDataSource(const char *url);
 
-    status_t setVideoSurface(void* surface);
+    int setVideoSurface(void* surface);
 
-    status_t setListener(MediaPlayerListener *listener);
+    void setListener(MediaPlayerListener *listener);
 
-    status_t prepare();
+    int prepare();
 
-    status_t prepareAsync();
+    int prepareAsync();
 
     void start();
 
@@ -85,7 +85,7 @@ public:
 
     int getVideoHeight();
 
-    status_t seekTo(long msec);
+    void seekTo(long msec);
 
     long getCurrentPosition();
 
@@ -93,7 +93,7 @@ public:
 
     int selectTrack(int trackId, bool selected);
 
-    status_t setVolume(float volume);
+    void setVolume(float volume);
 
     void setMute(bool mute);
 
@@ -107,7 +107,7 @@ public:
 
     void stop();
 
-    status_t reset();
+    void reset();
 
 };
 

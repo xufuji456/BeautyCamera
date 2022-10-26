@@ -120,7 +120,7 @@ int PacketQueue::getPacket(AVPacket *pkt, int block) {
 }
 
 int PacketQueue::getPacketSize() {
-    Mutex::Autolock lock(mMutex);
+    Mutex::AutoLock lock(mMutex);
     return nb_packets;
 }
 

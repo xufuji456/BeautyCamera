@@ -62,7 +62,7 @@ void AVSync::start(VideoDecoder *videoDecoder, AudioDecoder *audioDecoder) {
 }
 
 void AVSync::setVideoRender(VideoRender *render) {
-    Mutex::Autolock lock(m_syncMutex);
+    Mutex::AutoLock lock(m_syncMutex);
     this->m_videoRender = render;
 }
 

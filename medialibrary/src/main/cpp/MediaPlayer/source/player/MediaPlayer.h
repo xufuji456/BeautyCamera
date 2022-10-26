@@ -16,7 +16,6 @@
 #include <avsync/AVSync.h>
 #include <resample/AudioResampler.h>
 
-
 class MediaPlayer : public Runnable {
 
 private:
@@ -59,15 +58,15 @@ public:
 
     virtual ~MediaPlayer();
 
-    status_t reset();
+    int reset();
 
     void setDataSource(const char *url);
 
     void setVideoRender(VideoRender *render);
 
-    status_t prepare();
+    int prepare();
 
-    status_t prepareAsync();
+    int prepareAsync();
 
     void start();
 

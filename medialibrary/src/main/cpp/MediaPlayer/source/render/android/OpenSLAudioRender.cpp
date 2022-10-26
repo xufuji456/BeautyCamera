@@ -79,7 +79,7 @@ void OpenSLAudioRender::flush() {
 }
 
 void OpenSLAudioRender::setVolume(float volume) {
-    Mutex::Autolock lock(mMutex);
+    Mutex::AutoLock lock(mMutex);
     if (!updateVolume) {
         mVolume = volume;
         updateVolume = true;

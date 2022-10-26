@@ -133,7 +133,7 @@ inline void Thread::join() {
 }
 
 inline  void Thread::detach() {
-    Mutex::Autolock lock(mMutex);
+    Mutex::AutoLock lock(mMutex);
     if (mId >= 0) {
         pthread_detach(mId);
         mNeedJoin = false;

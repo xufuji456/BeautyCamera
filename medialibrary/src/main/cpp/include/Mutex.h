@@ -5,45 +5,42 @@
 #include <stdint.h>
 #include <sys/types.h>
 #include <time.h>
-
 #include <pthread.h>
-#include "Errors.h"
 
 class Condition;
 
 class Mutex {
+private:
+    friend class Condition;
+
+    Mutex(const Mutex&);
+    Mutex& operator = (const Mutex&);
+
+    pthread_mutex_t mMutex;
+
 public:
     enum {
         PRIVATE = 0,
-        SHARED = 1
+        SHARED  = 1
     };
+
     Mutex();
     Mutex(const char* name);
     Mutex(int type, const char* name = NULL);
     ~Mutex();
 
-    status_t    lock();
-    status_t    unlock();
+    int lock();
+    int unlock();
+    int tryLock();
 
-    status_t    tryLock();
-
-    class Autolock {
+    class AutoLock {
     public:
-        inline Autolock(Mutex& mutex) : mLock(mutex)  { mLock.lock(); }
-        inline Autolock(Mutex* mutex) : mLock(*mutex) { mLock.lock(); }
-        inline ~Autolock() { mLock.unlock(); }
+        inline AutoLock(Mutex& mutex) : mLock(mutex)  { mLock.lock(); }
+        inline AutoLock(Mutex* mutex) : mLock(*mutex) { mLock.lock(); }
+        inline ~AutoLock() { mLock.unlock(); }
     private:
         Mutex& mLock;
     };
-
-private:
-    friend class Condition;
-
-    // A mutex cannot be copied
-    Mutex(const Mutex&);
-    Mutex&      operator = (const Mutex&);
-
-    pthread_mutex_t mMutex;
 };
 
 inline Mutex::Mutex() {
@@ -71,17 +68,18 @@ inline Mutex::~Mutex() {
     pthread_mutex_destroy(&mMutex);
 }
 
-inline status_t Mutex::lock() {
-    return -pthread_mutex_lock(&mMutex);
+inline int Mutex::lock() {
+    return pthread_mutex_lock(&mMutex);
 }
 
-inline status_t Mutex::unlock() {
-    return -pthread_mutex_unlock(&mMutex);
+inline int Mutex::unlock() {
+    return pthread_mutex_unlock(&mMutex);
 }
 
-inline status_t Mutex::tryLock() {
-    return -pthread_mutex_trylock(&mMutex);
+inline int Mutex::tryLock() {
+    return pthread_mutex_trylock(&mMutex);
 }
-typedef Mutex::Autolock AutoMutex;
+
+typedef Mutex::AutoLock AutoMutex;
 
 #endif //MUTEX_H

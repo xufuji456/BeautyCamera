@@ -11,7 +11,7 @@ FFMessageQueue::FFMessageQueue() {
 FFMessageQueue::~FFMessageQueue() = default;
 
 void FFMessageQueue::start() {
-    Mutex::Autolock lock(m_msgMutex);
+    Mutex::AutoLock lock(m_msgMutex);
     m_abortReq = false;
     FFMessage msg;
     message_init(&msg);
@@ -20,7 +20,7 @@ void FFMessageQueue::start() {
 
 void FFMessageQueue::flush() {
     FFMessage *msg, *msg1;
-    Mutex::Autolock lock(m_msgMutex);
+    Mutex::AutoLock lock(m_msgMutex);
     for (msg = m_firstMsg; msg != nullptr; msg = msg1) {
         msg1 = msg->next;
         av_freep(&msg);
@@ -105,7 +105,7 @@ int FFMessageQueue::getMessage(FFMessage *msg, int block) {
 }
 
 int FFMessageQueue::putMessage(FFMessage *msg) {
-    Mutex::Autolock lock(m_msgMutex);
+    Mutex::AutoLock lock(m_msgMutex);
     FFMessage *message;
     if (m_abortReq) {
         return -1;
@@ -129,7 +129,7 @@ int FFMessageQueue::putMessage(FFMessage *msg) {
 }
 
 void FFMessageQueue::stop() {
-    Mutex::Autolock lock(m_msgMutex);
+    Mutex::AutoLock lock(m_msgMutex);
     m_abortReq = true;
     m_msgCond.signal();
 }

@@ -69,7 +69,7 @@ MediaPlayer::~MediaPlayer() {
     av_lockmgr_register(nullptr);
 }
 
-status_t MediaPlayer::reset() {
+int MediaPlayer::reset() {
     stop();
     if (mediaSync) {
         mediaSync->reset();
@@ -103,46 +103,45 @@ status_t MediaPlayer::reset() {
         delete m_playerParam;
         m_playerParam = nullptr;
     }
-    return NO_ERROR;
+    return 0;
 }
 
 void MediaPlayer::setDataSource(const char *url) {
-    Mutex::Autolock lock(mMutex);
+    Mutex::AutoLock lock(mMutex);
     m_playerParam->url = av_strdup(url);
 }
 
 void MediaPlayer::setVideoRender(VideoRender *render) {
-    Mutex::Autolock lock(mMutex);
+    Mutex::AutoLock lock(mMutex);
     mediaSync->setVideoRender(render);
 }
 
-status_t MediaPlayer::prepare() {
-    Mutex::Autolock lock(mMutex);
+int MediaPlayer::prepare() {
+    Mutex::AutoLock lock(mMutex);
     if (!m_playerParam->url) {
-        return BAD_VALUE;
+        return -1;
     }
     m_playerParam->m_abortReq = 0;
     if (!readThread) {
         readThread = new Thread(this);
         readThread->start();
     }
-    return NO_ERROR;
+    return 0;
 }
 
-status_t MediaPlayer::prepareAsync() {
-    Mutex::Autolock lock(mMutex);
+int MediaPlayer::prepareAsync() {
+    Mutex::AutoLock lock(mMutex);
     if (!m_playerParam->url) {
-        return BAD_VALUE;
+        return -1;
     }
-    // 发送消息请求准备
     if (m_playerParam->m_messageQueue) {
         m_playerParam->m_messageQueue->sendMessage(MSG_REQUEST_PREPARE);
     }
-    return NO_ERROR;
+    return 0;
 }
 
 void MediaPlayer::start() {
-    Mutex::Autolock lock(mMutex);
+    Mutex::AutoLock lock(mMutex);
     m_playerParam->m_abortReq = 0;
     m_playerParam->m_pauseReq = 0;
     mExit = false;
@@ -150,13 +149,13 @@ void MediaPlayer::start() {
 }
 
 void MediaPlayer::pause() {
-    Mutex::Autolock lock(mMutex);
+    Mutex::AutoLock lock(mMutex);
     m_playerParam->m_pauseReq = 1;
     mCondition.signal();
 }
 
 void MediaPlayer::resume() {
-    Mutex::Autolock lock(mMutex);
+    Mutex::AutoLock lock(mMutex);
     m_playerParam->m_pauseReq = 0;
     mCondition.signal();
 }
@@ -264,7 +263,7 @@ void MediaPlayer::setRate(float rate) {
 }
 
 int MediaPlayer::getRotate() {
-    Mutex::Autolock lock(mMutex);
+    Mutex::AutoLock lock(mMutex);
     if (videoDecoder) {
         return videoDecoder->getRotate();
     }
@@ -272,7 +271,7 @@ int MediaPlayer::getRotate() {
 }
 
 int MediaPlayer::getVideoWidth() {
-    Mutex::Autolock lock(mMutex);
+    Mutex::AutoLock lock(mMutex);
     if (videoDecoder) {
         return videoDecoder->getCodecContext()->width;
     }
@@ -280,7 +279,7 @@ int MediaPlayer::getVideoWidth() {
 }
 
 int MediaPlayer::getVideoHeight() {
-    Mutex::Autolock lock(mMutex);
+    Mutex::AutoLock lock(mMutex);
     if (videoDecoder) {
         return videoDecoder->getCodecContext()->height;
     }
@@ -288,7 +287,7 @@ int MediaPlayer::getVideoHeight() {
 }
 
 long MediaPlayer::getCurrentPosition() {
-    Mutex::Autolock lock(mMutex);
+    Mutex::AutoLock lock(mMutex);
     int64_t currentPosition = 0;
     // 处于定位
     if (m_playerParam->m_seekRequest) {
@@ -319,12 +318,12 @@ long MediaPlayer::getCurrentPosition() {
 }
 
 long MediaPlayer::getDuration() {
-    Mutex::Autolock lock(mMutex);
+    Mutex::AutoLock lock(mMutex);
     return (long)mDuration;
 }
 
 int MediaPlayer::isPlaying() {
-    Mutex::Autolock lock(mMutex);
+    Mutex::AutoLock lock(mMutex);
     return !m_playerParam->m_abortReq && !m_playerParam->m_pauseReq;
 }
 
@@ -337,7 +336,7 @@ static int avformat_interrupt_cb(void *ctx) {
 }
 
 FFMessageQueue *MediaPlayer::getMessageQueue() {
-    Mutex::Autolock lock(mMutex);
+    Mutex::AutoLock lock(mMutex);
     return m_playerParam->m_messageQueue;
 }
 
