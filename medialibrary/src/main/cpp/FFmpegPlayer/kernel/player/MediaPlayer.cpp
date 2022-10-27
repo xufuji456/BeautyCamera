@@ -745,12 +745,12 @@ int MediaPlayer::readPackets() {
                                                        (void *) errorMsg,
                                                      sizeof(errorMsg) / errorMsg[0]);
         }
-    } else { // 播放完成
+    } else {
         if (m_playerParam->m_messageQueue) {
             m_playerParam->m_messageQueue->sendMessage(MSG_ON_COMPLETE);
         }
     }
-    // 停止消息队列
+
     if (m_playerParam->m_messageQueue) {
         m_playerParam->m_messageQueue->stop();
     }
@@ -769,25 +769,20 @@ int MediaPlayer::openDecoder(int streamIndex) {
         return -1;
     }
 
-    // 创建解码上下文
     avctx = avcodec_alloc_context3(nullptr);
     if (!avctx) {
         return AVERROR(ENOMEM);
     }
 
     do {
-        // 复制解码上下文参数
         ret = avcodec_parameters_to_context(avctx, m_playerParam->m_formatCtx->streams[streamIndex]->codecpar);
         if (ret < 0) {
             break;
         }
 
-        // 设置时钟基准
         av_codec_set_pkt_timebase(avctx, m_playerParam->m_formatCtx->streams[streamIndex]->time_base);
-
         codec = avcodec_find_decoder(avctx->codec_id);
 
-        // 判断是否成功得到解码器
         if (!codec) {
             av_log(nullptr, AV_LOG_WARNING,
                    "No codec could be found with id %d\n", avctx->codec_id);
@@ -809,7 +804,6 @@ int MediaPlayer::openDecoder(int streamIndex) {
             av_dict_set(&opts, "refcounted_frames", "1", 0);
         }
 
-        // 打开解码器
         if ((ret = avcodec_open2(avctx, codec, &opts)) < 0) {
             break;
         }
@@ -819,7 +813,6 @@ int MediaPlayer::openDecoder(int streamIndex) {
             break;
         }
 
-        // 根据解码器类型创建解码器
         m_playerParam->m_formatCtx->streams[streamIndex]->discard = AVDISCARD_DEFAULT;
         switch (avctx->codec_type) {
             case AVMEDIA_TYPE_AUDIO: {
@@ -966,7 +959,6 @@ int MediaPlayer::openAudioRender(int64_t wanted_channel_layout, int wanted_nb_ch
         }
     }
 
-    // 初始化音频重采样器
     m_audioResampler = new AudioResampler(m_playerParam, m_audioDecoder, m_avSync);
     m_audioResampler->setResampleParams(&spec, wanted_channel_layout);
 

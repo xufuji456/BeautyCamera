@@ -148,7 +148,7 @@ int VideoDecoder::decodeVideo() {
             got_picture = 1;
 
             if (m_playerParam->m_reorderVideoPts == -1) {
-                frame->pts = av_frame_get_best_effort_timestamp(frame);
+                frame->pts = frame->best_effort_timestamp;
             } else if (!m_playerParam->m_reorderVideoPts) {
                 frame->pts = frame->pkt_dts;
             }

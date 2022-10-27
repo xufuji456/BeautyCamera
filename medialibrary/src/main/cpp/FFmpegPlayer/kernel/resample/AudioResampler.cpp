@@ -159,13 +159,13 @@ int AudioResampler::audioFrameResample() {
             continue;
         }
 
-        data_size = av_samples_get_buffer_size(nullptr, av_frame_get_channels(m_frame),
+        data_size = av_samples_get_buffer_size(nullptr, m_frame->channels,
                                                m_frame->nb_samples,
                                                (AVSampleFormat)m_frame->format, 1);
 
         dec_channel_layout =
-                (m_frame->channel_layout && av_frame_get_channels(m_frame) == av_get_channel_layout_nb_channels(m_frame->channel_layout))
-                ? m_frame->channel_layout : av_get_default_channel_layout(av_frame_get_channels(m_frame));
+                (m_frame->channel_layout && m_frame->channels == av_get_channel_layout_nb_channels(m_frame->channel_layout))
+                ? m_frame->channel_layout : av_get_default_channel_layout(m_frame->channels);
         wanted_nb_samples = audioSynchronize(m_frame->nb_samples);
 
         // check params between frame and resampler
@@ -192,7 +192,7 @@ int AudioResampler::audioFrameResample() {
                 return -1;
             }
             m_audioState->m_audioParamSrc.channel_layout = dec_channel_layout;
-            m_audioState->m_audioParamSrc.channels = av_frame_get_channels(m_frame);
+            m_audioState->m_audioParamSrc.channels = m_frame->channels;
             m_audioState->m_audioParamSrc.freq = m_frame->sample_rate;
             m_audioState->m_audioParamSrc.fmt = (AVSampleFormat)m_frame->format;
         }
