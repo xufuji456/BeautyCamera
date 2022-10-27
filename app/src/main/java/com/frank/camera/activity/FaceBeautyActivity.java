@@ -159,7 +159,7 @@ public class FaceBeautyActivity extends AppCompatActivity implements RadioGroup.
         int volume = audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION);
         if (volume != 0) {
             if (mediaPlayer == null) {
-                mediaPlayer = MediaPlayer.create(this, Uri.parse("file:///system/media/audio/ui/camera_click.ogg"));
+                mediaPlayer = FFmpegPlayer.create(this, Uri.parse("file:///system/media/audio/ui/camera_click.ogg"));
             }
             if (mediaPlayer != null) {
                 mediaPlayer.start();

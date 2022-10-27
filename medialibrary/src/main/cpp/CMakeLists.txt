@@ -20,5 +20,4 @@ set_target_properties(soundtouch
         PROPERTIES IMPORTED_LOCATION
         ${CMAKE_SOURCE_DIR}/../libs/${ANDROID_ABI}/libsoundtouch.so)
 
-# 媒体播放器
-add_subdirectory(${CMAKE_SOURCE_DIR}/MediaPlayer)
+add_subdirectory(${CMAKE_SOURCE_DIR}/FFmpegPlayer)
