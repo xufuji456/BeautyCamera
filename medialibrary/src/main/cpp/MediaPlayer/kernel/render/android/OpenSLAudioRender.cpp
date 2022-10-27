@@ -1,5 +1,4 @@
 
-#include <AndroidLog.h>
 #include "OpenSLAudioRender.h"
 
 #define OPENSLES_BUF_COUNT 4
@@ -121,7 +120,7 @@ void OpenSLAudioRender::run() {
         SLAndroidSimpleBufferQueueState slState = {0};
         SLresult slRet = (*slBufferQueueItf)->GetState(slBufferQueueItf, &slState);
         if (slRet != SL_RESULT_SUCCESS) {
-            ALOGE("slBufferQueueItf->GetState() error: %d", slRet);
+            av_log(nullptr, AV_LOG_ERROR, "slBufferQueueItf->GetState() error: %d", slRet);
             mMutex.unlock();
         }
 
@@ -135,7 +134,7 @@ void OpenSLAudioRender::run() {
                 mCondition.waitRelative(mMutex, 10 * 1000000);
                 slRet = (*slBufferQueueItf)->GetState(slBufferQueueItf, &slState);
                 if (slRet != SL_RESULT_SUCCESS) {
-                    ALOGE("slBufferQueueItf->GetState() error: %d", slRet);
+                    av_log(nullptr, AV_LOG_ERROR, "slBufferQueueItf->GetState() error: %d", slRet);
                     mMutex.unlock();
                 }
 
@@ -169,7 +168,7 @@ void OpenSLAudioRender::run() {
                 SLmillibel level = getAmplificationLevel(mVolume);
                 SLresult result = (*slVolumeItf)->SetVolumeLevel(slVolumeItf, level);
                 if (result != SL_RESULT_SUCCESS) {
-                    ALOGE("slVolumeItf->SetVolumeLevel error: %d", (int)result);
+                    av_log(nullptr, AV_LOG_ERROR, "slVolumeItf->SetVolumeLevel error: %d", (int)result);
                 }
             }
             updateVolume = false;
@@ -186,9 +185,9 @@ void OpenSLAudioRender::run() {
             if (slRet == SL_RESULT_SUCCESS) {
 
             } else if (slRet == SL_RESULT_BUFFER_INSUFFICIENT) {
-                ALOGE("Enqueue result: SL_RESULT_BUFFER_INSUFFICIENT");
+                av_log(nullptr, AV_LOG_ERROR, "Enqueue result: SL_RESULT_BUFFER_INSUFFICIENT");
             } else {
-                ALOGE("slBufferQueueItf->Enqueue err: %d", (int)slRet);
+                av_log(nullptr, AV_LOG_ERROR, "slBufferQueueItf->Enqueue err: %d", (int)slRet);
                 break;
             }
         }
@@ -209,18 +208,18 @@ int OpenSLAudioRender::open(const AudioRenderSpec *desired, AudioRenderSpec *obt
     result = slCreateEngine(&slObject, 0, nullptr, 0,
                             nullptr, nullptr);
     if ((result) != SL_RESULT_SUCCESS) {
-        ALOGE("slCreateEngine error:%d", result);
+        av_log(nullptr, AV_LOG_ERROR, "slCreateEngine error:%d", result);
         return -1;
     }
     (*slObject)->Realize(slObject, SL_BOOLEAN_FALSE);
     result = (*slObject)->GetInterface(slObject, SL_IID_ENGINE, &slEngine);
     if (result != SL_RESULT_SUCCESS) {
-        ALOGE("GetInterface of slObject error=%d", result);
+        av_log(nullptr, AV_LOG_ERROR, "GetInterface of slObject error=%d", result);
         return -1;
     }
     result = (*slEngine)->CreateOutputMix(slEngine, &slOutputMixObject, 1, mixIds, mixRequire);
     if (result != SL_RESULT_SUCCESS) {
-        ALOGE("CreateOutputMix error%d", result);
+        av_log(nullptr, AV_LOG_ERROR, "CreateOutputMix error%d", result);
         return -1;
     }
     (*slOutputMixObject)->Realize(slOutputMixObject, SL_BOOLEAN_FALSE);
@@ -240,7 +239,7 @@ int OpenSLAudioRender::open(const AudioRenderSpec *desired, AudioRenderSpec *obt
             channelMask = SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT;
             break;
         default:
-            ALOGE("open AudioRender error: channel %d", desired->channels);
+            av_log(nullptr, AV_LOG_ERROR, "open AudioRender error: channel %d", desired->channels);
             return -1;
     }
     SLDataFormat_PCM format_pcm = {
@@ -257,23 +256,23 @@ int OpenSLAudioRender::open(const AudioRenderSpec *desired, AudioRenderSpec *obt
 
     result = (*slEngine)->CreateAudioPlayer(slEngine, &slPlayerObject, &slDataSource, &audioSink, 3, ids, require);
     if (result != SL_RESULT_SUCCESS) {
-        ALOGE("CreateAudioPlayer error:%d", result);
+        av_log(nullptr, AV_LOG_ERROR, "CreateAudioPlayer error:%d", result);
         return -1;
     }
     (*slPlayerObject)->Realize(slPlayerObject, SL_BOOLEAN_FALSE);
     result = (*slPlayerObject)->GetInterface(slPlayerObject, SL_IID_PLAY, &slPlayItf);
     if (result != SL_RESULT_SUCCESS) {
-        ALOGE("GetInterface of Player error:%d", result);
+        av_log(nullptr, AV_LOG_ERROR, "GetInterface of Player error:%d", result);
         return -1;
     }
     result = (*slPlayerObject)->GetInterface(slPlayerObject, SL_IID_VOLUME, &slVolumeItf);
     if (result != SL_RESULT_SUCCESS) {
-        ALOGE("GetInterface of Volume error:%d", result);
+        av_log(nullptr, AV_LOG_ERROR, "GetInterface of Volume error:%d", result);
         return -1;
     }
     result = (*slPlayerObject)->GetInterface(slPlayerObject, SL_IID_ANDROIDSIMPLEBUFFERQUEUE, &slBufferQueueItf);
     if (result != SL_RESULT_SUCCESS) {
-        ALOGE("GetInterface of BufferQueue error:%d", result);
+        av_log(nullptr, AV_LOG_ERROR, "GetInterface of BufferQueue error:%d", result);
         return -1;
     }
 
@@ -295,7 +294,7 @@ int OpenSLAudioRender::open(const AudioRenderSpec *desired, AudioRenderSpec *obt
     for(int i = 0; i < OPENSLES_BUF_COUNT; i++) {
         result = (*slBufferQueueItf)->Enqueue(slBufferQueueItf, buffer + i * bytes_per_buffer, bytes_per_buffer);
         if (result != SL_RESULT_SUCCESS)  {
-            ALOGE("slBufferQueueItf->Enqueue error:%d", result);
+            av_log(nullptr, AV_LOG_ERROR, "slBufferQueueItf->Enqueue error:%d", result);
         }
     }
 

@@ -27,7 +27,7 @@ static int lockmgrCallback(void **mtx, enum AVLockOp op) {
         }
 
         case AV_LOCK_DESTROY: {
-            if (!*mtx) {
+            if (*mtx) {
                 delete (*mtx);
                 *mtx = nullptr;
             }
@@ -444,8 +444,6 @@ int MediaPlayer::readPackets() {
             mDuration = av_rescale(ic->duration, 1000, AV_TIME_BASE);
         }
 
-        m_playerParam->m_videoDuration = mDuration;
-
         if (ic->pb) {
             ic->pb->eof_reached = 0;
         }
@@ -817,7 +815,6 @@ int MediaPlayer::openDecoder(int streamIndex) {
                 break;
         }
         if (forcedCodecName) {
-            ALOGD("forceCodecName = %s", forcedCodecName);
             codec = avcodec_find_decoder_by_name(forcedCodecName);
         }
 

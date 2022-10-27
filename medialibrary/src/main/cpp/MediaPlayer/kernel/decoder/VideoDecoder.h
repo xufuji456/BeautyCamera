@@ -41,8 +41,6 @@ public:
 
     FrameQueue *getFrameQueue();
 
-    AVFormatContext *getFormatContext();
-
 };
 
 

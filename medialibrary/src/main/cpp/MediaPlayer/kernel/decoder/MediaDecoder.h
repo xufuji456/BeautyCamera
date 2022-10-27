@@ -2,7 +2,6 @@
 #ifndef MEDIADECODER_H
 #define MEDIADECODER_H
 
-#include <AndroidLog.h>
 #include <player/PlayerParam.h>
 #include <queue/PacketQueue.h>
 #include <queue/FrameQueue.h>

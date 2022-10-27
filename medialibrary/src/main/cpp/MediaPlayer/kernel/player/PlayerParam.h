@@ -93,10 +93,8 @@ public:
     AVCodecContext *m_subtitleCodecCtx;
 
     FFMessageQueue *m_messageQueue;
-    int64_t m_videoDuration;
 
     const char *url;
-
     const char *m_audioCodecName;
     const char *m_videoCodecName;
 

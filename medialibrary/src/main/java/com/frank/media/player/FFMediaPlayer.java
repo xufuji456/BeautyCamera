@@ -92,11 +92,7 @@ public class FFMediaPlayer implements IMediaPlayer {
             }
             mp.prepare();
             return mp;
-        } catch (IOException e) {
-            Log.d(TAG, "create player failed:", e);
-        } catch (IllegalArgumentException e) {
-            Log.d(TAG, "create player failed:", e);
-        } catch (SecurityException e) {
+        } catch (IOException | IllegalArgumentException e) {
             Log.d(TAG, "create player failed:", e);
         }
 

@@ -70,7 +70,7 @@ void JNIMediaPlayerListener::notify(int msg, int ext1, int ext2, void *obj) {
                               msg, ext1, ext2, obj);
 
     if (env->ExceptionCheck()) {
-        ALOGW("An exception occurred while notifying an event.");
+        ALOGE("An exception occurred while notifying an event.");
         env->ExceptionClear();
     }
 
@@ -215,7 +215,7 @@ void FFMediaPlayer_reset(JNIEnv *env, jobject thiz) {
 void FFMediaPlayer_finalize(JNIEnv *env, jobject thiz) {
     FFMediaPlayer *mp = getMediaPlayer(env, thiz);
     if (mp != nullptr) {
-        ALOGW("MediaPlayer finalized without being released");
+        ALOGE("MediaPlayer finalized without being released");
     }
     FFMediaPlayer_release(env, thiz);
 }

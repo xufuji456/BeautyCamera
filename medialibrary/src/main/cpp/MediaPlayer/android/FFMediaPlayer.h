@@ -2,7 +2,7 @@
 #ifndef FF_MEDIAPLAYER_H
 #define FF_MEDIAPLAYER_H
 
-#include <AndroidLog.h>
+#include <../../log_helper.h>
 #include <Mutex.h>
 #include <Condition.h>
 #include <Thread.h>

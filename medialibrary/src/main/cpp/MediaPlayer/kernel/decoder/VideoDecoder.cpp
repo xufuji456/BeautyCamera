@@ -86,11 +86,6 @@ FrameQueue *VideoDecoder::getFrameQueue() {
     return m_frameQueue;
 }
 
-AVFormatContext *VideoDecoder::getFormatContext() {
-    Mutex::AutoLock lock(m_decodeMutex);
-    return m_playerParam->m_formatCtx;
-}
-
 AVCodecContext *VideoDecoder::getCodecContext() {
     return m_playerParam->m_videoCodecCtx;
 }

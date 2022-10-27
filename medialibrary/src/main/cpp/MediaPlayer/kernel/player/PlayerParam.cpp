@@ -40,7 +40,6 @@ void PlayerParam::init() {
     m_pauseReq = 1;
     m_audioDisable = 0;
     m_videoDisable = 0;
-    m_videoDuration = 0;
     m_videoIndex = -1;
     m_audioIndex = -1;
     m_displayDisable = 0;
