@@ -780,7 +780,7 @@ int MediaPlayer::openDecoder(int streamIndex) {
             break;
         }
 
-        av_codec_set_pkt_timebase(avctx, m_playerParam->m_formatCtx->streams[streamIndex]->time_base);
+        avctx->pkt_timebase = m_playerParam->m_formatCtx->streams[streamIndex]->time_base;
         codec = avcodec_find_decoder(avctx->codec_id);
 
         if (!codec) {
