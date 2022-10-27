@@ -9,7 +9,7 @@ import android.view.WindowManager;
 import com.frank.media.R;
 import com.frank.media.viewcontroller.PlayerViewController;
 
-public class MainActivity extends Activity {
+public class PlayerActivity extends Activity {
 
     private final String[] permissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
