@@ -1,8 +1,8 @@
 
+#include "FFmpegPlayer.h"
 #include <message/FFMessageQueue.h>
-#include "FFMediaPlayer.h"
 
-FFMediaPlayer::FFMediaPlayer() {
+FFmpegPlayer::FFmpegPlayer() {
     m_exitReq      = false;
     m_seeking      = false;
     m_seekingPos   = 0;
@@ -12,7 +12,7 @@ FFMediaPlayer::FFMediaPlayer() {
     m_playListener = nullptr;
 }
 
-void FFMediaPlayer::init() {
+void FFmpegPlayer::init() {
     if (m_videoRender == nullptr) {
         m_videoRender = new NativeWindowVideoRender();
     }
@@ -22,7 +22,7 @@ void FFMediaPlayer::init() {
     }
 }
 
-void FFMediaPlayer::disconnect() {
+void FFmpegPlayer::disconnect() {
     m_exitReq = true;
     reset();
 
@@ -42,7 +42,7 @@ void FFMediaPlayer::disconnect() {
     }
 }
 
-int FFMediaPlayer::setDataSource(const char *url) {
+int FFmpegPlayer::setDataSource(const char *url) {
     if (url == nullptr) {
         return -1;
     }
@@ -54,7 +54,7 @@ int FFMediaPlayer::setDataSource(const char *url) {
     return 0;
 }
 
-int FFMediaPlayer::setVideoSurface(void *surface) {
+int FFmpegPlayer::setVideoSurface(void *surface) {
     if (m_mediaPlayer == nullptr) {
         return -1;
     }
@@ -65,7 +65,7 @@ int FFMediaPlayer::setVideoSurface(void *surface) {
     return -1;
 }
 
-void FFMediaPlayer::setListener(MediaPlayerListener *listener) {
+void FFmpegPlayer::setListener(MediaPlayerListener *listener) {
     if (m_playListener != nullptr) {
         delete m_playListener;
         m_playListener = nullptr;
@@ -73,7 +73,7 @@ void FFMediaPlayer::setListener(MediaPlayerListener *listener) {
     m_playListener = listener;
 }
 
-int FFMediaPlayer::prepare() {
+int FFmpegPlayer::prepare() {
     if (m_mediaPlayer == nullptr) {
         return -1;
     }
@@ -81,60 +81,60 @@ int FFMediaPlayer::prepare() {
     return ret;
 }
 
-int FFMediaPlayer::prepareAsync() {
+int FFmpegPlayer::prepareAsync() {
     if (m_mediaPlayer != nullptr) {
         return m_mediaPlayer->prepareAsync();
     }
     return -1;
 }
 
-void FFMediaPlayer::start() {
+void FFmpegPlayer::start() {
     if (m_mediaPlayer != nullptr) {
         m_mediaPlayer->start();
     }
 }
 
-void FFMediaPlayer::pause() {
+void FFmpegPlayer::pause() {
     if (m_mediaPlayer) {
         m_mediaPlayer->pause();
     }
 }
 
-void FFMediaPlayer::resume() {
+void FFmpegPlayer::resume() {
     if (m_mediaPlayer) {
         m_mediaPlayer->resume();
     }
 }
 
-bool FFMediaPlayer::isPlaying() {
+bool FFmpegPlayer::isPlaying() {
     if (m_mediaPlayer) {
         return (m_mediaPlayer->isPlaying() != 0);
     }
     return false;
 }
 
-int FFMediaPlayer::getRotate() {
+int FFmpegPlayer::getRotate() {
     if (m_mediaPlayer != nullptr) {
         return m_mediaPlayer->getRotate();
     }
     return 0;
 }
 
-int FFMediaPlayer::getVideoWidth() {
+int FFmpegPlayer::getVideoWidth() {
     if (m_mediaPlayer != nullptr) {
         return m_mediaPlayer->getVideoWidth();
     }
     return 0;
 }
 
-int FFMediaPlayer::getVideoHeight() {
+int FFmpegPlayer::getVideoHeight() {
     if (m_mediaPlayer != nullptr) {
         return m_mediaPlayer->getVideoHeight();
     }
     return 0;
 }
 
-void FFMediaPlayer::seekTo(long msec) {
+void FFmpegPlayer::seekTo(long msec) {
     if (m_mediaPlayer != nullptr) {
         if (m_seeking) {
             m_mediaPlayer->getMessageQueue()->sendMessage(MSG_REQUEST_SEEK, msec);
@@ -146,7 +146,7 @@ void FFMediaPlayer::seekTo(long msec) {
     }
 }
 
-long FFMediaPlayer::getCurrentPosition() {
+long FFmpegPlayer::getCurrentPosition() {
     if (m_mediaPlayer != nullptr) {
         if (m_seeking) {
             return m_seekingPos;
@@ -156,53 +156,53 @@ long FFMediaPlayer::getCurrentPosition() {
     return 0;
 }
 
-long FFMediaPlayer::getDuration() {
+long FFmpegPlayer::getDuration() {
     if (m_mediaPlayer != nullptr) {
         return m_mediaPlayer->getDuration();
     }
     return -1;
 }
 
-int FFMediaPlayer::selectTrack(int trackId, bool selected) {
+int FFmpegPlayer::selectTrack(int trackId, bool selected) {
     if (m_mediaPlayer != nullptr) {
         return m_mediaPlayer->selectTrack(trackId, selected);
     }
     return -1;
 }
 
-void FFMediaPlayer::setVolume(float volume) {
+void FFmpegPlayer::setVolume(float volume) {
     if (m_mediaPlayer != nullptr) {
         m_mediaPlayer->setVolume(volume);
     }
 }
 
-void FFMediaPlayer::setMute(bool mute) {
+void FFmpegPlayer::setMute(bool mute) {
     if (m_mediaPlayer != nullptr) {
         m_mediaPlayer->setMute(mute);
     }
 }
 
-void FFMediaPlayer::setRate(float speed) {
+void FFmpegPlayer::setRate(float speed) {
     if (m_mediaPlayer != nullptr) {
         m_mediaPlayer->setRate(speed);
     }
 }
 
-AVStream *FFMediaPlayer::getAVStream(int mediaType) const {
+AVStream *FFmpegPlayer::getAVStream(int mediaType) const {
     return m_mediaPlayer ? m_mediaPlayer->getAVStream(mediaType) : nullptr;
 }
 
-AVFormatContext *FFMediaPlayer::getMetadata() const {
+AVFormatContext *FFmpegPlayer::getMetadata() const {
     return m_mediaPlayer ? m_mediaPlayer->getMetadata() : nullptr;
 }
 
-void FFMediaPlayer::stop() {
+void FFmpegPlayer::stop() {
     if (m_mediaPlayer) {
         m_mediaPlayer->stop();
     }
 }
 
-void FFMediaPlayer::reset() {
+void FFmpegPlayer::reset() {
     if (m_mediaPlayer != nullptr) {
         m_mediaPlayer->reset();
         delete m_mediaPlayer;
@@ -210,19 +210,19 @@ void FFMediaPlayer::reset() {
     }
 }
 
-void FFMediaPlayer::notify(int msg, int ext1, int ext2, void *obj, int len) {
+void FFmpegPlayer::notify(int msg, int ext1, int ext2, void *obj, int len) {
     if (m_mediaPlayer != nullptr) {
         m_mediaPlayer->getMessageQueue()->sendMessage(msg, ext1, ext2, obj, len);
     }
 }
 
-void FFMediaPlayer::postEvent(int what, int arg1, int arg2, void *obj) {
+void FFmpegPlayer::postEvent(int what, int arg1, int arg2, void *obj) {
     if (m_playListener != nullptr) {
         m_playListener->notify(what, arg1, arg2, obj);
     }
 }
 
-void FFMediaPlayer::run() {
+void FFmpegPlayer::run() {
 
     int ret;
     while (true) {
@@ -302,7 +302,7 @@ void FFMediaPlayer::run() {
                 break;
             }
             case MSG_BUFFERING_TIME_UPDATE: {
-                ALOGD("FFMediaPlayer buffering time update.");
+                ALOGD("FFmpegPlayer buffering time update.");
                 break;
             }
             case MSG_SEEK_COMPLETE: {
@@ -336,7 +336,7 @@ void FFMediaPlayer::run() {
                 break;
             }
             default: {
-                ALOGE("FFMediaPlayer unknown msg:what=%d\n", msg.what);
+                ALOGE("FFmpegPlayer unknown msg:what=%d\n", msg.what);
                 break;
             }
         }

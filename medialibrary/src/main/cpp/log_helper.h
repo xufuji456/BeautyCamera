@@ -7,7 +7,7 @@
 #define LOGI(TAG, FORMAT, ...) __android_log_print(ANDROID_LOG_INFO, TAG, FORMAT, ##__VA_ARGS__)
 #define LOGE(TAG, FORMAT, ...) __android_log_print(ANDROID_LOG_ERROR, TAG, FORMAT, ##__VA_ARGS__)
 
-#define FFPLAY_TAG "FFMediaPlayer"
+#define FFPLAY_TAG "FFmpegPlayer"
 #define ALOGD(FORMAT, ...) __android_log_print(ANDROID_LOG_DEBUG, FFPLAY_TAG, FORMAT, ##__VA_ARGS__)
 #define ALOGI(FORMAT, ...) __android_log_print(ANDROID_LOG_INFO, FFPLAY_TAG, FORMAT, ##__VA_ARGS__)
 #define ALOGE(FORMAT, ...) __android_log_print(ANDROID_LOG_ERROR, FFPLAY_TAG, FORMAT, ##__VA_ARGS__)

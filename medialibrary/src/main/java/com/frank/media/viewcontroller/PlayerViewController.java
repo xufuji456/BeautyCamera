@@ -260,19 +260,19 @@ public class PlayerViewController implements View.OnClickListener, PlayerManager
 
     @Override
     public void onPrepared() {
-        Log.i("FFMediaPlayer", "onPrepared");
+        Log.i("FFmpegPlayer", "onPrepared");
         mPlayerManager.start();
     }
 
     @Override
     public boolean onError(int what, int extra) {
-        Log.i("FFMediaPlayer", "onError, what=" + what);
+        Log.i("FFmpegPlayer", "onError, what=" + what);
         return false;
     }
 
     @Override
     public void onRenderFirstFrame(int video, int audio) {
-        Log.i("FFMediaPlayer", "onRenderFirstFrame, video=" + video + ", audio=" + audio);
+        Log.i("FFmpegPlayer", "onRenderFirstFrame, video=" + video + ", audio=" + audio);
         if (video == 1 || audio == 1) {
             long playProgress = mPlayerManager.getDuration();
             txtDuration.setText(TimeUtil.getVideoTime(playProgress));
@@ -285,7 +285,7 @@ public class PlayerViewController implements View.OnClickListener, PlayerManager
 
     @Override
     public void onCompletion() {
-        Log.i("FFMediaPlayer", "onCompletion...");
+        Log.i("FFmpegPlayer", "onCompletion...");
         mPlayerManager.switchNext(nextPath);
     }
 

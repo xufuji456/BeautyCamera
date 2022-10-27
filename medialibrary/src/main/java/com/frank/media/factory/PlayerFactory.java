@@ -3,7 +3,7 @@ package com.frank.media.factory;
 import androidx.annotation.IntDef;
 
 import com.frank.media.listener.IMediaPlayer;
-import com.frank.media.player.FFMediaPlayer;
+import com.frank.media.player.FFmpegPlayer;
 import com.frank.media.player.SystemMediaPlayer;
 
 import java.lang.annotation.Documented;
@@ -28,7 +28,7 @@ public class PlayerFactory {
     public static IMediaPlayer createPlayer(@PlayerType int playerType) {
         switch (playerType) {
             case PLAYER_TYPE_FFMPEG:
-                return new FFMediaPlayer();
+                return new FFmpegPlayer();
             case PLAYER_TYPE_SYSTEM:
                 return new SystemMediaPlayer();
             default:

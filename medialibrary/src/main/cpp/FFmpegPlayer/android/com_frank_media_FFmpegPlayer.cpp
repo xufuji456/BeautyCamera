@@ -3,13 +3,13 @@
 #include <Mutex.h>
 #include <unistd.h>
 #include <Condition.h>
-#include <FFMediaPlayer.h>
+#include <FFmpegPlayer.h>
 
 extern "C" {
 #include <libavcodec/jni.h>
 }
 
-const char *CLASS_NAME = "com/frank/media/player/FFMediaPlayer";
+const char *CLASS_NAME = "com/frank/media/player/FFmpegPlayer";
 
 #include <android/log.h>
 #define PLAYER_TAG "FFmpegPlayer"
@@ -48,7 +48,7 @@ JNIMediaPlayerListener::JNIMediaPlayerListener(JNIEnv *env, jobject thiz, jobjec
 
     jclass clazz = env->GetObjectClass(thiz);
     if (clazz == nullptr) {
-        ALOGE("Can't find FFMediaPlayer");
+        ALOGE("Can't find FFmpegPlayer");
         return;
     }
     mClass   = (jclass)env->NewGlobalRef(clazz);
@@ -79,25 +79,25 @@ void JNIMediaPlayerListener::notify(int msg, int ext1, int ext2, void *obj) {
     }
 }
 
-static FFMediaPlayer *getMediaPlayer(JNIEnv *env, jobject thiz) {
-    return (FFMediaPlayer *) env->GetLongField(thiz, fields.context);
+static FFmpegPlayer *getFFmpegPlayer(JNIEnv *env, jobject thiz) {
+    return (FFmpegPlayer *) env->GetLongField(thiz, fields.context);
 }
 
-static FFMediaPlayer *setMediaPlayer(JNIEnv *env, jobject thiz, long mediaPlayer) {
-    auto *old = (FFMediaPlayer *) env->GetLongField(thiz, fields.context);
+static FFmpegPlayer *setFFmpegPlayer(JNIEnv *env, jobject thiz, long mediaPlayer) {
+    auto *old = (FFmpegPlayer *) env->GetLongField(thiz, fields.context);
     env->SetLongField(thiz, fields.context, mediaPlayer);
     return old;
 }
 
 static void process_media_player_call(JNIEnv *env, jobject thiz, int opStatus) {
     if (opStatus < 0) {
-        FFMediaPlayer* mp = getMediaPlayer(env, thiz);
+        FFmpegPlayer* mp = getFFmpegPlayer(env, thiz);
         if (mp != nullptr) mp->notify(MEDIA_ERROR, opStatus, 0);
     }
 }
 
 void FFMediaPlayer_setDataSource(JNIEnv *env, jobject thiz, jstring jpath) {
-    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    FFmpegPlayer *mp = getFFmpegPlayer(env, thiz);
     if (mp == nullptr) {
         return;
     }
@@ -130,7 +130,7 @@ int jniGetFDFromFileDescriptor(JNIEnv* env, jobject fileDescriptor) {
 }
 
 void FFMediaPlayer_setDataSourceFD(JNIEnv *env, jobject thiz, jobject fileDescriptor, jlong length) {
-    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    FFmpegPlayer *mp = getFFmpegPlayer(env, thiz);
     if (mp == nullptr) {
         return;
     }
@@ -186,26 +186,26 @@ void FFMediaPlayer_init(JNIEnv *env) {
 }
 
 void FFMediaPlayer_setup(JNIEnv *env, jobject thiz, jobject mediaplayer_this) {
-    auto *mp = new FFMediaPlayer();
+    auto *mp = new FFmpegPlayer();
     mp->init();
     // create new listener and give it to MediaPlayer
     auto *listener = new JNIMediaPlayerListener(env, thiz, mediaplayer_this);
     mp->setListener(listener);
     // Stow our new C++ MediaPlayer in an opaque field in the Java object.
-    setMediaPlayer(env, thiz, (long)mp);
+    setFFmpegPlayer(env, thiz, (long) mp);
 }
 
 void FFMediaPlayer_release(JNIEnv *env, jobject thiz) {
-    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    FFmpegPlayer *mp = getFFmpegPlayer(env, thiz);
     if (mp != nullptr) {
         mp->disconnect();
         delete mp;
-        setMediaPlayer(env, thiz, 0);
+        setFFmpegPlayer(env, thiz, 0);
     }
 }
 
 void FFMediaPlayer_reset(JNIEnv *env, jobject thiz) {
-    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    FFmpegPlayer *mp = getFFmpegPlayer(env, thiz);
     if (mp == nullptr) {
         return;
     }
@@ -213,7 +213,7 @@ void FFMediaPlayer_reset(JNIEnv *env, jobject thiz) {
 }
 
 void FFMediaPlayer_finalize(JNIEnv *env, jobject thiz) {
-    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    FFmpegPlayer *mp = getFFmpegPlayer(env, thiz);
     if (mp != nullptr) {
         ALOGE("MediaPlayer finalized without being released");
     }
@@ -221,7 +221,7 @@ void FFMediaPlayer_finalize(JNIEnv *env, jobject thiz) {
 }
 
 void FFMediaPlayer_setVideoSurface(JNIEnv *env, jobject thiz, jobject surface) {
-    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    FFmpegPlayer *mp = getFFmpegPlayer(env, thiz);
     if (mp == nullptr) {
         return;
     }
@@ -233,7 +233,7 @@ void FFMediaPlayer_setVideoSurface(JNIEnv *env, jobject thiz, jobject surface) {
 }
 
 void FFMediaPlayer_prepare(JNIEnv *env, jobject thiz) {
-    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    FFmpegPlayer *mp = getFFmpegPlayer(env, thiz);
     if (mp == nullptr) {
         return;
     }
@@ -241,7 +241,7 @@ void FFMediaPlayer_prepare(JNIEnv *env, jobject thiz) {
 }
 
 void FFMediaPlayer_prepareAsync(JNIEnv *env, jobject thiz) {
-    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    FFmpegPlayer *mp = getFFmpegPlayer(env, thiz);
     if (mp == nullptr) {
         return;
     }
@@ -249,7 +249,7 @@ void FFMediaPlayer_prepareAsync(JNIEnv *env, jobject thiz) {
 }
 
 void FFMediaPlayer_start(JNIEnv *env, jobject thiz) {
-    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    FFmpegPlayer *mp = getFFmpegPlayer(env, thiz);
     if (mp == nullptr) {
         return;
     }
@@ -257,7 +257,7 @@ void FFMediaPlayer_start(JNIEnv *env, jobject thiz) {
 }
 
 void FFMediaPlayer_pause(JNIEnv *env, jobject thiz) {
-    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    FFmpegPlayer *mp = getFFmpegPlayer(env, thiz);
     if (mp == nullptr) {
         return;
     }
@@ -265,7 +265,7 @@ void FFMediaPlayer_pause(JNIEnv *env, jobject thiz) {
 }
 
 void FFMediaPlayer_resume(JNIEnv *env, jobject thiz) {
-    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    FFmpegPlayer *mp = getFFmpegPlayer(env, thiz);
     if (mp == nullptr) {
         return;
     }
@@ -274,7 +274,7 @@ void FFMediaPlayer_resume(JNIEnv *env, jobject thiz) {
 }
 
 void FFMediaPlayer_stop(JNIEnv *env, jobject thiz) {
-    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    FFmpegPlayer *mp = getFFmpegPlayer(env, thiz);
     if (mp == nullptr) {
         return;
     }
@@ -282,7 +282,7 @@ void FFMediaPlayer_stop(JNIEnv *env, jobject thiz) {
 }
 
 void FFMediaPlayer_seekTo(JNIEnv *env, jobject thiz, jlong timeMs) {
-    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    FFmpegPlayer *mp = getFFmpegPlayer(env, thiz);
     if (mp == nullptr) {
         return;
     }
@@ -290,7 +290,7 @@ void FFMediaPlayer_seekTo(JNIEnv *env, jobject thiz, jlong timeMs) {
 }
 
 void FFMediaPlayer_setMute(JNIEnv *env, jobject thiz, jboolean mute) {
-    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    FFmpegPlayer *mp = getFFmpegPlayer(env, thiz);
     if (mp == nullptr) {
         return;
     }
@@ -298,7 +298,7 @@ void FFMediaPlayer_setMute(JNIEnv *env, jobject thiz, jboolean mute) {
 }
 
 void FFMediaPlayer_setVolume(JNIEnv *env, jobject thiz, jfloat volume) {
-    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    FFmpegPlayer *mp = getFFmpegPlayer(env, thiz);
     if (mp == nullptr) {
         return;
     }
@@ -306,7 +306,7 @@ void FFMediaPlayer_setVolume(JNIEnv *env, jobject thiz, jfloat volume) {
 }
 
 void FFMediaPlayer_setRate(JNIEnv *env, jobject thiz, jfloat speed) {
-    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    FFmpegPlayer *mp = getFFmpegPlayer(env, thiz);
     if (mp == nullptr) {
         return;
     }
@@ -314,7 +314,7 @@ void FFMediaPlayer_setRate(JNIEnv *env, jobject thiz, jfloat speed) {
 }
 
 int FFMediaPlayer_selectTrack(JNIEnv *env, jobject thiz, int trackId, jboolean selected) {
-    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    FFmpegPlayer *mp = getFFmpegPlayer(env, thiz);
     if (mp == nullptr) {
         return -1;
     }
@@ -323,7 +323,7 @@ int FFMediaPlayer_selectTrack(JNIEnv *env, jobject thiz, int trackId, jboolean s
 
 jlong FFMediaPlayer_getCurrentPosition(JNIEnv *env, jobject thiz) {
 
-    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    FFmpegPlayer *mp = getFFmpegPlayer(env, thiz);
     if (mp == nullptr) {
         return 0L;
     }
@@ -331,7 +331,7 @@ jlong FFMediaPlayer_getCurrentPosition(JNIEnv *env, jobject thiz) {
 }
 
 jlong FFMediaPlayer_getDuration(JNIEnv *env, jobject thiz) {
-    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    FFmpegPlayer *mp = getFFmpegPlayer(env, thiz);
     if (mp == nullptr) {
         return 0L;
     }
@@ -339,7 +339,7 @@ jlong FFMediaPlayer_getDuration(JNIEnv *env, jobject thiz) {
 }
 
 jboolean FFMediaPlayer_isPlaying(JNIEnv *env, jobject thiz) {
-    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    FFmpegPlayer *mp = getFFmpegPlayer(env, thiz);
     if (mp == nullptr) {
         return JNI_FALSE;
     }
@@ -347,7 +347,7 @@ jboolean FFMediaPlayer_isPlaying(JNIEnv *env, jobject thiz) {
 }
 
 jint FFMediaPlayer_getRotate(JNIEnv *env, jobject thiz) {
-    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    FFmpegPlayer *mp = getFFmpegPlayer(env, thiz);
     if (mp == nullptr) {
         return 0;
     }
@@ -355,7 +355,7 @@ jint FFMediaPlayer_getRotate(JNIEnv *env, jobject thiz) {
 }
 
 jint FFMediaPlayer_getVideoWidth(JNIEnv *env, jobject thiz) {
-    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    FFmpegPlayer *mp = getFFmpegPlayer(env, thiz);
     if (mp == nullptr) {
         return 0;
     }
@@ -363,7 +363,7 @@ jint FFMediaPlayer_getVideoWidth(JNIEnv *env, jobject thiz) {
 }
 
 jint FFMediaPlayer_getVideoHeight(JNIEnv *env, jobject thiz) {
-    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    FFmpegPlayer *mp = getFFmpegPlayer(env, thiz);
     if (mp == nullptr) {
         return 0;
     }
@@ -371,7 +371,7 @@ jint FFMediaPlayer_getVideoHeight(JNIEnv *env, jobject thiz) {
 }
 
 int FFMediaPlayer_getTrackCount(JNIEnv *env, jobject thiz, int mediaType) {
-    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    FFmpegPlayer *mp = getFFmpegPlayer(env, thiz);
     if (mp == nullptr || mp->getMetadata() == nullptr) {
         return 0;
     }
@@ -386,7 +386,7 @@ int FFMediaPlayer_getTrackCount(JNIEnv *env, jobject thiz, int mediaType) {
 }
 
 void FFMediaPlayer_getMediaTrack(JNIEnv *env, jobject thiz, int mediaType, int index, jobject mediaTrack) {
-    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    FFmpegPlayer *mp = getFFmpegPlayer(env, thiz);
     if (mp == nullptr || mp->getMetadata() == nullptr) {
         return;
     }
@@ -419,7 +419,7 @@ void FFMediaPlayer_getMediaTrack(JNIEnv *env, jobject thiz, int mediaType, int i
 }
 
 void FFMediaPlayer_getMediaInfo(JNIEnv *env, jobject thiz, int mediaType, jobject mediaInfo) {
-    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    FFmpegPlayer *mp = getFFmpegPlayer(env, thiz);
     if (mp == nullptr || mp->getAVStream(mediaType) == nullptr) {
         return;
     }

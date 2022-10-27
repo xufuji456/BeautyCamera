@@ -1,6 +1,6 @@
 
-#ifndef FF_MEDIAPLAYER_H
-#define FF_MEDIAPLAYER_H
+#ifndef FFMPEG_PLAYER_H
+#define FFMPEG_PLAYER_H
 
 #include <../../log_helper.h>
 #include <Thread.h>
@@ -27,7 +27,7 @@ public:
     virtual void notify(int msg, int ext1, int ext2, void *obj) {}
 };
 
-class FFMediaPlayer : public Runnable {
+class FFmpegPlayer : public Runnable {
     
 private:
     bool m_exitReq;
@@ -47,7 +47,7 @@ protected:
     void run() override;
 
 public:
-    FFMediaPlayer();
+    FFmpegPlayer();
 
     void init();
 
@@ -103,4 +103,4 @@ public:
 
 };
 
-#endif //FF_MEDIAPLAYER_H
+#endif //FFMPEG_PLAYER_H

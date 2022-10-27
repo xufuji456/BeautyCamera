@@ -19,14 +19,14 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FFMediaPlayer implements IMediaPlayer {
+public class FFmpegPlayer implements IMediaPlayer {
 
     static {
         System.loadLibrary("ffmpeg_player");
         native_init();
     }
 
-    private static final String TAG = FFMediaPlayer.class.getSimpleName();
+    private static final String TAG = FFmpegPlayer.class.getSimpleName();
 
     private long mNativeContext;
 
@@ -63,7 +63,7 @@ public class FFMediaPlayer implements IMediaPlayer {
     private native void native_release();
     private native void native_finalize();
 
-    public FFMediaPlayer() {
+    public FFmpegPlayer() {
         Looper looper;
         if ((looper = Looper.myLooper()) != null) {
             mEventHandler = new EventHandler(this, looper);
@@ -82,10 +82,10 @@ public class FFMediaPlayer implements IMediaPlayer {
         setScreenOnWhilePlaying(true);
     }
 
-    public static FFMediaPlayer create(String path, Surface surface) {
+    public static FFmpegPlayer create(String path, Surface surface) {
 
         try {
-            FFMediaPlayer mp = new FFMediaPlayer();
+            FFmpegPlayer mp = new FFmpegPlayer();
             mp.setDataSource(path);
             if (surface != null) {
                 mp.setSurface(surface);
@@ -276,9 +276,9 @@ public class FFMediaPlayer implements IMediaPlayer {
 
     private class EventHandler extends Handler {
 
-        private final FFMediaPlayer mMediaPlayer;
+        private final FFmpegPlayer mMediaPlayer;
 
-        public EventHandler(FFMediaPlayer mp, Looper looper) {
+        public EventHandler(FFmpegPlayer mp, Looper looper) {
             super(looper);
             mMediaPlayer = mp;
         }
@@ -337,7 +337,7 @@ public class FFMediaPlayer implements IMediaPlayer {
 
     private static void postEventFromNative(Object mediaplayer_ref,
                                             int what, int arg1, int arg2, Object obj) {
-        final FFMediaPlayer mp = (FFMediaPlayer)((WeakReference) mediaplayer_ref).get();
+        final FFmpegPlayer mp = (FFmpegPlayer)((WeakReference) mediaplayer_ref).get();
         if (mp == null) {
             return;
         }
