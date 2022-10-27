@@ -4,7 +4,7 @@
 
 #include <player/PlayerParam.h>
 #include <avsync/AVSync.h>
-#include <SoundTouchHelper.h>
+#include <soundtouch/SoundTouchHelper.h>
 #include <render/AudioRender.h>
 
 typedef struct AudioParams {

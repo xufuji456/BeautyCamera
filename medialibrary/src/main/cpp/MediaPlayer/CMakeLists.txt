@@ -1,9 +1,7 @@
 
-set(soundtouch_dir ../include/soundtouch)
-
 include_directories( kernel
                      android
-                     ${soundtouch_dir})
+                     include)
 
 aux_source_directory(kernel/decoder SRC_DECODER)
 aux_source_directory(kernel/resample SRC_RESAMPLE)

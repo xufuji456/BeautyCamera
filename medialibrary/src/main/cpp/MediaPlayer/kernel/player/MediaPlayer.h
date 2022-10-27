@@ -3,7 +3,6 @@
 #define MEDIAPLAYER_H
 
 #include <avsync/MediaClock.h>
-#include <SoundTouchHelper.h>
 #include <player/PlayerParam.h>
 #include <decoder/AudioDecoder.h>
 #include <decoder/VideoDecoder.h>
