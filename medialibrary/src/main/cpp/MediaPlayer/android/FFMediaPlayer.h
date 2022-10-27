@@ -3,13 +3,10 @@
 #define FF_MEDIAPLAYER_H
 
 #include <../../log_helper.h>
-#include <Mutex.h>
-#include <Condition.h>
 #include <Thread.h>
 #include <player/MediaPlayer.h>
 
 enum media_event_type {
-    MEDIA_NOP                = 0x00,
     MEDIA_PREPARED           = 0x01,
     MEDIA_RENDER_FIRST_FRAME = 0x02,
     MEDIA_STARTED            = 0x03,
@@ -33,18 +30,15 @@ public:
 class FFMediaPlayer : public Runnable {
     
 private:
-    Mutex mMutex;
-    Condition mCondition;
-    Thread *msgThread;
-    bool abortRequest;
-    NativeWindowVideoRender *videoRender;
-    MediaPlayer *mediaPlayer;
-    MediaPlayerListener *mListener;
+    bool m_exitReq;
+    bool m_seeking;
+    long m_seekingPos;
 
-    bool mSeeking;
-    long mSeekingPosition;
-    bool mPrepareSync;
-    int  mPrepareStatus;
+    Thread *m_msgThread;
+
+    NativeWindowVideoRender *m_videoRender;
+    MediaPlayer *m_mediaPlayer;
+    MediaPlayerListener *m_playListener;
 
 private:
     void postEvent(int what, int arg1, int arg2, void *obj = nullptr);
@@ -54,8 +48,6 @@ protected:
 
 public:
     FFMediaPlayer();
-
-    virtual ~FFMediaPlayer();
 
     void init();
 

@@ -19,25 +19,23 @@
 class MediaPlayer : public Runnable {
 
 private:
-    Mutex mMutex;
-    Condition mCondition;
-    Thread *readThread;
+    Mutex m_playerMutex;
+    Condition m_playerCond;
+    Thread *m_readThread;
 
     PlayerParam *m_playerParam;
 
-    AudioDecoder *audioDecoder;
-    VideoDecoder *videoDecoder;
-    bool mExit;
+    AudioDecoder *m_audioDecoder;
+    VideoDecoder *m_videoDecoder;
 
-    int64_t mDuration;
-    int lastPaused;
-    int eof;
-    int attachmentRequest;
+    int m_eof;
+    bool m_exitPlay;
+    int m_lastPause;
+    int64_t m_duration;
 
-    AudioRender *audioRender{};
-    AudioResampler *audioResampler;
-
-    AVSync *mediaSync;
+    AVSync *m_avSync;
+    AudioRender *m_audioRender;
+    AudioResampler *m_audioResampler;
 
 private:
     int readPackets();

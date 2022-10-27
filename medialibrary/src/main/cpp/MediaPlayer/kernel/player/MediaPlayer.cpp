@@ -40,18 +40,18 @@ static int lockmgrCallback(void **mtx, enum AVLockOp op) {
 MediaPlayer::MediaPlayer() {
     av_register_all();
     avformat_network_init();
-    m_playerParam = new PlayerParam();
-    mDuration    = -1;
-    lastPaused   = -1;
-    audioDecoder = nullptr;
-    videoDecoder = nullptr;
-    attachmentRequest = 0;
+    m_playerParam  = new PlayerParam();
+    m_duration     = -1;
+    m_lastPause    = -1;
+    m_audioDecoder = nullptr;
+    m_videoDecoder = nullptr;
 
-    mediaSync = new AVSync(m_playerParam);
-    audioResampler = nullptr;
-    readThread = nullptr;
-    mExit = true;
-    eof = 0;
+    m_eof            = 0;
+    m_exitPlay       = true;
+    m_readThread     = nullptr;
+    m_audioRender    = nullptr;
+    m_audioResampler = nullptr;
+    m_avSync = new AVSync(m_playerParam);
 
     if (av_lockmgr_register(lockmgrCallback)) {
         av_log(nullptr, AV_LOG_FATAL, "Could not initialize lock manager!\n");
@@ -65,29 +65,29 @@ MediaPlayer::~MediaPlayer() {
 
 int MediaPlayer::reset() {
     stop();
-    if (mediaSync) {
-        mediaSync->reset();
-        delete mediaSync;
-        mediaSync = nullptr;
+    if (m_avSync) {
+        m_avSync->reset();
+        delete m_avSync;
+        m_avSync = nullptr;
     }
-    if (audioDecoder != nullptr) {
-        audioDecoder->stop();
-        delete audioDecoder;
-        audioDecoder = nullptr;
+    if (m_audioDecoder != nullptr) {
+        m_audioDecoder->stop();
+        delete m_audioDecoder;
+        m_audioDecoder = nullptr;
     }
-    if (videoDecoder != nullptr) {
-        videoDecoder->stop();
-        delete videoDecoder;
-        videoDecoder = nullptr;
+    if (m_videoDecoder != nullptr) {
+        m_videoDecoder->stop();
+        delete m_videoDecoder;
+        m_videoDecoder = nullptr;
     }
-    if (audioRender != nullptr) {
-        audioRender->stop();
-        delete audioRender;
-        audioRender = nullptr;
+    if (m_audioRender != nullptr) {
+        m_audioRender->stop();
+        delete m_audioRender;
+        m_audioRender = nullptr;
     }
-    if (audioResampler) {
-        delete audioResampler;
-        audioResampler = nullptr;
+    if (m_audioResampler) {
+        delete m_audioResampler;
+        m_audioResampler = nullptr;
     }
     if (m_playerParam) {
         if (m_playerParam->m_formatCtx != nullptr) {
@@ -101,30 +101,30 @@ int MediaPlayer::reset() {
 }
 
 void MediaPlayer::setDataSource(const char *url) {
-    Mutex::AutoLock lock(mMutex);
+    Mutex::AutoLock lock(m_playerMutex);
     m_playerParam->url = av_strdup(url);
 }
 
 void MediaPlayer::setVideoRender(VideoRender *render) {
-    Mutex::AutoLock lock(mMutex);
-    mediaSync->setVideoRender(render);
+    Mutex::AutoLock lock(m_playerMutex);
+    m_avSync->setVideoRender(render);
 }
 
 int MediaPlayer::prepare() {
-    Mutex::AutoLock lock(mMutex);
+    Mutex::AutoLock lock(m_playerMutex);
     if (!m_playerParam->url) {
         return -1;
     }
     m_playerParam->m_abortReq = 0;
-    if (!readThread) {
-        readThread = new Thread(this);
-        readThread->start();
+    if (!m_readThread) {
+        m_readThread = new Thread(this);
+        m_readThread->start();
     }
     return 0;
 }
 
 int MediaPlayer::prepareAsync() {
-    Mutex::AutoLock lock(mMutex);
+    Mutex::AutoLock lock(m_playerMutex);
     if (!m_playerParam->url) {
         return -1;
     }
@@ -135,35 +135,35 @@ int MediaPlayer::prepareAsync() {
 }
 
 void MediaPlayer::start() {
-    Mutex::AutoLock lock(mMutex);
+    Mutex::AutoLock lock(m_playerMutex);
     m_playerParam->m_abortReq = 0;
     m_playerParam->m_pauseReq = 0;
-    mExit = false;
-    mCondition.signal();
+    m_exitPlay = false;
+    m_playerCond.signal();
 }
 
 void MediaPlayer::pause() {
-    Mutex::AutoLock lock(mMutex);
+    Mutex::AutoLock lock(m_playerMutex);
     m_playerParam->m_pauseReq = 1;
-    mCondition.signal();
+    m_playerCond.signal();
 }
 
 void MediaPlayer::resume() {
-    Mutex::AutoLock lock(mMutex);
+    Mutex::AutoLock lock(m_playerMutex);
     m_playerParam->m_pauseReq = 0;
-    mCondition.signal();
+    m_playerCond.signal();
 }
 
 void MediaPlayer::seekTo(long timeMs) {
-    if (mDuration <= 0) {
+    if (m_duration <= 0) {
         return;
     }
 
-    mMutex.lock();
+    m_playerMutex.lock();
     while (m_playerParam->m_seekRequest) {
-        mCondition.wait(mMutex);
+        m_playerCond.wait(m_playerMutex);
     }
-    mMutex.unlock();
+    m_playerMutex.unlock();
 
     if (!m_playerParam->m_seekRequest) {
         int64_t seek_pos = av_rescale(timeMs, AV_TIME_BASE, 1000);
@@ -174,7 +174,7 @@ void MediaPlayer::seekTo(long timeMs) {
         m_playerParam->m_seekPos = seek_pos;
         m_playerParam->m_seekFlag &= ~AVSEEK_FLAG_BYTE;
         m_playerParam->m_seekRequest = 1;
-        mCondition.signal();
+        m_playerCond.signal();
     }
 }
 
@@ -237,51 +237,51 @@ int MediaPlayer::selectTrack(int streamId, bool selected) {
 }
 
 void MediaPlayer::setVolume(float volume) {
-    if (audioRender) {
-        audioRender->setVolume(volume);
+    if (m_audioRender) {
+        m_audioRender->setVolume(volume);
     }
 }
 
 void MediaPlayer::setMute(int mute) {
-    mMutex.lock();
+    m_playerMutex.lock();
     m_playerParam->m_mute = mute;
-    mCondition.signal();
-    mMutex.unlock();
+    m_playerCond.signal();
+    m_playerMutex.unlock();
 }
 
 void MediaPlayer::setRate(float rate) {
-    mMutex.lock();
+    m_playerMutex.lock();
     m_playerParam->m_playbackRate = rate;
-    mCondition.signal();
-    mMutex.unlock();
+    m_playerCond.signal();
+    m_playerMutex.unlock();
 }
 
 int MediaPlayer::getRotate() {
-    Mutex::AutoLock lock(mMutex);
-    if (videoDecoder) {
-        return videoDecoder->getRotate();
+    Mutex::AutoLock lock(m_playerMutex);
+    if (m_videoDecoder) {
+        return m_videoDecoder->getRotate();
     }
     return 0;
 }
 
 int MediaPlayer::getVideoWidth() {
-    Mutex::AutoLock lock(mMutex);
-    if (videoDecoder) {
-        return videoDecoder->getCodecContext()->width;
+    Mutex::AutoLock lock(m_playerMutex);
+    if (m_videoDecoder) {
+        return m_videoDecoder->getCodecContext()->width;
     }
     return 0;
 }
 
 int MediaPlayer::getVideoHeight() {
-    Mutex::AutoLock lock(mMutex);
-    if (videoDecoder) {
-        return videoDecoder->getCodecContext()->height;
+    Mutex::AutoLock lock(m_playerMutex);
+    if (m_videoDecoder) {
+        return m_videoDecoder->getCodecContext()->height;
     }
     return 0;
 }
 
 long MediaPlayer::getCurrentPosition() {
-    Mutex::AutoLock lock(mMutex);
+    Mutex::AutoLock lock(m_playerMutex);
     int64_t currentPosition = 0;
     // 处于定位
     if (m_playerParam->m_seekRequest) {
@@ -297,7 +297,7 @@ long MediaPlayer::getCurrentPosition() {
 
         // 计算主时钟的时间
         int64_t pos = 0;
-        double clock = mediaSync->getMasterClock();
+        double clock = m_avSync->getMasterClock();
         if (isnan(clock)) {
             pos = m_playerParam->m_seekPos;
         } else {
@@ -312,12 +312,12 @@ long MediaPlayer::getCurrentPosition() {
 }
 
 long MediaPlayer::getDuration() {
-    Mutex::AutoLock lock(mMutex);
-    return (long)mDuration;
+    Mutex::AutoLock lock(m_playerMutex);
+    return (long)m_duration;
 }
 
 int MediaPlayer::isPlaying() {
-    Mutex::AutoLock lock(mMutex);
+    Mutex::AutoLock lock(m_playerMutex);
     return !m_playerParam->m_abortReq && !m_playerParam->m_pauseReq;
 }
 
@@ -330,7 +330,7 @@ static int avformat_interrupt_cb(void *ctx) {
 }
 
 FFMessageQueue *MediaPlayer::getMessageQueue() {
-    Mutex::AutoLock lock(mMutex);
+    Mutex::AutoLock lock(m_playerMutex);
     return m_playerParam->m_messageQueue;
 }
 
@@ -351,19 +351,19 @@ AVFormatContext *MediaPlayer::getMetadata() const {
 }
 
 void MediaPlayer::stop() {
-    mMutex.lock();
+    m_playerMutex.lock();
     m_playerParam->m_abortReq = 1;
-    mCondition.signal();
-    mMutex.unlock();
-    mMutex.lock();
-    while (!mExit) {
-        mCondition.wait(mMutex);
+    m_playerCond.signal();
+    m_playerMutex.unlock();
+    m_playerMutex.lock();
+    while (!m_exitPlay) {
+        m_playerCond.wait(m_playerMutex);
     }
-    mMutex.unlock();
-    if (readThread != nullptr) {
-        readThread->join();
-        delete readThread;
-        readThread = nullptr;
+    m_playerMutex.unlock();
+    if (m_readThread != nullptr) {
+        m_readThread->join();
+        delete m_readThread;
+        m_readThread = nullptr;
     }
 }
 
@@ -396,7 +396,7 @@ void MediaPlayer::startAudioRender(PlayerParam *playerParam) {
                 playerParam->m_syncType = AV_SYNC_EXTERNAL;
             }
         } else {
-            audioRender->start();
+            m_audioRender->start();
         }
     }
 }
@@ -406,7 +406,7 @@ int MediaPlayer::readPackets() {
     AVFormatContext *ic;
 
     // 准备解码器
-    mMutex.lock();
+    m_playerMutex.lock();
     do {
         // 创建解复用上下文
         ic = avformat_alloc_context();
@@ -441,7 +441,7 @@ int MediaPlayer::readPackets() {
         }
 
         if (ic->duration != AV_NOPTS_VALUE) {
-            mDuration = av_rescale(ic->duration, 1000, AV_TIME_BASE);
+            m_duration = av_rescale(ic->duration, 1000, AV_TIME_BASE);
         }
 
         if (ic->pb) {
@@ -449,7 +449,7 @@ int MediaPlayer::readPackets() {
         }
 
         // 设置最大帧间隔
-        mediaSync->setMaxDuration((ic->iformat->flags & AVFMT_TS_DISCONT) ? 10.0 : 3600.0);
+        m_avSync->setMaxDuration((ic->iformat->flags & AVFMT_TS_DISCONT) ? 10.0 : 3600.0);
 
         // 如果不是从头开始播放，则跳转到播放位置
         if (m_playerParam->m_startTime != AV_NOPTS_VALUE) {
@@ -519,7 +519,7 @@ int MediaPlayer::readPackets() {
             }
         }
 
-        if (!audioDecoder && !videoDecoder) {
+        if (!m_audioDecoder && !m_videoDecoder) {
             av_log(nullptr, AV_LOG_WARNING,
                    "failed to create audio and video decoder\n");
             ret = -1;
@@ -528,12 +528,12 @@ int MediaPlayer::readPackets() {
         ret = 0;
 
     } while (false);
-    mMutex.unlock();
+    m_playerMutex.unlock();
 
     // 出错返回
     if (ret < 0) {
-        mExit = true;
-        mCondition.signal();
+        m_exitPlay = true;
+        m_playerCond.signal();
         if (m_playerParam->m_messageQueue) {
             const char errorMsg[] = "prepare decoder failed!";
             m_playerParam->m_messageQueue->sendMessage(MSG_ON_ERROR, 0, 0,
@@ -543,7 +543,7 @@ int MediaPlayer::readPackets() {
         return -1;
     }
 
-    if (videoDecoder) {
+    if (m_videoDecoder) {
         AVCodecParameters *codecpar = m_playerParam->m_videoStream->codecpar;
         if (m_playerParam->m_messageQueue) {
             m_playerParam->m_messageQueue->sendMessage(MSG_VIDEO_SIZE_CHANGED,
@@ -555,8 +555,8 @@ int MediaPlayer::readPackets() {
         m_playerParam->m_messageQueue->sendMessage(MSG_ON_PREPARED);
     }
 
-    if (videoDecoder != nullptr) {
-        videoDecoder->start();
+    if (m_videoDecoder != nullptr) {
+        m_videoDecoder->start();
         if (m_playerParam->m_messageQueue) {
             m_playerParam->m_messageQueue->sendMessage(MSG_VIDEO_DECODE_START);
         }
@@ -566,18 +566,18 @@ int MediaPlayer::readPackets() {
         }
     }
 
-    if (videoDecoder) {
+    if (m_videoDecoder) {
         if (m_playerParam->m_syncType == AV_SYNC_AUDIO) {
-            videoDecoder->setMasterClock(mediaSync->getAudioClock());
+            m_videoDecoder->setMasterClock(m_avSync->getAudioClock());
         } else if (m_playerParam->m_syncType == AV_SYNC_VIDEO) {
-            videoDecoder->setMasterClock(mediaSync->getVideoClock());
+            m_videoDecoder->setMasterClock(m_avSync->getVideoClock());
         } else {
-            videoDecoder->setMasterClock(mediaSync->getExternalClock());
+            m_videoDecoder->setMasterClock(m_avSync->getExternalClock());
         }
     }
 
     // 开始同步
-    mediaSync->start(videoDecoder, audioDecoder);
+    m_avSync->start(m_videoDecoder, m_audioDecoder);
 
     // 等待开始
     if (m_playerParam->m_pauseReq) {
@@ -595,7 +595,7 @@ int MediaPlayer::readPackets() {
     }
 
     // 读数据包流程
-    eof = 0;
+    m_eof = 0;
     ret = 0;
     AVPacket pkt1, *pkt = &pkt1;
     int64_t stream_start_time;
@@ -610,8 +610,8 @@ int MediaPlayer::readPackets() {
         }
 
         // 是否暂停
-        if (m_playerParam->m_pauseReq != lastPaused) {
-            lastPaused = m_playerParam->m_pauseReq;
+        if (m_playerParam->m_pauseReq != m_lastPause) {
+            m_lastPause = m_playerParam->m_pauseReq;
             if (m_playerParam->m_pauseReq) {
                 av_read_pause(ic);
             } else {
@@ -639,51 +639,36 @@ int MediaPlayer::readPackets() {
             if (ret < 0) {
                 av_log(nullptr, AV_LOG_ERROR, "%s: error while seeking\n", m_playerParam->url);
             } else {
-                if (audioDecoder) {
-                    audioDecoder->flush();
+                if (m_audioDecoder) {
+                    m_audioDecoder->flush();
                 }
-                if (videoDecoder) {
-                    videoDecoder->flush();
+                if (m_videoDecoder) {
+                    m_videoDecoder->flush();
                 }
 
                 // 更新外部时钟值
                 if (m_playerParam->m_seekFlag & AVSEEK_FLAG_BYTE) {
-                    mediaSync->updateExternalClock(NAN);
+                    m_avSync->updateExternalClock(NAN);
                 } else {
-                    mediaSync->updateExternalClock(seek_target / (double)AV_TIME_BASE);
+                    m_avSync->updateExternalClock(seek_target / (double)AV_TIME_BASE);
                 }
-                mediaSync->refreshVideoTimer();
+                m_avSync->refreshVideoTimer();
             }
-            attachmentRequest = 1;
             m_playerParam->m_seekRequest = 0;
-            mCondition.signal();
-            eof = 0;
+            m_playerCond.signal();
+            m_eof = 0;
             // 定位完成回调通知
             if (m_playerParam->m_messageQueue) {
-                m_playerParam->m_messageQueue->sendMessage(MSG_SEEK_COMPLETE,
-                                                           (int) av_rescale(seek_target, 1000,
-                                                                          AV_TIME_BASE), ret);
+                int seekTime = (int) av_rescale(seek_target, 1000, AV_TIME_BASE);
+                m_playerParam->m_messageQueue->sendMessage(MSG_SEEK_COMPLETE, seekTime, ret);
             }
-        }
-
-        // 取得封面数据包
-        if (attachmentRequest) {
-            if (videoDecoder && (m_playerParam->m_videoStream->disposition
-                                 & AV_DISPOSITION_ATTACHED_PIC)) {
-                AVPacket copy;
-                if ((ret = av_copy_packet(&copy, &m_playerParam->m_videoStream->attached_pic)) < 0) {
-                    break;
-                }
-                videoDecoder->pushPacket(&copy);
-            }
-            attachmentRequest = 0;
         }
 
         // 如果队列中存在足够的数据包，则等待消耗
         // 备注：这里要等待一定时长的缓冲队列，要不然会导致OpenSLES播放音频出现卡顿等现象
-        if (((audioDecoder ? audioDecoder->getMemorySize() : 0) + (videoDecoder ? videoDecoder->getMemorySize() : 0) > MAX_QUEUE_SIZE
-             || (!audioDecoder || audioDecoder->hasEnoughPackets(m_playerParam->m_audioStream))
-             && (!videoDecoder || videoDecoder->hasEnoughPackets(m_playerParam->m_videoStream)))) {
+        if (((m_audioDecoder ? m_audioDecoder->getMemorySize() : 0) + (m_videoDecoder ? m_videoDecoder->getMemorySize() : 0) > MAX_QUEUE_SIZE
+             || (!m_audioDecoder || m_audioDecoder->hasEnoughPackets(m_playerParam->m_audioStream))
+             && (!m_videoDecoder || m_videoDecoder->hasEnoughPackets(m_playerParam->m_videoStream)))) {
             continue;
         }
 
@@ -695,8 +680,8 @@ int MediaPlayer::readPackets() {
         }
         if (ret < 0) {
             // 如果没能读出裸数据包，判断是否是结尾
-            if ((ret == AVERROR_EOF || avio_feof(ic->pb)) && !eof) {
-                eof = 1;
+            if ((ret == AVERROR_EOF || avio_feof(ic->pb)) && !m_eof) {
+                m_eof = 1;
             }
             // 读取出错，则直接退出
             if (ic->pb && ic->pb->error) {
@@ -705,9 +690,9 @@ int MediaPlayer::readPackets() {
             }
 
             // 如果不处于暂停状态，并且队列中所有数据都没有，则判断是否需要
-            if (!m_playerParam->m_pauseReq && (!audioDecoder || audioDecoder->getPacketSize() == 0)
-                && (!videoDecoder || (videoDecoder->getPacketSize() == 0
-                                      && videoDecoder->getFrameSize() == 0))) {
+            if (!m_playerParam->m_pauseReq && (!m_audioDecoder || m_audioDecoder->getPacketSize() == 0)
+                && (!m_videoDecoder || (m_videoDecoder->getPacketSize() == 0
+                                        && m_videoDecoder->getFrameSize() == 0))) {
                 if (m_playerParam->m_loop) {
                     seekTo(m_playerParam->m_startTime != AV_NOPTS_VALUE ? m_playerParam->m_startTime : 0);
                 } else {
@@ -719,7 +704,7 @@ int MediaPlayer::readPackets() {
             av_usleep(10 * 1000);
             continue;
         } else {
-            eof = 0;
+            m_eof = 0;
         }
 
         // 计算pkt的pts是否处于播放范围内
@@ -731,10 +716,10 @@ int MediaPlayer::readPackets() {
                          av_q2d(ic->streams[pkt->stream_index]->time_base)
                          - (double)(m_playerParam->m_startTime != AV_NOPTS_VALUE ? m_playerParam->m_startTime : 0) / 1000000
                          <= ((double)m_playerParam->m_duration / 1000000);
-        if (playInRange && audioDecoder && pkt->stream_index == m_playerParam->m_audioIndex) {
-            audioDecoder->pushPacket(pkt);
-        } else if (playInRange && videoDecoder && pkt->stream_index == m_playerParam->m_videoIndex) {
-            videoDecoder->pushPacket(pkt);
+        if (playInRange && m_audioDecoder && pkt->stream_index == m_playerParam->m_audioIndex) {
+            m_audioDecoder->pushPacket(pkt);
+        } else if (playInRange && m_videoDecoder && pkt->stream_index == m_playerParam->m_videoIndex) {
+            m_videoDecoder->pushPacket(pkt);
         } else {
             av_packet_unref(pkt);
         }
@@ -750,8 +735,8 @@ int MediaPlayer::readPackets() {
     if (m_playerParam->m_videoIndex >= 0) {
         closeDecoder(m_playerParam->m_videoIndex);
     }
-    mExit = true;
-    mCondition.signal();
+    m_exitPlay = true;
+    m_playerCond.signal();
 
     if (ret < 0) {
         if (m_playerParam->m_messageQueue) {
@@ -866,18 +851,17 @@ int MediaPlayer::openDecoder(int streamIndex) {
                 m_playerParam->m_audioIndex    = streamIndex;
                 m_playerParam->m_audioStream   = m_playerParam->m_formatCtx->streams[streamIndex];
                 m_playerParam->m_audioCodecCtx = avctx;
-                audioDecoder = new AudioDecoder(m_playerParam);
-                startAudioDecoder(m_playerParam, audioDecoder);
+                m_audioDecoder = new AudioDecoder(m_playerParam);
+                startAudioDecoder(m_playerParam, m_audioDecoder);
                 startAudioRender(m_playerParam);
-                mediaSync->setAudioDecoder(audioDecoder);
+                m_avSync->setAudioDecoder(m_audioDecoder);
                 break;
             }
             case AVMEDIA_TYPE_VIDEO: {
                 m_playerParam->m_videoIndex    = streamIndex;
                 m_playerParam->m_videoStream   = m_playerParam->m_formatCtx->streams[streamIndex];
                 m_playerParam->m_videoCodecCtx = avctx;
-                videoDecoder = new VideoDecoder(m_playerParam);
-                attachmentRequest = 1;
+                m_videoDecoder = new VideoDecoder(m_playerParam);
                 break;
             }
             default:{
@@ -907,31 +891,31 @@ void MediaPlayer::closeDecoder(int streamIndex) {
     AVStream *stream = m_playerParam->m_formatCtx->streams[streamIndex];
     switch (stream->codecpar->codec_type) {
         case AVMEDIA_TYPE_AUDIO:
-            if (audioDecoder) {
-                audioDecoder->flush();
+            if (m_audioDecoder) {
+                m_audioDecoder->flush();
             }
-            if (audioRender) {
-                audioRender->stop();
-                delete audioRender;
-                audioRender = nullptr;
+            if (m_audioRender) {
+                m_audioRender->stop();
+                delete m_audioRender;
+                m_audioRender = nullptr;
             }
-            if (audioResampler) {
-                delete audioResampler;
-                audioResampler = nullptr;
+            if (m_audioResampler) {
+                delete m_audioResampler;
+                m_audioResampler = nullptr;
             }
-            if (audioDecoder) {
-                audioDecoder->stop();
-                delete audioDecoder;
-                audioDecoder = nullptr;
+            if (m_audioDecoder) {
+                m_audioDecoder->stop();
+                delete m_audioDecoder;
+                m_audioDecoder = nullptr;
             }
             m_playerParam->m_audioIndex  = -1;
             m_playerParam->m_audioStream = nullptr;
             break;
         case AVMEDIA_TYPE_VIDEO:
-            if (videoDecoder) {
-                videoDecoder->stop();
-                delete videoDecoder;
-                videoDecoder = nullptr;
+            if (m_videoDecoder) {
+                m_videoDecoder->stop();
+                delete m_videoDecoder;
+                m_videoDecoder = nullptr;
             }
             m_playerParam->m_videoIndex  = -1;
             m_playerParam->m_videoStream = nullptr;
@@ -978,8 +962,8 @@ int MediaPlayer::openAudioRender(int64_t wanted_channel_layout, int wanted_nb_ch
     wanted_spec.opaque = this;
 
     // Audio Render
-    audioRender = new OpenSLAudioRender();
-    while (audioRender->open(&wanted_spec, &spec) < 0) {
+    m_audioRender = new OpenSLAudioRender();
+    while (m_audioRender->open(&wanted_spec, &spec) < 0) {
         av_log(nullptr, AV_LOG_WARNING, "Failed to open audio device: (%d channels, %d Hz)!\n",
                wanted_spec.channels, wanted_spec.freq);
         wanted_spec.channels = next_nb_channels[FFMIN(7, wanted_spec.channels)];
@@ -1008,18 +992,18 @@ int MediaPlayer::openAudioRender(int64_t wanted_channel_layout, int wanted_nb_ch
     }
 
     // 初始化音频重采样器
-    audioResampler = new AudioResampler(m_playerParam, audioDecoder, mediaSync);
-    audioResampler->setResampleParams(&spec, wanted_channel_layout);
+    m_audioResampler = new AudioResampler(m_playerParam, m_audioDecoder, m_avSync);
+    m_audioResampler->setResampleParams(&spec, wanted_channel_layout);
 
     return 0;
 }
 
 void MediaPlayer::pcmQueueCallback(uint8_t *stream, int len) {
-    if (!audioResampler) {
+    if (!m_audioResampler) {
         memset(stream, 0, sizeof(len));
         return;
     }
-    audioResampler->pcmQueueCallback(stream, len);
+    m_audioResampler->pcmQueueCallback(stream, len);
     if (!m_playerParam->m_firstAudioFrame && m_playerParam->m_messageQueue) {
         m_playerParam->m_firstAudioFrame = true;
         m_playerParam->m_messageQueue->sendMessage(MSG_AUDIO_RENDER_START);

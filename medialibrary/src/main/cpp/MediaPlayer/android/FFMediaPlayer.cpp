@@ -3,248 +3,222 @@
 #include "FFMediaPlayer.h"
 
 FFMediaPlayer::FFMediaPlayer() {
-    msgThread = nullptr;
-    abortRequest = true;
-    videoRender = nullptr;
-    mediaPlayer = nullptr;
-    mListener = nullptr;
-    mPrepareSync = false;
-    mPrepareStatus = 0;
-    mSeeking = false;
-    mSeekingPosition = 0;
-}
-
-FFMediaPlayer::~FFMediaPlayer() {
-
+    m_exitReq      = false;
+    m_seeking      = false;
+    m_seekingPos   = 0;
+    m_msgThread    = nullptr;
+    m_videoRender  = nullptr;
+    m_mediaPlayer  = nullptr;
+    m_playListener = nullptr;
 }
 
 void FFMediaPlayer::init() {
-
-    mMutex.lock();
-    abortRequest = false;
-    mCondition.signal();
-    mMutex.unlock();
-
-    mMutex.lock();
-    if (videoRender == nullptr) {
-        videoRender = new NativeWindowVideoRender();
+    if (m_videoRender == nullptr) {
+        m_videoRender = new NativeWindowVideoRender();
     }
-    if (msgThread == nullptr) {
-        msgThread = new Thread(this);
-        msgThread->start();
+    if (m_msgThread == nullptr) {
+        m_msgThread = new Thread(this);
+        m_msgThread->start();
     }
-    mMutex.unlock();
 }
 
 void FFMediaPlayer::disconnect() {
-
-    mMutex.lock();
-    abortRequest = true;
-    mCondition.signal();
-    mMutex.unlock();
-
+    m_exitReq = true;
     reset();
 
-    if (msgThread != nullptr) {
-        msgThread->join();
-        delete msgThread;
-        msgThread = nullptr;
+    if (m_msgThread != nullptr) {
+        m_msgThread->join();
+        delete m_msgThread;
+        m_msgThread = nullptr;
     }
 
-    if (videoRender != nullptr) {
-        delete videoRender;
-        videoRender = nullptr;
+    if (m_videoRender != nullptr) {
+        delete m_videoRender;
+        m_videoRender = nullptr;
     }
-    if (mListener != nullptr) {
-        delete mListener;
-        mListener = nullptr;
+    if (m_playListener != nullptr) {
+        delete m_playListener;
+        m_playListener = nullptr;
     }
-
 }
 
 int FFMediaPlayer::setDataSource(const char *url) {
     if (url == nullptr) {
         return -1;
     }
-    if (mediaPlayer == nullptr) {
-        mediaPlayer = new MediaPlayer();
+    if (m_mediaPlayer == nullptr) {
+        m_mediaPlayer = new MediaPlayer();
     }
-    mediaPlayer->setDataSource(url);
-    mediaPlayer->setVideoRender(videoRender);
+    m_mediaPlayer->setDataSource(url);
+    m_mediaPlayer->setVideoRender(m_videoRender);
     return 0;
 }
 
 int FFMediaPlayer::setVideoSurface(void *surface) {
-    if (mediaPlayer == nullptr) {
+    if (m_mediaPlayer == nullptr) {
         return -1;
     }
     if (surface != nullptr) {
-        videoRender->setSurface(surface);
+        m_videoRender->setSurface(surface);
         return 0;
     }
     return -1;
 }
 
 void FFMediaPlayer::setListener(MediaPlayerListener *listener) {
-    if (mListener != nullptr) {
-        delete mListener;
-        mListener = nullptr;
+    if (m_playListener != nullptr) {
+        delete m_playListener;
+        m_playListener = nullptr;
     }
-    mListener = listener;
+    m_playListener = listener;
 }
 
 int FFMediaPlayer::prepare() {
-    if (mediaPlayer == nullptr) {
+    if (m_mediaPlayer == nullptr) {
         return -1;
     }
-    if (mPrepareSync) {
-        return -EALREADY;
-    }
-    mPrepareSync = true;
-    int ret = mediaPlayer->prepare();
-    mPrepareSync = false;
-    return ret < 0 ? ret : mPrepareStatus;
+    int ret = m_mediaPlayer->prepare();
+    return ret;
 }
 
 int FFMediaPlayer::prepareAsync() {
-    if (mediaPlayer != nullptr) {
-        return mediaPlayer->prepareAsync();
+    if (m_mediaPlayer != nullptr) {
+        return m_mediaPlayer->prepareAsync();
     }
     return -1;
 }
 
 void FFMediaPlayer::start() {
-    if (mediaPlayer != nullptr) {
-        mediaPlayer->start();
+    if (m_mediaPlayer != nullptr) {
+        m_mediaPlayer->start();
     }
 }
 
 void FFMediaPlayer::pause() {
-    if (mediaPlayer) {
-        mediaPlayer->pause();
+    if (m_mediaPlayer) {
+        m_mediaPlayer->pause();
     }
 }
 
 void FFMediaPlayer::resume() {
-    if (mediaPlayer) {
-        mediaPlayer->resume();
+    if (m_mediaPlayer) {
+        m_mediaPlayer->resume();
     }
 }
 
 bool FFMediaPlayer::isPlaying() {
-    if (mediaPlayer) {
-        return (mediaPlayer->isPlaying() != 0);
+    if (m_mediaPlayer) {
+        return (m_mediaPlayer->isPlaying() != 0);
     }
     return false;
 }
 
 int FFMediaPlayer::getRotate() {
-    if (mediaPlayer != nullptr) {
-        return mediaPlayer->getRotate();
+    if (m_mediaPlayer != nullptr) {
+        return m_mediaPlayer->getRotate();
     }
     return 0;
 }
 
 int FFMediaPlayer::getVideoWidth() {
-    if (mediaPlayer != nullptr) {
-        return mediaPlayer->getVideoWidth();
+    if (m_mediaPlayer != nullptr) {
+        return m_mediaPlayer->getVideoWidth();
     }
     return 0;
 }
 
 int FFMediaPlayer::getVideoHeight() {
-    if (mediaPlayer != nullptr) {
-        return mediaPlayer->getVideoHeight();
+    if (m_mediaPlayer != nullptr) {
+        return m_mediaPlayer->getVideoHeight();
     }
     return 0;
 }
 
 void FFMediaPlayer::seekTo(long msec) {
-    if (mediaPlayer != nullptr) {
-        if (mSeeking) {
-            mediaPlayer->getMessageQueue()->sendMessage(MSG_REQUEST_SEEK, msec);
+    if (m_mediaPlayer != nullptr) {
+        if (m_seeking) {
+            m_mediaPlayer->getMessageQueue()->sendMessage(MSG_REQUEST_SEEK, msec);
         } else {
-            mediaPlayer->seekTo(msec);
-            mSeekingPosition = (long) msec;
-            mSeeking = true;
+            m_mediaPlayer->seekTo(msec);
+            m_seekingPos = (long) msec;
+            m_seeking = true;
         }
     }
 }
 
 long FFMediaPlayer::getCurrentPosition() {
-    if (mediaPlayer != nullptr) {
-        if (mSeeking) {
-            return mSeekingPosition;
+    if (m_mediaPlayer != nullptr) {
+        if (m_seeking) {
+            return m_seekingPos;
         }
-        return mediaPlayer->getCurrentPosition();
+        return m_mediaPlayer->getCurrentPosition();
     }
     return 0;
 }
 
 long FFMediaPlayer::getDuration() {
-    if (mediaPlayer != nullptr) {
-        return mediaPlayer->getDuration();
+    if (m_mediaPlayer != nullptr) {
+        return m_mediaPlayer->getDuration();
     }
     return -1;
 }
 
 int FFMediaPlayer::selectTrack(int trackId, bool selected) {
-    if (mediaPlayer != nullptr) {
-        return mediaPlayer->selectTrack(trackId, selected);
+    if (m_mediaPlayer != nullptr) {
+        return m_mediaPlayer->selectTrack(trackId, selected);
     }
     return -1;
 }
 
 void FFMediaPlayer::setVolume(float volume) {
-    if (mediaPlayer != nullptr) {
-        mediaPlayer->setVolume(volume);
+    if (m_mediaPlayer != nullptr) {
+        m_mediaPlayer->setVolume(volume);
     }
 }
 
 void FFMediaPlayer::setMute(bool mute) {
-    if (mediaPlayer != nullptr) {
-        mediaPlayer->setMute(mute);
+    if (m_mediaPlayer != nullptr) {
+        m_mediaPlayer->setMute(mute);
     }
 }
 
 void FFMediaPlayer::setRate(float speed) {
-    if (mediaPlayer != nullptr) {
-        mediaPlayer->setRate(speed);
+    if (m_mediaPlayer != nullptr) {
+        m_mediaPlayer->setRate(speed);
     }
 }
 
 AVStream *FFMediaPlayer::getAVStream(int mediaType) const {
-    return mediaPlayer ? mediaPlayer->getAVStream(mediaType) : nullptr;
+    return m_mediaPlayer ? m_mediaPlayer->getAVStream(mediaType) : nullptr;
 }
 
 AVFormatContext *FFMediaPlayer::getMetadata() const {
-    return mediaPlayer ? mediaPlayer->getMetadata() : nullptr;
+    return m_mediaPlayer ? m_mediaPlayer->getMetadata() : nullptr;
 }
 
 void FFMediaPlayer::stop() {
-    if (mediaPlayer) {
-        mediaPlayer->stop();
+    if (m_mediaPlayer) {
+        m_mediaPlayer->stop();
     }
 }
 
 void FFMediaPlayer::reset() {
-    mPrepareSync = false;
-    if (mediaPlayer != nullptr) {
-        mediaPlayer->reset();
-        delete mediaPlayer;
-        mediaPlayer = nullptr;
+    if (m_mediaPlayer != nullptr) {
+        m_mediaPlayer->reset();
+        delete m_mediaPlayer;
+        m_mediaPlayer = nullptr;
     }
 }
 
 void FFMediaPlayer::notify(int msg, int ext1, int ext2, void *obj, int len) {
-    if (mediaPlayer != nullptr) {
-        mediaPlayer->getMessageQueue()->sendMessage(msg, ext1, ext2, obj, len);
+    if (m_mediaPlayer != nullptr) {
+        m_mediaPlayer->getMessageQueue()->sendMessage(msg, ext1, ext2, obj, len);
     }
 }
 
 void FFMediaPlayer::postEvent(int what, int arg1, int arg2, void *obj) {
-    if (mListener != nullptr) {
-        mListener->notify(what, arg1, arg2, obj);
+    if (m_playListener != nullptr) {
+        m_playListener->notify(what, arg1, arg2, obj);
     }
 }
 
@@ -253,16 +227,16 @@ void FFMediaPlayer::run() {
     int ret;
     while (true) {
 
-        if (abortRequest) {
+        if (m_exitReq) {
             break;
         }
-        if (!mediaPlayer || !mediaPlayer->getMessageQueue()) {
+        if (!m_mediaPlayer || !m_mediaPlayer->getMessageQueue()) {
             av_usleep(10 * 1000);
             continue;
         }
 
         FFMessage msg;
-        ret = mediaPlayer->getMessageQueue()->getMessage(&msg);
+        ret = m_mediaPlayer->getMessageQueue()->getMessage(&msg);
         if (ret < 0) {
             ALOGE("getMessage error");
             break;
@@ -272,77 +246,58 @@ void FFMediaPlayer::run() {
 
         switch (msg.what) {
             case MSG_FLUSH: {
-                ALOGD("FFMediaPlayer is flushing.\n");
-                postEvent(MEDIA_NOP, 0, 0);
+                ALOGD("is flushing");
                 break;
             }
             case MSG_ON_ERROR: {
-                ALOGD("FFMediaPlayer occurs error: %d\n", msg.arg1);
-                if (mPrepareSync) {
-                    mPrepareSync = false;
-                    mPrepareStatus = msg.arg1;
-                }
                 postEvent(MEDIA_ERROR, msg.arg1, 0);
                 break;
             }
             case MSG_ON_PREPARED: {
-                ALOGD("FFMediaPlayer is prepared.\n");
-                if (mPrepareSync) {
-                    mPrepareSync = false;
-                    mPrepareStatus = 0;
-                }
                 postEvent(MEDIA_PREPARED, 0, 0);
                 break;
             }
             case MSG_ON_START: {
-                ALOGD("FFMediaPlayer is started!");
                 postEvent(MEDIA_STARTED, 0, 0);
                 break;
             }
             case MSG_ON_COMPLETE: {
-                ALOGD("FFMediaPlayer is playback completed.\n");
                 postEvent(MEDIA_PLAYBACK_COMPLETE, 0, 0);
                 break;
             }
             case MSG_VIDEO_SIZE_CHANGED: {
-                ALOGD("FFMediaPlayer is video size changing: %d, %d\n", msg.arg1, msg.arg2);
                 postEvent(MEDIA_VIDEO_SIZE_CHANGED, msg.arg1, msg.arg2);
                 break;
             }
             case MSG_VIDEO_RENDER_START: {
-                ALOGD("FFMediaPlayer is video playing.\n");
                 postEvent(MEDIA_RENDER_FIRST_FRAME, 1, 0);
                 break;
             }
             case MSG_AUDIO_RENDER_START: {
-                ALOGD("FFMediaPlayer is audio playing.\n");
                 postEvent(MEDIA_RENDER_FIRST_FRAME, 0, 1);
                 break;
             }
             case MSG_VIDEO_ROTATION_CHANGED: {
-                ALOGD("FFMediaPlayer's video rotation is changing: %d\n", msg.arg1);
+                ALOGD("video rotation is changing: %d", msg.arg1);
                 break;
             }
             case MSG_AUDIO_DECODE_START: {
-                ALOGD("FFMediaPlayer starts audio decoder.\n");
+                ALOGD("start audio decoder");
                 break;
             }
             case MSG_VIDEO_DECODE_START: {
-                ALOGD("FFMediaPlayer starts video decoder.\n");
+                ALOGD("start video decoder");
                 break;
             }
             case MSG_BUFFERING_START: {
-                ALOGD("CanMediaPlayer is buffering start.\n");
                 postEvent(MEDIA_INFO, MEDIA_BUFFERING_START, msg.arg1);
                 break;
             }
             case MSG_BUFFERING_END: {
-                ALOGD("FFMediaPlayer is buffering finish.\n");
                 postEvent(MEDIA_INFO, MEDIA_BUFFERING_END, msg.arg1);
                 break;
             }
             case MSG_BUFFERING_UPDATE: {
-                ALOGD("FFMediaPlayer is buffering: %d, %d", msg.arg1, msg.arg2);
                 postEvent(MEDIA_BUFFERING_UPDATE, msg.arg1, msg.arg2);
                 break;
             }
@@ -351,38 +306,33 @@ void FFMediaPlayer::run() {
                 break;
             }
             case MSG_SEEK_COMPLETE: {
-                ALOGD("FFMediaPlayer seeks completed!\n");
-                mSeeking = false;
+                m_seeking = false;
                 postEvent(MEDIA_SEEK_COMPLETE, 0, 0);
                 break;
             }
             case MSG_TIMED_TEXT: {
-                ALOGD("FFMediaPlayer is updating time text.");
                 postEvent(MEDIA_TIMED_TEXT, 0, 0, msg.obj);
                 break;
             }
             case MSG_REQUEST_PREPARE: {
-                ALOGD("FFMediaPlayer is preparing...");
                 int result = prepare();
                 if (result < 0) {
-                    ALOGE("FFMediaPlayer prepare error:%d", result);
+                    ALOGE("prepare error:%d", result);
                 }
                 break;
             }
             case MSG_REQUEST_START: {
-                ALOGD("FFMediaPlayer is waiting to start.");
+                ALOGD("request to start.");
                 break;
             }
             case MSG_REQUEST_PAUSE: {
-                ALOGD("FFMediaPlayer is pausing...");
                 pause();
                 break;
             }
             case MSG_REQUEST_SEEK: {
-                ALOGD("FFMediaPlayer is seeking...");
-                mSeeking = true;
-                mSeekingPosition = (long) msg.arg1;
-                mediaPlayer->seekTo(mSeekingPosition);
+                m_seeking = true;
+                m_seekingPos = (long) msg.arg1;
+                m_mediaPlayer->seekTo(m_seekingPos);
                 break;
             }
             default: {
