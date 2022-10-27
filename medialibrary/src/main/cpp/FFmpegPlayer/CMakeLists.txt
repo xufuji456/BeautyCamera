@@ -23,6 +23,11 @@ add_library(ffmpeg_player
             ${SRC_PLAYER}
             ${SRC_ANDROID})
 
+add_library(soundtouch SHARED IMPORTED)
+set_target_properties(soundtouch
+        PROPERTIES IMPORTED_LOCATION
+        ${CMAKE_SOURCE_DIR}/../libs/${ANDROID_ABI}/libsoundtouch.so)
+
 target_link_libraries(  ffmpeg_player
                         ffmpeg
                         soundtouch

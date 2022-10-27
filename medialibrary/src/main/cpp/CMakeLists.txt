@@ -15,9 +15,4 @@ set_target_properties(ffmpeg
         PROPERTIES IMPORTED_LOCATION
         ${CMAKE_SOURCE_DIR}/../libs/${ANDROID_ABI}/libffmpeg.so)
 
-add_library(soundtouch SHARED IMPORTED)
-set_target_properties(soundtouch
-        PROPERTIES IMPORTED_LOCATION
-        ${CMAKE_SOURCE_DIR}/../libs/${ANDROID_ABI}/libsoundtouch.so)
-
 add_subdirectory(${CMAKE_SOURCE_DIR}/FFmpegPlayer)
