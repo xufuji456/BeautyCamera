@@ -19,8 +19,6 @@ PlayerParam::~PlayerParam() {
 
 void PlayerParam::init() {
     url                = nullptr;
-    m_audioCodecName   = nullptr;
-    m_videoCodecName   = nullptr;
     m_videoStream      = nullptr;
     m_audioStream      = nullptr;
     m_subtitleStream   = nullptr;

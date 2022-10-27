@@ -95,8 +95,6 @@ public:
     FFMessageQueue *m_messageQueue;
 
     const char *url;
-    const char *m_audioCodecName;
-    const char *m_videoCodecName;
 
     int m_abortReq;
     int m_pauseReq;

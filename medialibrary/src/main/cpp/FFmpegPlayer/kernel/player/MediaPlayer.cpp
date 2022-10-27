@@ -764,7 +764,6 @@ int MediaPlayer::openDecoder(int streamIndex) {
     AVCodec *codec = nullptr;
     AVDictionary *opts = nullptr;
     AVDictionaryEntry *t;
-    const char *forcedCodecName = nullptr;
 
     if (streamIndex < 0 || streamIndex >= m_playerParam->m_formatCtx->nb_streams) {
         return -1;
@@ -786,31 +785,7 @@ int MediaPlayer::openDecoder(int streamIndex) {
         // 设置时钟基准
         av_codec_set_pkt_timebase(avctx, m_playerParam->m_formatCtx->streams[streamIndex]->time_base);
 
-        // 优先使用指定的解码器
-        switch(avctx->codec_type) {
-            case AVMEDIA_TYPE_AUDIO: {
-                forcedCodecName = m_playerParam->m_audioCodecName;
-                break;
-            }
-            case AVMEDIA_TYPE_VIDEO: {
-                forcedCodecName = m_playerParam->m_videoCodecName;
-                break;
-            }
-            default:
-                break;
-        }
-        if (forcedCodecName) {
-            codec = avcodec_find_decoder_by_name(forcedCodecName);
-        }
-
-        // 如果没有找到指定的解码器，则查找默认的解码器
-        if (!codec) {
-            if (forcedCodecName) {
-                av_log(nullptr, AV_LOG_WARNING,
-                       "No codec could be found with name '%s'\n", forcedCodecName);
-            }
-            codec = avcodec_find_decoder(avctx->codec_id);
-        }
+        codec = avcodec_find_decoder(avctx->codec_id);
 
         // 判断是否成功得到解码器
         if (!codec) {
