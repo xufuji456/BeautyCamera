@@ -323,10 +323,6 @@ void MediaPlayer::stop() {
     }
 }
 
-void MediaPlayer::run() {
-    readPackets();
-}
-
 void startAudioDecoder(PlayerParam *playerParam, AudioDecoder *audioDecoder) {
     if (audioDecoder != nullptr) {
         audioDecoder->start();
@@ -341,7 +337,7 @@ void MediaPlayer::startAudioRender(PlayerParam *playerParam) {
     if (playerParam->m_audioCodecCtx != nullptr) {
         AVCodecContext *avctx = playerParam->m_audioCodecCtx;
         int ret = openAudioRender((int64_t)avctx->channel_layout, avctx->channels,
-                              avctx->sample_rate);
+                                  avctx->sample_rate);
         if (ret < 0) {
             av_log(nullptr, AV_LOG_ERROR, "couldn't open audio render\n");
             // audio render fail, use external as master clock
@@ -352,6 +348,203 @@ void MediaPlayer::startAudioRender(PlayerParam *playerParam) {
             m_audioRender->start();
         }
     }
+}
+
+int MediaPlayer::openDecoder(int streamIndex) {
+    int ret;
+    AVCodecContext *avctx;
+
+    if (streamIndex < 0 || streamIndex >= m_playerParam->m_formatCtx->nb_streams) {
+        return -1;
+    }
+
+    avctx = avcodec_alloc_context3(nullptr);
+    if (!avctx) {
+        return AVERROR(ENOMEM);
+    }
+
+    do {
+        ret = avcodec_parameters_to_context(avctx, m_playerParam->m_formatCtx->streams[streamIndex]->codecpar);
+        if (ret < 0) {
+            break;
+        }
+
+        avctx->pkt_timebase = m_playerParam->m_formatCtx->streams[streamIndex]->time_base;
+        const AVCodec *codec = avcodec_find_decoder(avctx->codec_id);
+
+        if (!codec) {
+            av_log(nullptr, AV_LOG_ERROR,
+                   "No codec could be found with id %d\n", avctx->codec_id);
+            ret = AVERROR(EINVAL);
+            break;
+        }
+        avctx->codec_id = codec->id;
+
+        if (m_playerParam->m_decodeFastFlag) {
+            avctx->flags2 |= AV_CODEC_FLAG2_FAST;
+        }
+        if ((ret = avcodec_open2(avctx, codec, nullptr)) < 0) {
+            break;
+        }
+
+        m_playerParam->m_formatCtx->streams[streamIndex]->discard = AVDISCARD_DEFAULT;
+        switch (avctx->codec_type) {
+            case AVMEDIA_TYPE_AUDIO: {
+                m_playerParam->m_audioIndex    = streamIndex;
+                m_playerParam->m_audioStream   = m_playerParam->m_formatCtx->streams[streamIndex];
+                m_playerParam->m_audioCodecCtx = avctx;
+                m_audioDecoder = new AudioDecoder(m_playerParam);
+                startAudioDecoder(m_playerParam, m_audioDecoder);
+                startAudioRender(m_playerParam);
+                m_avSync->setAudioDecoder(m_audioDecoder);
+                break;
+            }
+            case AVMEDIA_TYPE_VIDEO: {
+                m_playerParam->m_videoIndex    = streamIndex;
+                m_playerParam->m_videoStream   = m_playerParam->m_formatCtx->streams[streamIndex];
+                m_playerParam->m_videoCodecCtx = avctx;
+                m_videoDecoder = new VideoDecoder(m_playerParam);
+                break;
+            }
+            default:{
+                break;
+            }
+        }
+    } while (false);
+
+    if (ret < 0) {
+        avcodec_free_context(&avctx);
+    }
+
+    return ret;
+}
+
+void MediaPlayer::closeDecoder(int streamIndex) {
+    if (streamIndex < 0 || streamIndex >= m_playerParam->m_formatCtx->nb_streams)
+        return;
+    AVStream *stream = m_playerParam->m_formatCtx->streams[streamIndex];
+    switch (stream->codecpar->codec_type) {
+        case AVMEDIA_TYPE_AUDIO:
+            if (m_audioDecoder) {
+                m_audioDecoder->flush();
+            }
+            if (m_audioRender) {
+                m_audioRender->stop();
+                delete m_audioRender;
+                m_audioRender = nullptr;
+            }
+            if (m_audioResampler) {
+                delete m_audioResampler;
+                m_audioResampler = nullptr;
+            }
+            if (m_audioDecoder) {
+                m_audioDecoder->stop();
+                delete m_audioDecoder;
+                m_audioDecoder = nullptr;
+            }
+            m_playerParam->m_audioIndex  = -1;
+            m_playerParam->m_audioStream = nullptr;
+            break;
+        case AVMEDIA_TYPE_VIDEO:
+            if (m_videoDecoder) {
+                m_videoDecoder->stop();
+                delete m_videoDecoder;
+                m_videoDecoder = nullptr;
+            }
+            m_playerParam->m_videoIndex  = -1;
+            m_playerParam->m_videoStream = nullptr;
+            break;
+        case AVMEDIA_TYPE_SUBTITLE:
+            av_log(nullptr, AV_LOG_INFO, "not implementation...");
+            break;
+        default:
+            break;
+    }
+}
+
+void audioPCMCallback(void *opaque, uint8_t *stream, int len) {
+    auto *mediaPlayer = (MediaPlayer *) opaque;
+    mediaPlayer->pcmCallback(stream, len);
+}
+
+int MediaPlayer::openAudioRender(int64_t wanted_channel_layout, int wanted_nb_channels,
+                                 int wanted_sample_rate) {
+    AudioRenderSpec wanted_spec, spec;
+    const int next_nb_channels[] = {0, 0, 1, 6, 2, 6, 4, 6};
+    const int next_sample_rates[] = {44100, 48000};
+    int next_sample_rate_idx = FF_ARRAY_ELEMS(next_sample_rates) - 1;
+    if (wanted_nb_channels != av_get_channel_layout_nb_channels(wanted_channel_layout)
+        || !wanted_channel_layout) {
+        wanted_channel_layout = av_get_default_channel_layout(wanted_nb_channels);
+        wanted_channel_layout &= ~AV_CH_LAYOUT_STEREO_DOWNMIX;
+    }
+    wanted_nb_channels = av_get_channel_layout_nb_channels(wanted_channel_layout);
+    wanted_spec.channels = wanted_nb_channels;
+    wanted_spec.freq = wanted_sample_rate;
+    if (wanted_spec.freq <= 0 || wanted_spec.channels <= 0) {
+        av_log(nullptr, AV_LOG_ERROR, "Invalid sample rate or channel count!\n");
+        return -1;
+    }
+    while (next_sample_rate_idx && next_sample_rates[next_sample_rate_idx] >= wanted_spec.freq) {
+        next_sample_rate_idx--;
+    }
+
+    wanted_spec.format = AV_SAMPLE_FMT_S16;
+    wanted_spec.samples = FFMAX(AUDIO_MIN_BUFFER_SIZE,
+                                2 << av_log2(wanted_spec.freq / AUDIO_MAX_CALLBACKS_PER_SEC));
+    wanted_spec.callback = audioPCMCallback;
+    wanted_spec.opaque = this;
+
+    // Audio Render
+    m_audioRender = new OpenSLAudioRender();
+    while (m_audioRender->open(&wanted_spec, &spec) < 0) {
+        av_log(nullptr, AV_LOG_ERROR, "open audio render error: channel=%d, sampleRate=%d\n",
+               wanted_spec.channels, wanted_spec.freq);
+        wanted_spec.channels = next_nb_channels[FFMIN(7, wanted_spec.channels)];
+        if (!wanted_spec.channels) {
+            wanted_spec.freq = next_sample_rates[next_sample_rate_idx--];
+            wanted_spec.channels = wanted_nb_channels;
+            if (!wanted_spec.freq) {
+                av_log(nullptr, AV_LOG_ERROR, "audio open failed\n");
+                return -1;
+            }
+        }
+        wanted_channel_layout = av_get_default_channel_layout(wanted_spec.channels);
+    }
+
+    if (spec.format != AV_SAMPLE_FMT_S16) {
+        av_log(nullptr, AV_LOG_ERROR, "audio format %d is not supported!\n", spec.format);
+        return -1;
+    }
+
+    if (spec.channels != wanted_spec.channels) {
+        wanted_channel_layout = av_get_default_channel_layout(spec.channels);
+        if (!wanted_channel_layout) {
+            av_log(nullptr, AV_LOG_ERROR, "don't support channel:%d\n", spec.channels);
+            return -1;
+        }
+    }
+
+    m_audioResampler = new AudioResampler(m_playerParam, m_audioDecoder, m_avSync);
+    m_audioResampler->setResampleParams(&spec, wanted_channel_layout);
+
+    return 0;
+}
+
+void MediaPlayer::pcmCallback(uint8_t *stream, int len) {
+    if (!m_audioResampler) {
+        memset(stream, 0, sizeof(len));
+        return;
+    }
+    m_audioResampler->pcmQueueCallback(stream, len);
+    if (!m_playerParam->m_firstAudioFrame && m_playerParam->m_messageQueue) {
+        m_playerParam->m_firstAudioFrame = true;
+        m_playerParam->m_messageQueue->sendMessage(MSG_AUDIO_RENDER_START);
+    }
+}
+
+void MediaPlayer::run() {
+    readPackets();
 }
 
 int MediaPlayer::readPackets() {
@@ -652,197 +845,4 @@ int MediaPlayer::readPackets() {
     }
 
     return ret;
-}
-
-int MediaPlayer::openDecoder(int streamIndex) {
-    int ret;
-    AVCodecContext *avctx;
-
-    if (streamIndex < 0 || streamIndex >= m_playerParam->m_formatCtx->nb_streams) {
-        return -1;
-    }
-
-    avctx = avcodec_alloc_context3(nullptr);
-    if (!avctx) {
-        return AVERROR(ENOMEM);
-    }
-
-    do {
-        ret = avcodec_parameters_to_context(avctx, m_playerParam->m_formatCtx->streams[streamIndex]->codecpar);
-        if (ret < 0) {
-            break;
-        }
-
-        avctx->pkt_timebase = m_playerParam->m_formatCtx->streams[streamIndex]->time_base;
-        const AVCodec *codec = avcodec_find_decoder(avctx->codec_id);
-
-        if (!codec) {
-            av_log(nullptr, AV_LOG_ERROR,
-                   "No codec could be found with id %d\n", avctx->codec_id);
-            ret = AVERROR(EINVAL);
-            break;
-        }
-        avctx->codec_id = codec->id;
-
-        if (m_playerParam->m_decodeFastFlag) {
-            avctx->flags2 |= AV_CODEC_FLAG2_FAST;
-        }
-        if ((ret = avcodec_open2(avctx, codec, nullptr)) < 0) {
-            break;
-        }
-
-        m_playerParam->m_formatCtx->streams[streamIndex]->discard = AVDISCARD_DEFAULT;
-        switch (avctx->codec_type) {
-            case AVMEDIA_TYPE_AUDIO: {
-                m_playerParam->m_audioIndex    = streamIndex;
-                m_playerParam->m_audioStream   = m_playerParam->m_formatCtx->streams[streamIndex];
-                m_playerParam->m_audioCodecCtx = avctx;
-                m_audioDecoder = new AudioDecoder(m_playerParam);
-                startAudioDecoder(m_playerParam, m_audioDecoder);
-                startAudioRender(m_playerParam);
-                m_avSync->setAudioDecoder(m_audioDecoder);
-                break;
-            }
-            case AVMEDIA_TYPE_VIDEO: {
-                m_playerParam->m_videoIndex    = streamIndex;
-                m_playerParam->m_videoStream   = m_playerParam->m_formatCtx->streams[streamIndex];
-                m_playerParam->m_videoCodecCtx = avctx;
-                m_videoDecoder = new VideoDecoder(m_playerParam);
-                break;
-            }
-            default:{
-                break;
-            }
-        }
-    } while (false);
-
-    if (ret < 0) {
-        avcodec_free_context(&avctx);
-    }
-
-    return ret;
-}
-
-void MediaPlayer::closeDecoder(int streamIndex) {
-    if (streamIndex < 0 || streamIndex >= m_playerParam->m_formatCtx->nb_streams)
-        return;
-    AVStream *stream = m_playerParam->m_formatCtx->streams[streamIndex];
-    switch (stream->codecpar->codec_type) {
-        case AVMEDIA_TYPE_AUDIO:
-            if (m_audioDecoder) {
-                m_audioDecoder->flush();
-            }
-            if (m_audioRender) {
-                m_audioRender->stop();
-                delete m_audioRender;
-                m_audioRender = nullptr;
-            }
-            if (m_audioResampler) {
-                delete m_audioResampler;
-                m_audioResampler = nullptr;
-            }
-            if (m_audioDecoder) {
-                m_audioDecoder->stop();
-                delete m_audioDecoder;
-                m_audioDecoder = nullptr;
-            }
-            m_playerParam->m_audioIndex  = -1;
-            m_playerParam->m_audioStream = nullptr;
-            break;
-        case AVMEDIA_TYPE_VIDEO:
-            if (m_videoDecoder) {
-                m_videoDecoder->stop();
-                delete m_videoDecoder;
-                m_videoDecoder = nullptr;
-            }
-            m_playerParam->m_videoIndex  = -1;
-            m_playerParam->m_videoStream = nullptr;
-            break;
-        case AVMEDIA_TYPE_SUBTITLE:
-            av_log(nullptr, AV_LOG_INFO, "not implementation...");
-            break;
-        default:
-            break;
-    }
-}
-
-void audioPCMCallback(void *opaque, uint8_t *stream, int len) {
-    auto *mediaPlayer = (MediaPlayer *) opaque;
-    mediaPlayer->pcmCallback(stream, len);
-}
-
-int MediaPlayer::openAudioRender(int64_t wanted_channel_layout, int wanted_nb_channels,
-                                 int wanted_sample_rate) {
-    AudioRenderSpec wanted_spec, spec;
-    const int next_nb_channels[] = {0, 0, 1, 6, 2, 6, 4, 6};
-    const int next_sample_rates[] = {44100, 48000};
-    int next_sample_rate_idx = FF_ARRAY_ELEMS(next_sample_rates) - 1;
-    if (wanted_nb_channels != av_get_channel_layout_nb_channels(wanted_channel_layout)
-        || !wanted_channel_layout) {
-        wanted_channel_layout = av_get_default_channel_layout(wanted_nb_channels);
-        wanted_channel_layout &= ~AV_CH_LAYOUT_STEREO_DOWNMIX;
-    }
-    wanted_nb_channels = av_get_channel_layout_nb_channels(wanted_channel_layout);
-    wanted_spec.channels = wanted_nb_channels;
-    wanted_spec.freq = wanted_sample_rate;
-    if (wanted_spec.freq <= 0 || wanted_spec.channels <= 0) {
-        av_log(nullptr, AV_LOG_ERROR, "Invalid sample rate or channel count!\n");
-        return -1;
-    }
-    while (next_sample_rate_idx && next_sample_rates[next_sample_rate_idx] >= wanted_spec.freq) {
-        next_sample_rate_idx--;
-    }
-
-    wanted_spec.format = AV_SAMPLE_FMT_S16;
-    wanted_spec.samples = FFMAX(AUDIO_MIN_BUFFER_SIZE,
-                                2 << av_log2(wanted_spec.freq / AUDIO_MAX_CALLBACKS_PER_SEC));
-    wanted_spec.callback = audioPCMCallback;
-    wanted_spec.opaque = this;
-
-    // Audio Render
-    m_audioRender = new OpenSLAudioRender();
-    while (m_audioRender->open(&wanted_spec, &spec) < 0) {
-        av_log(nullptr, AV_LOG_ERROR, "open audio render error: channel=%d, sampleRate=%d\n",
-               wanted_spec.channels, wanted_spec.freq);
-        wanted_spec.channels = next_nb_channels[FFMIN(7, wanted_spec.channels)];
-        if (!wanted_spec.channels) {
-            wanted_spec.freq = next_sample_rates[next_sample_rate_idx--];
-            wanted_spec.channels = wanted_nb_channels;
-            if (!wanted_spec.freq) {
-                av_log(nullptr, AV_LOG_ERROR, "audio open failed\n");
-                return -1;
-            }
-        }
-        wanted_channel_layout = av_get_default_channel_layout(wanted_spec.channels);
-    }
-
-    if (spec.format != AV_SAMPLE_FMT_S16) {
-        av_log(nullptr, AV_LOG_ERROR, "audio format %d is not supported!\n", spec.format);
-        return -1;
-    }
-
-    if (spec.channels != wanted_spec.channels) {
-        wanted_channel_layout = av_get_default_channel_layout(spec.channels);
-        if (!wanted_channel_layout) {
-            av_log(nullptr, AV_LOG_ERROR, "don't support channel:%d\n", spec.channels);
-            return -1;
-        }
-    }
-
-    m_audioResampler = new AudioResampler(m_playerParam, m_audioDecoder, m_avSync);
-    m_audioResampler->setResampleParams(&spec, wanted_channel_layout);
-
-    return 0;
-}
-
-void MediaPlayer::pcmCallback(uint8_t *stream, int len) {
-    if (!m_audioResampler) {
-        memset(stream, 0, sizeof(len));
-        return;
-    }
-    m_audioResampler->pcmQueueCallback(stream, len);
-    if (!m_playerParam->m_firstAudioFrame && m_playerParam->m_messageQueue) {
-        m_playerParam->m_firstAudioFrame = true;
-        m_playerParam->m_messageQueue->sendMessage(MSG_AUDIO_RENDER_START);
-    }
 }
