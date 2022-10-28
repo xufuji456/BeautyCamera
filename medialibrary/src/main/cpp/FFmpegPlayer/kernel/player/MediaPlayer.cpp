@@ -241,12 +241,10 @@ int MediaPlayer::getVideoHeight() {
 
 long MediaPlayer::getCurrentPosition() {
     Mutex::AutoLock lock(m_playerMutex);
-    int64_t currentPosition = 0;
     // 处于定位
     if (m_playerParam->m_seekRequest) {
-        currentPosition = m_playerParam->m_seekPos;
+        return m_playerParam->m_seekPos;
     } else {
-
         // 起始延时
         int64_t start_time = m_playerParam->m_formatCtx->start_time;
         int64_t start_diff = 0;
@@ -255,7 +253,7 @@ long MediaPlayer::getCurrentPosition() {
         }
 
         // 计算主时钟的时间
-        int64_t pos = 0;
+        int64_t pos;
         double clock = m_avSync->getMasterClock();
         if (isnan(clock)) {
             pos = m_playerParam->m_seekPos;
@@ -267,7 +265,6 @@ long MediaPlayer::getCurrentPosition() {
         }
         return (long) (pos - start_diff);
     }
-    return (long)currentPosition;
 }
 
 long MediaPlayer::getDuration() {
@@ -343,10 +340,10 @@ void startAudioDecoder(PlayerParam *playerParam, AudioDecoder *audioDecoder) {
 void MediaPlayer::startAudioRender(PlayerParam *playerParam) {
     if (playerParam->m_audioCodecCtx != nullptr) {
         AVCodecContext *avctx = playerParam->m_audioCodecCtx;
-        int ret = openAudioRender(avctx->channel_layout, avctx->channels,
+        int ret = openAudioRender((int64_t)avctx->channel_layout, avctx->channels,
                               avctx->sample_rate);
         if (ret < 0) {
-            av_log(nullptr, AV_LOG_WARNING, "could not open audio device\n");
+            av_log(nullptr, AV_LOG_ERROR, "couldn't open audio render\n");
             // audio render fail, use external as master clock
             if (playerParam->m_syncType == AV_SYNC_AUDIO) {
                 playerParam->m_syncType = AV_SYNC_EXTERNAL;
@@ -450,7 +447,6 @@ int MediaPlayer::readPackets() {
         }
 
         if (!m_audioDecoder && !m_videoDecoder) {
-            av_log(nullptr, AV_LOG_ERROR,"failed to create audio and video decoder\n");
             ret = -1;
             break;
         }
@@ -463,10 +459,11 @@ int MediaPlayer::readPackets() {
         m_exitPlay = true;
         m_playerCond.signal();
         if (m_playerParam->m_messageQueue) {
-            const char errorMsg[] = "prepare decoder failed!";
-            m_playerParam->m_messageQueue->sendMessage(MSG_ON_ERROR, 0, 0,
-                                                       (void *) errorMsg,
-                                                     sizeof(errorMsg) / errorMsg[0]);
+            if (m_playerParam->m_messageQueue) {
+                const char *msg = "open decoder error";
+                m_playerParam->m_messageQueue->sendMessage(MSG_ON_ERROR, 0, 0,
+                                                           (void *) msg, (int)strlen(msg));
+            }
         }
         return -1;
     }
@@ -507,36 +504,24 @@ int MediaPlayer::readPackets() {
     // 开始同步
     m_avSync->start(m_videoDecoder, m_audioDecoder);
 
-    // 等待开始
-    if (m_playerParam->m_pauseReq) {
-        // 请求开始
-        if (m_playerParam->m_messageQueue) {
-            m_playerParam->m_messageQueue->sendMessage(MSG_REQUEST_START);
-        }
-        while ((!m_playerParam->m_abortReq) && m_playerParam->m_pauseReq) {
-            av_usleep(10 * 1000);
-        }
-    }
-
     if (m_playerParam->m_messageQueue) {
         m_playerParam->m_messageQueue->sendMessage(MSG_ON_START);
     }
 
     ret = 0;
     m_eof = 0;
-    AVPacket pkt1, *pkt = &pkt1;
-    int64_t stream_start_time;
-    int playInRange = 0;
     int64_t pkt_ts;
     int waitToSeek = 0;
+    int playInRange;
+    int64_t stream_start_time;
+    AVPacket pkt1, *pkt = &pkt1;
+
     for (;;) {
 
-        // 退出播放器
         if (m_playerParam->m_abortReq) {
             break;
         }
 
-        // 是否暂停
         if (m_playerParam->m_pauseReq != m_lastPause) {
             m_lastPause = m_playerParam->m_pauseReq;
             if (m_playerParam->m_pauseReq) {
@@ -545,15 +530,6 @@ int MediaPlayer::readPackets() {
                 av_read_play(ic);
             }
         }
-
-#if CONFIG_RTSP_DEMUXER || CONFIG_MMSH_PROTOCOL
-        if (m_playerParam->m_pauseReq &&
-            (!strcmp(pFormatCtx->iformat->name, "rtsp") ||
-             (pFormatCtx->pb && !strncmp(url, "mmsh:", 5)))) {
-            av_usleep(10 * 1000);
-            continue;
-        }
-#endif
 
         if (m_playerParam->m_seekRequest) {
             int64_t seek_target = m_playerParam->m_seekPos;
@@ -575,7 +551,7 @@ int MediaPlayer::readPackets() {
                 if (m_playerParam->m_seekFlag & AVSEEK_FLAG_BYTE) {
                     m_avSync->updateExternalClock(NAN);
                 } else {
-                    m_avSync->updateExternalClock(seek_target / (double)AV_TIME_BASE);
+                    m_avSync->updateExternalClock((double)seek_target / AV_TIME_BASE);
                 }
                 m_avSync->refreshVideoTimer();
             }
@@ -629,10 +605,11 @@ int MediaPlayer::readPackets() {
 
         // 计算pkt的pts是否处于播放范围内
         stream_start_time = ic->streams[pkt->stream_index]->start_time;
+        int64_t start_time = stream_start_time != AV_NOPTS_VALUE ? stream_start_time : 0;
         pkt_ts = pkt->pts == AV_NOPTS_VALUE ? pkt->dts : pkt->pts;
         // 播放范围
         playInRange = m_playerParam->m_duration == AV_NOPTS_VALUE
-                      || (pkt_ts - (stream_start_time != AV_NOPTS_VALUE ? stream_start_time : 0)) *
+                      || (double)(pkt_ts - start_time) *
                          av_q2d(ic->streams[pkt->stream_index]->time_base)
                          - (double)(m_playerParam->m_startTime != AV_NOPTS_VALUE ? m_playerParam->m_startTime : 0) / 1000000
                          <= ((double)m_playerParam->m_duration / 1000000);
@@ -660,10 +637,9 @@ int MediaPlayer::readPackets() {
 
     if (ret < 0) {
         if (m_playerParam->m_messageQueue) {
-            const char errorMsg[] = "error when reading packets!";
+            const char *msg = "read frame error";
             m_playerParam->m_messageQueue->sendMessage(MSG_ON_ERROR, 0, 0,
-                                                       (void *) errorMsg,
-                                                     sizeof(errorMsg) / errorMsg[0]);
+                                                       (void *) msg, (int)strlen(msg));
         }
     } else {
         if (m_playerParam->m_messageQueue) {
@@ -681,8 +657,6 @@ int MediaPlayer::readPackets() {
 int MediaPlayer::openDecoder(int streamIndex) {
     int ret;
     AVCodecContext *avctx;
-    AVDictionary *opts = nullptr;
-    AVDictionaryEntry *t;
 
     if (streamIndex < 0 || streamIndex >= m_playerParam->m_formatCtx->nb_streams) {
         return -1;
@@ -703,7 +677,7 @@ int MediaPlayer::openDecoder(int streamIndex) {
         const AVCodec *codec = avcodec_find_decoder(avctx->codec_id);
 
         if (!codec) {
-            av_log(nullptr, AV_LOG_WARNING,
+            av_log(nullptr, AV_LOG_ERROR,
                    "No codec could be found with id %d\n", avctx->codec_id);
             ret = AVERROR(EINVAL);
             break;
@@ -713,13 +687,7 @@ int MediaPlayer::openDecoder(int streamIndex) {
         if (m_playerParam->m_decodeFastFlag) {
             avctx->flags2 |= AV_CODEC_FLAG2_FAST;
         }
-
-        if ((ret = avcodec_open2(avctx, codec, &opts)) < 0) {
-            break;
-        }
-        if ((t = av_dict_get(opts, "", nullptr, AV_DICT_IGNORE_SUFFIX))) {
-            av_log(nullptr, AV_LOG_ERROR, "Option %s not found.\n", t->key);
-            ret =  AVERROR_OPTION_NOT_FOUND;
+        if ((ret = avcodec_open2(avctx, codec, nullptr)) < 0) {
             break;
         }
 
@@ -749,16 +717,8 @@ int MediaPlayer::openDecoder(int streamIndex) {
     } while (false);
 
     if (ret < 0) {
-        if (m_playerParam->m_messageQueue) {
-            const char errorMsg[] = "failed to open stream!";
-            m_playerParam->m_messageQueue->sendMessage(MSG_ON_ERROR, 0, 0,
-                                                       (void *) errorMsg,
-                                                     sizeof(errorMsg) / errorMsg[0]);
-        }
         avcodec_free_context(&avctx);
     }
-
-    av_dict_free(&opts);
 
     return ret;
 }
@@ -806,9 +766,9 @@ void MediaPlayer::closeDecoder(int streamIndex) {
     }
 }
 
-void audioPCMQueueCallback(void *opaque, uint8_t *stream, int len) {
+void audioPCMCallback(void *opaque, uint8_t *stream, int len) {
     auto *mediaPlayer = (MediaPlayer *) opaque;
-    mediaPlayer->pcmQueueCallback(stream, len);
+    mediaPlayer->pcmCallback(stream, len);
 }
 
 int MediaPlayer::openAudioRender(int64_t wanted_channel_layout, int wanted_nb_channels,
@@ -836,20 +796,20 @@ int MediaPlayer::openAudioRender(int64_t wanted_channel_layout, int wanted_nb_ch
     wanted_spec.format = AV_SAMPLE_FMT_S16;
     wanted_spec.samples = FFMAX(AUDIO_MIN_BUFFER_SIZE,
                                 2 << av_log2(wanted_spec.freq / AUDIO_MAX_CALLBACKS_PER_SEC));
-    wanted_spec.callback = audioPCMQueueCallback;
+    wanted_spec.callback = audioPCMCallback;
     wanted_spec.opaque = this;
 
     // Audio Render
     m_audioRender = new OpenSLAudioRender();
     while (m_audioRender->open(&wanted_spec, &spec) < 0) {
-        av_log(nullptr, AV_LOG_WARNING, "Failed to open audio device: (%d channels, %d Hz)!\n",
+        av_log(nullptr, AV_LOG_ERROR, "open audio render error: channel=%d, sampleRate=%d\n",
                wanted_spec.channels, wanted_spec.freq);
         wanted_spec.channels = next_nb_channels[FFMIN(7, wanted_spec.channels)];
         if (!wanted_spec.channels) {
             wanted_spec.freq = next_sample_rates[next_sample_rate_idx--];
             wanted_spec.channels = wanted_nb_channels;
             if (!wanted_spec.freq) {
-                av_log(nullptr, AV_LOG_ERROR, "No more combinations to try, audio open failed\n");
+                av_log(nullptr, AV_LOG_ERROR, "audio open failed\n");
                 return -1;
             }
         }
@@ -864,7 +824,7 @@ int MediaPlayer::openAudioRender(int64_t wanted_channel_layout, int wanted_nb_ch
     if (spec.channels != wanted_spec.channels) {
         wanted_channel_layout = av_get_default_channel_layout(spec.channels);
         if (!wanted_channel_layout) {
-            av_log(nullptr, AV_LOG_ERROR, "channel count %d is not supported!\n", spec.channels);
+            av_log(nullptr, AV_LOG_ERROR, "don't support channel:%d\n", spec.channels);
             return -1;
         }
     }
@@ -875,7 +835,7 @@ int MediaPlayer::openAudioRender(int64_t wanted_channel_layout, int wanted_nb_ch
     return 0;
 }
 
-void MediaPlayer::pcmQueueCallback(uint8_t *stream, int len) {
+void MediaPlayer::pcmCallback(uint8_t *stream, int len) {
     if (!m_audioResampler) {
         memset(stream, 0, sizeof(len));
         return;

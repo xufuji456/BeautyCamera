@@ -99,7 +99,7 @@ public:
 
     AVFormatContext *getMetadata() const;
 
-    void pcmQueueCallback(uint8_t *stream, int len);
+    void pcmCallback(uint8_t *stream, int len);
 
     void stop();
 
