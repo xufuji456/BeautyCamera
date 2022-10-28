@@ -184,7 +184,7 @@ int AudioResampler::audioFrameResample() {
                 av_log(nullptr, AV_LOG_ERROR, "Create resampler error: %d Hz %s %d channels to %d Hz %s %d channels!\n",
                        m_frame->sample_rate,
                        av_get_sample_fmt_name((AVSampleFormat)m_frame->format),
-                       av_frame_get_channels(m_frame),
+                       m_frame->channels,
                        m_audioState->m_audioParamDst.freq,
                        av_get_sample_fmt_name(m_audioState->m_audioParamDst.fmt),
                        m_audioState->m_audioParamDst.channels);
