@@ -333,9 +333,6 @@ void MediaPlayer::run() {
 void startAudioDecoder(PlayerParam *playerParam, AudioDecoder *audioDecoder) {
     if (audioDecoder != nullptr) {
         audioDecoder->start();
-        if (playerParam->m_messageQueue) {
-            playerParam->m_messageQueue->sendMessage(MSG_AUDIO_DECODE_START);
-        }
     } else {
         if (playerParam->m_syncType == AV_SYNC_AUDIO) {
             playerParam->m_syncType = AV_SYNC_EXTERNAL;
@@ -364,13 +361,11 @@ int MediaPlayer::readPackets() {
     int ret = 0;
     AVFormatContext *ic;
 
-    // 准备解码器
     m_playerMutex.lock();
     do {
-        // 创建解复用上下文
         ic = avformat_alloc_context();
         if (!ic) {
-            av_log(nullptr, AV_LOG_FATAL, "Could not allocate context.\n");
+            av_log(nullptr, AV_LOG_ERROR, "Could not allocate context.\n");
             ret = AVERROR(ENOMEM);
             break;
         }
@@ -379,7 +374,6 @@ int MediaPlayer::readPackets() {
         ic->interrupt_callback.callback = avformat_interrupt_cb;
         ic->interrupt_callback.opaque = m_playerParam;
 
-        // 打开文件
         ret = avformat_open_input(&ic, m_playerParam->url, nullptr, nullptr);
         if (ret < 0) {
             av_log(nullptr, AV_LOG_ERROR, "open input err:url=%s, msg=%s", m_playerParam->url, strerror(ret));
@@ -388,29 +382,16 @@ int MediaPlayer::readPackets() {
         }
 
         av_format_inject_global_side_data(ic);
-
-        // 查找媒体流信息
-        ret = avformat_find_stream_info(ic, nullptr);
-
-        if (ret < 0) {
-            av_log(nullptr, AV_LOG_WARNING,
-                   "%s: could not find codec parameters\n", m_playerParam->url);
-            ret = -1;
-            break;
-        }
+        avformat_find_stream_info(ic, nullptr);
 
         if (ic->duration != AV_NOPTS_VALUE) {
             m_duration = av_rescale(ic->duration, 1000, AV_TIME_BASE);
         }
-
         if (ic->pb) {
             ic->pb->eof_reached = 0;
         }
 
-        // 设置最大帧间隔
-        m_avSync->setMaxDuration((ic->iformat->flags & AVFMT_TS_DISCONT) ? 10.0 : 3600.0);
-
-        // 如果不是从头开始播放，则跳转到播放位置
+        // seek
         if (m_playerParam->m_startTime != AV_NOPTS_VALUE) {
             int64_t timestamp;
 
@@ -422,12 +403,11 @@ int MediaPlayer::readPackets() {
             ret = avformat_seek_file(ic, -1, INT64_MIN, timestamp, INT64_MAX, 0);
             m_playerParam->m_playMutex.unlock();
             if (ret < 0) {
-                av_log(nullptr, AV_LOG_WARNING, "%s: could not seek to position %0.3f\n",
+                av_log(nullptr, AV_LOG_ERROR, "%s: could not seek to position %0.3f\n",
                        m_playerParam->url, (double)timestamp / AV_TIME_BASE);
             }
         }
 
-        // 查找媒体流信息
         int audioIndex = -1;
         int videoIndex = -1;
         for (int i = 0; i < ic->nb_streams; ++i) {
@@ -441,30 +421,21 @@ int MediaPlayer::readPackets() {
                 }
             }
         }
-        // 如果不禁止视频流，则查找最合适的视频流索引
+
         if (!m_playerParam->m_videoDisable) {
             videoIndex = av_find_best_stream(ic, AVMEDIA_TYPE_VIDEO,
                                              videoIndex, -1, nullptr, 0);
-        } else {
-            videoIndex = -1;
         }
-        // 如果不禁止音频流，则查找最合适的音频流索引(与视频流关联的音频流)
         if (!m_playerParam->m_audioDisable) {
             audioIndex = av_find_best_stream(ic, AVMEDIA_TYPE_AUDIO,
                                              audioIndex, videoIndex, nullptr, 0);
-        } else {
-            audioIndex = -1;
         }
-
-        // 如果音频流和视频流都没有找到，则直接退出
         if (audioIndex == -1 && videoIndex == -1) {
-            av_log(nullptr, AV_LOG_WARNING,
-                   "%s: could not find audio and video stream\n", m_playerParam->url);
+            av_log(nullptr, AV_LOG_ERROR,"%s: no audio and video stream\n", m_playerParam->url);
             ret = -1;
             break;
         }
 
-        // 根据媒体流索引准备解码器
         if (audioIndex >= 0) {
             openDecoder(audioIndex);
             if (m_playerParam->m_messageQueue) {
@@ -479,8 +450,7 @@ int MediaPlayer::readPackets() {
         }
 
         if (!m_audioDecoder && !m_videoDecoder) {
-            av_log(nullptr, AV_LOG_WARNING,
-                   "failed to create audio and video decoder\n");
+            av_log(nullptr, AV_LOG_ERROR,"failed to create audio and video decoder\n");
             ret = -1;
             break;
         }
@@ -489,7 +459,6 @@ int MediaPlayer::readPackets() {
     } while (false);
     m_playerMutex.unlock();
 
-    // 出错返回
     if (ret < 0) {
         m_exitPlay = true;
         m_playerCond.signal();
@@ -553,9 +522,8 @@ int MediaPlayer::readPackets() {
         m_playerParam->m_messageQueue->sendMessage(MSG_ON_START);
     }
 
-    // 读数据包流程
-    m_eof = 0;
     ret = 0;
+    m_eof = 0;
     AVPacket pkt1, *pkt = &pkt1;
     int64_t stream_start_time;
     int playInRange = 0;
@@ -586,12 +554,11 @@ int MediaPlayer::readPackets() {
             continue;
         }
 #endif
-        // 定位处理
+
         if (m_playerParam->m_seekRequest) {
             int64_t seek_target = m_playerParam->m_seekPos;
             int64_t seek_min = INT64_MIN;
             int64_t seek_max = INT64_MAX;
-            // 定位
             m_playerParam->m_playMutex.lock();
             ret = avformat_seek_file(ic, -1, seek_min, seek_target, seek_max, m_playerParam->m_seekFlag);
             m_playerParam->m_playMutex.unlock();
@@ -605,7 +572,6 @@ int MediaPlayer::readPackets() {
                     m_videoDecoder->flush();
                 }
 
-                // 更新外部时钟值
                 if (m_playerParam->m_seekFlag & AVSEEK_FLAG_BYTE) {
                     m_avSync->updateExternalClock(NAN);
                 } else {
@@ -623,32 +589,27 @@ int MediaPlayer::readPackets() {
             }
         }
 
-        // 如果队列中存在足够的数据包，则等待消耗
-        // 备注：这里要等待一定时长的缓冲队列，要不然会导致OpenSLES播放音频出现卡顿等现象
+        // waiting
         if (((m_audioDecoder ? m_audioDecoder->getMemorySize() : 0) + (m_videoDecoder ? m_videoDecoder->getMemorySize() : 0) > MAX_QUEUE_SIZE
              || (!m_audioDecoder || m_audioDecoder->hasEnoughPackets(m_playerParam->m_audioStream))
              && (!m_videoDecoder || m_videoDecoder->hasEnoughPackets(m_playerParam->m_videoStream)))) {
             continue;
         }
 
-        // 读出数据包
         if (!waitToSeek) {
             ret = av_read_frame(ic, pkt);
         } else {
             ret = -1;
         }
         if (ret < 0) {
-            // 如果没能读出裸数据包，判断是否是结尾
             if ((ret == AVERROR_EOF || avio_feof(ic->pb)) && !m_eof) {
                 m_eof = 1;
             }
-            // 读取出错，则直接退出
             if (ic->pb && ic->pb->error) {
                 ret = -1;
                 break;
             }
 
-            // 如果不处于暂停状态，并且队列中所有数据都没有，则判断是否需要
             if (!m_playerParam->m_pauseReq && (!m_audioDecoder || m_audioDecoder->getPacketSize() == 0)
                 && (!m_videoDecoder || (m_videoDecoder->getPacketSize() == 0
                                         && m_videoDecoder->getFrameSize() == 0))) {
@@ -659,7 +620,7 @@ int MediaPlayer::readPackets() {
                     break;
                 }
             }
-            // 读取失败时，睡眠10毫秒继续
+
             av_usleep(10 * 1000);
             continue;
         } else {
@@ -682,7 +643,7 @@ int MediaPlayer::readPackets() {
         } else {
             av_packet_unref(pkt);
         }
-        // 等待定位
+
         if (!playInRange) {
             waitToSeek = 1;
         }
