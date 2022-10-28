@@ -1,42 +1,6 @@
 
 #include "MediaPlayer.h"
 
-static int lockmgrCallback(void **mtx, enum AVLockOp op) {
-    switch (op) {
-        case AV_LOCK_CREATE: {
-            *mtx = new Mutex();
-            if (!*mtx) {
-                av_log(nullptr, AV_LOG_FATAL, "failed to create mutex.\n");
-                return 1;
-            }
-            return 0;
-        }
-
-        case AV_LOCK_OBTAIN: {
-            if (!*mtx) {
-                return 1;
-            }
-            return ((Mutex *)(*mtx))->lock() != 0;
-        }
-
-        case AV_LOCK_RELEASE: {
-            if (!*mtx) {
-                return 1;
-            }
-            return ((Mutex *)(*mtx))->unlock() != 0;
-        }
-
-        case AV_LOCK_DESTROY: {
-            if (*mtx) {
-                delete (*mtx);
-                *mtx = nullptr;
-            }
-            return 0;
-        }
-    }
-    return 1;
-}
-
 MediaPlayer::MediaPlayer() {
     av_register_all();
     avformat_network_init();
@@ -52,15 +16,10 @@ MediaPlayer::MediaPlayer() {
     m_audioRender    = nullptr;
     m_audioResampler = nullptr;
     m_avSync = new AVSync(m_playerParam);
-
-    if (av_lockmgr_register(lockmgrCallback)) {
-        av_log(nullptr, AV_LOG_FATAL, "Could not initialize lock manager!\n");
-    }
 }
 
 MediaPlayer::~MediaPlayer() {
     avformat_network_deinit();
-    av_lockmgr_register(nullptr);
 }
 
 int MediaPlayer::reset() {
@@ -761,7 +720,6 @@ int MediaPlayer::readPackets() {
 int MediaPlayer::openDecoder(int streamIndex) {
     int ret;
     AVCodecContext *avctx;
-    AVCodec *codec = nullptr;
     AVDictionary *opts = nullptr;
     AVDictionaryEntry *t;
 
@@ -781,7 +739,7 @@ int MediaPlayer::openDecoder(int streamIndex) {
         }
 
         avctx->pkt_timebase = m_playerParam->m_formatCtx->streams[streamIndex]->time_base;
-        codec = avcodec_find_decoder(avctx->codec_id);
+        const AVCodec *codec = avcodec_find_decoder(avctx->codec_id);
 
         if (!codec) {
             av_log(nullptr, AV_LOG_WARNING,
