@@ -22,43 +22,6 @@ MediaPlayer::~MediaPlayer() {
     avformat_network_deinit();
 }
 
-int MediaPlayer::reset() {
-    stop();
-    if (m_avSync) {
-        m_avSync->reset();
-        delete m_avSync;
-        m_avSync = nullptr;
-    }
-    if (m_audioDecoder != nullptr) {
-        m_audioDecoder->stop();
-        delete m_audioDecoder;
-        m_audioDecoder = nullptr;
-    }
-    if (m_videoDecoder != nullptr) {
-        m_videoDecoder->stop();
-        delete m_videoDecoder;
-        m_videoDecoder = nullptr;
-    }
-    if (m_audioRender != nullptr) {
-        m_audioRender->stop();
-        delete m_audioRender;
-        m_audioRender = nullptr;
-    }
-    if (m_audioResampler) {
-        delete m_audioResampler;
-        m_audioResampler = nullptr;
-    }
-    if (m_playerParam) {
-        if (m_playerParam->m_formatCtx != nullptr) {
-            avformat_close_input(&m_playerParam->m_formatCtx);
-            m_playerParam->m_formatCtx = nullptr;
-        }
-        delete m_playerParam;
-        m_playerParam = nullptr;
-    }
-    return 0;
-}
-
 void MediaPlayer::setDataSource(const char *url) {
     Mutex::AutoLock lock(m_playerMutex);
     m_playerParam->url = av_strdup(url);
@@ -321,6 +284,43 @@ void MediaPlayer::stop() {
         delete m_readThread;
         m_readThread = nullptr;
     }
+}
+
+int MediaPlayer::reset() {
+    stop();
+    if (m_avSync) {
+        m_avSync->reset();
+        delete m_avSync;
+        m_avSync = nullptr;
+    }
+    if (m_audioDecoder != nullptr) {
+        m_audioDecoder->stop();
+        delete m_audioDecoder;
+        m_audioDecoder = nullptr;
+    }
+    if (m_videoDecoder != nullptr) {
+        m_videoDecoder->stop();
+        delete m_videoDecoder;
+        m_videoDecoder = nullptr;
+    }
+    if (m_audioRender != nullptr) {
+        m_audioRender->stop();
+        delete m_audioRender;
+        m_audioRender = nullptr;
+    }
+    if (m_audioResampler) {
+        delete m_audioResampler;
+        m_audioResampler = nullptr;
+    }
+    if (m_playerParam) {
+        if (m_playerParam->m_formatCtx != nullptr) {
+            avformat_close_input(&m_playerParam->m_formatCtx);
+            m_playerParam->m_formatCtx = nullptr;
+        }
+        delete m_playerParam;
+        m_playerParam = nullptr;
+    }
+    return 0;
 }
 
 void startAudioDecoder(PlayerParam *playerParam, AudioDecoder *audioDecoder) {
