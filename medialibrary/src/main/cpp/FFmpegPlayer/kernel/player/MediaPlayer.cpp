@@ -752,15 +752,6 @@ int MediaPlayer::openDecoder(int streamIndex) {
         if (m_playerParam->m_decodeFastFlag) {
             avctx->flags2 |= AV_CODEC_FLAG2_FAST;
         }
-#if FF_API_EMU_EDGE
-        if (codec->capabilities & AV_CODEC_CAP_DR1) {
-            avctx->flags |= CODEC_FLAG_EMU_EDGE;
-        }
-#endif
-
-        if (avctx->codec_type == AVMEDIA_TYPE_VIDEO || avctx->codec_type == AVMEDIA_TYPE_AUDIO) {
-            av_dict_set(&opts, "refcounted_frames", "1", 0);
-        }
 
         if ((ret = avcodec_open2(avctx, codec, &opts)) < 0) {
             break;
