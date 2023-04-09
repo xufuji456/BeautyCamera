@@ -25,19 +25,19 @@ import java.util.List;
     implements ExternalTextureProcessor {
 
   private static final String VERTEX_SHADER_TRANSFORMATION_PATH =
-      "shaders/vertex_shader_transformation_es2.glsl";
+          "shaders/vertex_shader_transform_es2.glsl";
   private static final String VERTEX_SHADER_TRANSFORMATION_ES3_PATH =
-      "shaders/vertex_shader_transformation_es3.glsl";
+          "shaders/vertex_shader_transform_es3.glsl";
   private static final String FRAGMENT_SHADER_TRANSFORMATION_PATH =
-      "shaders/fragment_shader_transformation_es2.glsl";
+          "shaders/fragment_transform_es2.glsl";
   private static final String FRAGMENT_SHADER_OETF_ES3_PATH =
-      "shaders/fragment_shader_oetf_es3.glsl";
+          "shaders/fragment_oetf_es3.glsl";
   private static final String FRAGMENT_SHADER_TRANSFORMATION_SDR_OETF_ES2_PATH =
-      "shaders/fragment_shader_transformation_sdr_oetf_es2.glsl";
+          "shaders/fragment_transform_sdr_oetf_es2.glsl";
   private static final String FRAGMENT_SHADER_TRANSFORMATION_EXTERNAL_YUV_ES3_PATH =
-      "shaders/fragment_shader_transformation_external_yuv_es3.glsl";
+          "shaders/fragment_transform_external_yuv_es3.glsl";
   private static final String FRAGMENT_SHADER_TRANSFORMATION_SDR_EXTERNAL_PATH =
-      "shaders/fragment_shader_transformation_sdr_external_es2.glsl";
+          "shaders/fragment_transform_sdr_external_es2.glsl";
   private static final ImmutableList<float[]> NDC_SQUARE =
       ImmutableList.of(
           new float[] {-1, -1, 0, 1},

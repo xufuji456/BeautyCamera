@@ -13,8 +13,8 @@ import com.google.android.exoplayer2.util.GlUtil;
 import java.io.IOException;
 
 /* package */ final class ColorLutProcessor extends SingleFrameGlTextureProcessor {
-  private static final String VERTEX_SHADER_PATH = "shaders/vertex_shader_transformation_es2.glsl";
-  private static final String FRAGMENT_SHADER_PATH = "shaders/fragment_shader_lut_es2.glsl";
+  private static final String VERTEX_SHADER_PATH = "shaders/vertex_shader_transform_es2.glsl";
+  private static final String FRAGMENT_SHADER_PATH = "shaders/fragment_lut_es2.glsl";
 
   private final GlProgram glProgram;
   private final ColorLut colorLut;
