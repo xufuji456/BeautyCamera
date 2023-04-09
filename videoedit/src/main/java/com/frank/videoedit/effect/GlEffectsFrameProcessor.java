@@ -127,7 +127,6 @@ public final class GlEffectsFrameProcessor implements FrameProcessor {
         new ImmutableList.Builder<>();
     ImmutableList.Builder<GlMatrixTransformation> matrixTransformationListBuilder =
         new ImmutableList.Builder<>();
-    ImmutableList.Builder<RgbMatrix> rgbMatrixListBuilder = new ImmutableList.Builder<>();
     boolean sampleFromExternalTexture = true;
     for (int i = 0; i < effects.size(); i++) {
       Effect effect = effects.get(i);
@@ -141,27 +140,21 @@ public final class GlEffectsFrameProcessor implements FrameProcessor {
         matrixTransformationListBuilder.add((GlMatrixTransformation) glEffect);
         continue;
       }
-      if (glEffect instanceof RgbMatrix) {
-        rgbMatrixListBuilder.add((RgbMatrix) glEffect);
-        continue;
-      }
       ImmutableList<GlMatrixTransformation> matrixTransformations =
           matrixTransformationListBuilder.build();
-      ImmutableList<RgbMatrix> rgbMatrices = rgbMatrixListBuilder.build();
-      if (!matrixTransformations.isEmpty() || !rgbMatrices.isEmpty() || sampleFromExternalTexture) {
+      if (!matrixTransformations.isEmpty() || sampleFromExternalTexture) {
         MatrixTextureProcessor matrixTextureProcessor;
         if (sampleFromExternalTexture) {
           matrixTextureProcessor =
               MatrixTextureProcessor.createWithExternalSamplerApplyingEotf(
-                  context, matrixTransformations, rgbMatrices, colorInfo);
+                  context, matrixTransformations, colorInfo);
         } else {
           matrixTextureProcessor =
               MatrixTextureProcessor.create(
-                  context, matrixTransformations, rgbMatrices, ColorInfo.isTransferHdr(colorInfo));
+                  context, matrixTransformations, ColorInfo.isTransferHdr(colorInfo));
         }
         textureProcessorListBuilder.add(matrixTextureProcessor);
         matrixTransformationListBuilder = new ImmutableList.Builder<>();
-        rgbMatrixListBuilder = new ImmutableList.Builder<>();
         sampleFromExternalTexture = false;
       }
       textureProcessorListBuilder.add(
@@ -174,7 +167,6 @@ public final class GlEffectsFrameProcessor implements FrameProcessor {
             eglDisplay,
             eglContext,
             matrixTransformationListBuilder.build(),
-            rgbMatrixListBuilder.build(),
             listener,
             debugViewProvider,
             sampleFromExternalTexture,

@@ -42,7 +42,6 @@ public interface GlMatrixTransformation extends GlEffect {
     return MatrixTextureProcessor.create(
         context,
         /* matrixTransformations= */ ImmutableList.of(this),
-        /* rgbMatrices= */ ImmutableList.of(),
         useHdr);
   }
 }

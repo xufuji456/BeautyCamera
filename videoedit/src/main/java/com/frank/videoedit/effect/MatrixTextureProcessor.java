@@ -60,10 +60,8 @@ import java.util.List;
   };
 
   private final ImmutableList<GlMatrixTransformation> matrixTransformations;
-  private final ImmutableList<RgbMatrix> rgbMatrices;
   private final boolean useHdr;
   private final float[][] transformationMatrixCache;
-  private final float[][] rgbMatrixCache;
   private final float[] compositeTransformationMatrixArray;
   private final float[] compositeRgbMatrixArray;
   private final float[] tempResultMatrix;
@@ -74,7 +72,6 @@ import java.util.List;
   public static MatrixTextureProcessor create(
       Context context,
       List<GlMatrixTransformation> matrixTransformations,
-      List<RgbMatrix> rgbMatrices,
       boolean useHdr)
       throws FrameProcessingException {
     GlProgram glProgram =
@@ -86,14 +83,12 @@ import java.util.List;
     return new MatrixTextureProcessor(
         glProgram,
         ImmutableList.copyOf(matrixTransformations),
-        ImmutableList.copyOf(rgbMatrices),
         useHdr);
   }
 
   public static MatrixTextureProcessor createWithExternalSamplerApplyingEotf(
       Context context,
       List<GlMatrixTransformation> matrixTransformations,
-      List<RgbMatrix> rgbMatrices,
       ColorInfo electricalColorInfo)
       throws FrameProcessingException {
     boolean useHdr = ColorInfo.isTransferHdr(electricalColorInfo);
@@ -128,14 +123,12 @@ import java.util.List;
     return new MatrixTextureProcessor(
         glProgram,
         ImmutableList.copyOf(matrixTransformations),
-        ImmutableList.copyOf(rgbMatrices),
         useHdr);
   }
 
   public static MatrixTextureProcessor createApplyingOetf(
       Context context,
       List<GlMatrixTransformation> matrixTransformations,
-      List<RgbMatrix> rgbMatrices,
       ColorInfo electricalColorInfo)
       throws FrameProcessingException {
     boolean useHdr = ColorInfo.isTransferHdr(electricalColorInfo);
@@ -155,14 +148,12 @@ import java.util.List;
     return new MatrixTextureProcessor(
         glProgram,
         ImmutableList.copyOf(matrixTransformations),
-        ImmutableList.copyOf(rgbMatrices),
         useHdr);
   }
 
   public static MatrixTextureProcessor createWithExternalSamplerApplyingEotfThenOetf(
       Context context,
       List<GlMatrixTransformation> matrixTransformations,
-      List<RgbMatrix> rgbMatrices,
       ColorInfo electricalColorInfo)
       throws FrameProcessingException {
     boolean useHdr = ColorInfo.isTransferHdr(electricalColorInfo);
@@ -195,23 +186,19 @@ import java.util.List;
     return new MatrixTextureProcessor(
         glProgram,
         ImmutableList.copyOf(matrixTransformations),
-        ImmutableList.copyOf(rgbMatrices),
         useHdr);
   }
 
   private MatrixTextureProcessor(
       GlProgram glProgram,
       ImmutableList<GlMatrixTransformation> matrixTransformations,
-      ImmutableList<RgbMatrix> rgbMatrices,
       boolean useHdr) {
     super(useHdr);
     this.glProgram = glProgram;
     this.matrixTransformations = matrixTransformations;
-    this.rgbMatrices = rgbMatrices;
     this.useHdr = useHdr;
 
     transformationMatrixCache = new float[matrixTransformations.size()][16];
-    rgbMatrixCache = new float[rgbMatrices.size()][16];
     compositeTransformationMatrixArray = GlUtil.create4x4IdentityMatrix();
     compositeRgbMatrixArray = GlUtil.create4x4IdentityMatrix();
     tempResultMatrix = new float[16];
@@ -246,7 +233,6 @@ import java.util.List;
 
   @Override
   public void drawFrame(int inputTexId, long presentationTimeUs) throws FrameProcessingException {
-    updateCompositeRgbaMatrixArray(presentationTimeUs);
     updateCompositeTransformationMatrixAndVisiblePolygon(presentationTimeUs);
     if (visiblePolygon.size() < 3) {
       return; // Need at least three visible vertices for a triangle.
@@ -328,34 +314,6 @@ import java.util.List;
         compositeTransformationMatrixArray,
         /* mOffset= */ 0);
     visiblePolygon = MatrixUtils.transformPoints(tempResultMatrix, visiblePolygon);
-  }
-
-  /** Updates {@link #compositeRgbMatrixArray} based on the given frame timestamp. */
-  private void updateCompositeRgbaMatrixArray(long presentationTimeUs) {
-    float[][] matricesCurrTimestamp = new float[rgbMatrices.size()][16];
-    for (int i = 0; i < rgbMatrices.size(); i++) {
-      matricesCurrTimestamp[i] = rgbMatrices.get(i).getMatrix(presentationTimeUs, useHdr);
-    }
-
-    if (!updateMatrixCache(rgbMatrixCache, matricesCurrTimestamp)) {
-      return;
-    }
-
-    for (int i = 0; i < rgbMatrices.size(); i++) {
-      Matrix.multiplyMM(
-          /* result= */ tempResultMatrix,
-          /* resultOffset= */ 0,
-          /* lhs= */ rgbMatrices.get(i).getMatrix(presentationTimeUs, useHdr),
-          /* lhsOffset= */ 0,
-          /* rhs= */ compositeRgbMatrixArray,
-          /* rhsOffset= */ 0);
-      System.arraycopy(
-          /* src= */ tempResultMatrix,
-          /* srcPos= */ 0,
-          /* dest= */ compositeRgbMatrixArray,
-          /* destPost= */ 0,
-          /* length= */ tempResultMatrix.length);
-    }
   }
 
   /**

@@ -39,7 +39,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
   private final Context context;
   private final ImmutableList<GlMatrixTransformation> matrixTransformations;
-  private final ImmutableList<RgbMatrix> rgbMatrices;
   private final EGLDisplay eglDisplay;
   private final EGLContext eglContext;
   private final DebugViewProvider debugViewProvider;
@@ -74,7 +73,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
       EGLDisplay eglDisplay,
       EGLContext eglContext,
       ImmutableList<GlMatrixTransformation> matrixTransformations,
-      ImmutableList<RgbMatrix> rgbMatrices,
       FrameProcessor.Listener frameProcessorListener,
       DebugViewProvider debugViewProvider,
       boolean sampleFromExternalTexture,
@@ -82,7 +80,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
       boolean releaseFramesAutomatically) {
     this.context = context;
     this.matrixTransformations = matrixTransformations;
-    this.rgbMatrices = rgbMatrices;
     this.eglDisplay = eglDisplay;
     this.eglContext = eglContext;
     this.debugViewProvider = debugViewProvider;
@@ -341,11 +338,11 @@ import java.util.concurrent.ConcurrentLinkedQueue;
     if (sampleFromExternalTexture) {
       matrixTextureProcessor =
           MatrixTextureProcessor.createWithExternalSamplerApplyingEotfThenOetf(
-              context, expandedMatrixTransformations, rgbMatrices, colorInfo);
+              context, expandedMatrixTransformations, colorInfo);
     } else {
       matrixTextureProcessor =
           MatrixTextureProcessor.createApplyingOetf(
-              context, expandedMatrixTransformations, rgbMatrices, colorInfo);
+              context, expandedMatrixTransformations, colorInfo);
     }
 
     matrixTextureProcessor.setTextureTransformMatrix(textureTransformMatrix);
