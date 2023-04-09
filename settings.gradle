@@ -16,3 +16,4 @@ dependencyResolutionManagement {
 include ':app', 'OpenCVLibrary320'
 include ':BeautyFilter'
 //include ':medialibrary'
+include ':videoedit'
