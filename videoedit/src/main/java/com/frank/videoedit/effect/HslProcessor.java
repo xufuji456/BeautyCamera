@@ -14,7 +14,7 @@ import java.io.IOException;
 
 /** Applies the {@link HslAdjustment} to each frame in the fragment shader. */
 /* package */ final class HslProcessor extends SingleFrameGlTextureProcessor {
-  private static final String VERTEX_SHADER_PATH = "shaders/vertex_shader_transform_es2.glsl";
+  private static final String VERTEX_SHADER_PATH = "shaders/vertex_transform_es2.glsl";
   private static final String FRAGMENT_SHADER_PATH = "shaders/fragment_hsl_es2.glsl";
 
   private final GlProgram glProgram;

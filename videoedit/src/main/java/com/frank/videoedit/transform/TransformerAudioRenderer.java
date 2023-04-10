@@ -71,7 +71,7 @@ import com.google.android.exoplayer2.source.SampleStream.ReadDataResult;
               fallbackListener);
     } else {
       samplePipeline =
-          new AudioTranscodingSamplePipeline(
+          new AudioTranscodeSamplePipeline(
               inputFormat,
               streamOffsetUs,
               streamStartPositionUs,

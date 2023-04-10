@@ -78,7 +78,7 @@ import com.google.common.collect.ImmutableList;
     Format inputFormat = checkNotNull(formatHolder.format);
     if (shouldTranscode(inputFormat)) {
       samplePipeline =
-          new VideoTranscodingSamplePipeline(
+          new VideoTranscodeSamplePipeline(
               context,
               inputFormat,
               streamOffsetUs,

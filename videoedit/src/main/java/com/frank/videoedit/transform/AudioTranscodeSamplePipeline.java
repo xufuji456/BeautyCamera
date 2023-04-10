@@ -18,7 +18,7 @@ import java.nio.ByteBuffer;
 /**
  * Pipeline to decode audio samples, apply transformations on the raw samples, and re-encode them.
  */
-/* package */ final class AudioTranscodingSamplePipeline extends BaseSamplePipeline {
+/* package */ final class AudioTranscodeSamplePipeline extends BaseSamplePipeline {
 
   private static final int DEFAULT_ENCODER_BITRATE = 128 * 1024;
 
@@ -37,7 +37,7 @@ import java.nio.ByteBuffer;
   private long nextEncoderInputBufferTimeUs;
   private long encoderBufferDurationRemainder;
 
-  public AudioTranscodingSamplePipeline(
+  public AudioTranscodeSamplePipeline(
       Format inputFormat,
       long streamOffsetUs,
       long streamStartPositionUs,

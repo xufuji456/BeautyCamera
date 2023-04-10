@@ -5,7 +5,7 @@ import android.os.Build;
 import com.google.android.exoplayer2.util.Util;
 
 /** Provides encoder bitrates that should target 0.95 SSIM or higher, accounting for device used. */
-public class DeviceMappedEncoderBitrateProvider implements EncoderBitrateProvider {
+public class DeviceEncoderBitrateProvider implements EncoderBitrateProvider {
 
   @Override
   public int getBitrate(String encoderName, int width, int height, float frameRate) {

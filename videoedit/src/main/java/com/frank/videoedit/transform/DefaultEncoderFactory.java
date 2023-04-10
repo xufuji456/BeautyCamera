@@ -195,7 +195,7 @@ public final class DefaultEncoderFactory implements Codec.EncoderFactory {
 
     if (supportedVideoEncoderSettings.enableHighQualityTargeting) {
       int bitrate =
-          new DeviceMappedEncoderBitrateProvider()
+          new DeviceEncoderBitrateProvider()
               .getBitrate(
                   encoderInfo.getName(),
                   encoderSupportedFormat.width,

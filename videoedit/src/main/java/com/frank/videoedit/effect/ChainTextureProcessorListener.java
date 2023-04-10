@@ -12,7 +12,7 @@ import com.frank.videoedit.effect.GlTextureProcessor.OutputListener;
 import java.util.ArrayDeque;
 import java.util.Queue;
 
-/* package */ final class ChainingGlTextureProcessorListener
+/* package */ final class ChainTextureProcessorListener
     implements InputListener, OutputListener {
 
   private final GlTextureProcessor producingGlTextureProcessor;
@@ -25,7 +25,7 @@ import java.util.Queue;
   @GuardedBy("this")
   private int consumingGlTextureProcessorInputCapacity;
 
-  public ChainingGlTextureProcessorListener(
+  public ChainTextureProcessorListener(
       GlTextureProcessor producingGlTextureProcessor,
       GlTextureProcessor consumingGlTextureProcessor,
       FrameProcessingTaskExecutor frameProcessingTaskExecutor) {

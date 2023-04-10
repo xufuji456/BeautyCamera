@@ -162,7 +162,7 @@ public final class GlEffectsFrameProcessor implements FrameProcessor {
     }
 
     textureProcessorListBuilder.add(
-        new FinalMatrixTextureProcessorWrapper(
+        new MatrixTextureProcessorWrapper(
             context,
             eglDisplay,
             eglContext,
@@ -182,8 +182,8 @@ public final class GlEffectsFrameProcessor implements FrameProcessor {
     for (int i = 0; i < textureProcessors.size() - 1; i++) {
       GlTextureProcessor producingGlTextureProcessor = textureProcessors.get(i);
       GlTextureProcessor consumingGlTextureProcessor = textureProcessors.get(i + 1);
-      ChainingGlTextureProcessorListener chainingGlTextureProcessorListener =
-          new ChainingGlTextureProcessorListener(
+      ChainTextureProcessorListener chainingGlTextureProcessorListener =
+          new ChainTextureProcessorListener(
               producingGlTextureProcessor,
               consumingGlTextureProcessor,
               frameProcessingTaskExecutor);
@@ -202,7 +202,7 @@ public final class GlEffectsFrameProcessor implements FrameProcessor {
   private final ExternalTextureManager inputExternalTextureManager;
   private final Surface inputSurface;
   private final boolean releaseFramesAutomatically;
-  private final FinalMatrixTextureProcessorWrapper finalTextureProcessorWrapper;
+  private final MatrixTextureProcessorWrapper finalTextureProcessorWrapper;
   private final ImmutableList<GlTextureProcessor> allTextureProcessors;
 
   private FrameInfo nextInputFrameInfo;
@@ -228,14 +228,14 @@ public final class GlEffectsFrameProcessor implements FrameProcessor {
 
     checkState(!textureProcessors.isEmpty());
     checkState(textureProcessors.get(0) instanceof ExternalTextureProcessor);
-    checkState(getLast(textureProcessors) instanceof FinalMatrixTextureProcessorWrapper);
+    checkState(getLast(textureProcessors) instanceof MatrixTextureProcessorWrapper);
     ExternalTextureProcessor inputExternalTextureProcessor =
         (ExternalTextureProcessor) textureProcessors.get(0);
     inputExternalTextureManager =
         new ExternalTextureManager(inputExternalTextureProcessor, frameProcessingTaskExecutor);
     inputExternalTextureProcessor.setInputListener(inputExternalTextureManager);
     inputSurface = new Surface(inputExternalTextureManager.getSurfaceTexture());
-    finalTextureProcessorWrapper = (FinalMatrixTextureProcessorWrapper) getLast(textureProcessors);
+    finalTextureProcessorWrapper = (MatrixTextureProcessorWrapper) getLast(textureProcessors);
     allTextureProcessors = textureProcessors;
     previousStreamOffsetUs = C.TIME_UNSET;
   }

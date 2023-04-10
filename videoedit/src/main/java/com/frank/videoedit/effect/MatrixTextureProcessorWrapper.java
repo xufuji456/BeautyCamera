@@ -33,7 +33,7 @@ import com.google.common.collect.ImmutableList;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-/* package */ final class FinalMatrixTextureProcessorWrapper implements ExternalTextureProcessor {
+/* package */ final class MatrixTextureProcessorWrapper implements ExternalTextureProcessor {
 
   private static final String TAG = "FinalProcessorWrapper";
 
@@ -68,7 +68,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
   @Nullable
   private EGLSurface outputEglSurface;
 
-  public FinalMatrixTextureProcessorWrapper(
+  public MatrixTextureProcessorWrapper(
       Context context,
       EGLDisplay eglDisplay,
       EGLContext eglContext,

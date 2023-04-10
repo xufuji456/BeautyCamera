@@ -25,9 +25,9 @@ import java.util.List;
     implements ExternalTextureProcessor {
 
   private static final String VERTEX_SHADER_TRANSFORMATION_PATH =
-          "shaders/vertex_shader_transform_es2.glsl";
+          "shaders/vertex_transform_es2.glsl";
   private static final String VERTEX_SHADER_TRANSFORMATION_ES3_PATH =
-          "shaders/vertex_shader_transform_es3.glsl";
+          "shaders/vertex_transform_es3.glsl";
   private static final String FRAGMENT_SHADER_TRANSFORMATION_PATH =
           "shaders/fragment_transform_es2.glsl";
   private static final String FRAGMENT_SHADER_OETF_ES3_PATH =

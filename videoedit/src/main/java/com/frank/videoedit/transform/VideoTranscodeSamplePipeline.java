@@ -35,7 +35,7 @@ import java.util.List;
 /**
  * Pipeline to decode video samples, apply transformations on the raw samples, and re-encode them.
  */
-/* package */ final class VideoTranscodingSamplePipeline extends BaseSamplePipeline {
+/* package */ final class VideoTranscodeSamplePipeline extends BaseSamplePipeline {
 
   private final int maxPendingFrameCount;
 
@@ -48,7 +48,7 @@ import java.util.List;
   private final EncoderWrapper encoderWrapper;
   private final DecoderInputBuffer encoderOutputBuffer;
 
-  public VideoTranscodingSamplePipeline(
+  public VideoTranscodeSamplePipeline(
       Context context,
       Format inputFormat,
       long streamOffsetUs,
