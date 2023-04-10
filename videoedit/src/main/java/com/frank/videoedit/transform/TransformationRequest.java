@@ -11,8 +11,6 @@ public final class TransformationRequest {
   /** A builder for {@link TransformationRequest} instances. */
   public static final class Builder {
 
-    private float scaleX;
-    private float scaleY;
     private float rotationDegrees;
     private int outputHeight;
     @Nullable private String audioMimeType;
@@ -28,14 +26,10 @@ public final class TransformationRequest {
      * {@link TransformationRequest}.
      */
     public Builder() {
-      scaleX = 1;
-      scaleY = 1;
       outputHeight = C.LENGTH_UNSET;
     }
 
     private Builder(TransformationRequest transformationRequest) {
-      this.scaleX = transformationRequest.scaleX;
-      this.scaleY = transformationRequest.scaleY;
       this.rotationDegrees = transformationRequest.rotationDegrees;
       this.outputHeight = transformationRequest.outputHeight;
       this.audioMimeType = transformationRequest.audioMimeType;
@@ -43,23 +37,6 @@ public final class TransformationRequest {
       this.enableRequestSdrToneMapping = transformationRequest.enableRequestSdrToneMapping;
       this.forceInterpretHdrVideoAsSdr = transformationRequest.forceInterpretHdrVideoAsSdr;
       this.enableHdrEditing = transformationRequest.enableHdrEditing;
-    }
-
-    /**
-     * Sets the x and y axis scaling factors to apply to each frame's width and height, stretching
-     * the video along these axes appropriately.
-     *
-     * <p>The default value for {@code scaleX} and {@code scaleY}, 1, corresponds to not scaling
-     * along the x and y axes, respectively.
-     *
-     * @param scaleX The multiplier by which the frame will scale horizontally, along the x-axis.
-     * @param scaleY The multiplier by which the frame will scale vertically, along the y-axis.
-     * @return This builder.
-     */
-    public Builder setScale(float scaleX, float scaleY) {
-      this.scaleX = scaleX;
-      this.scaleY = scaleY;
-      return this;
     }
 
     /**
@@ -86,10 +63,6 @@ public final class TransformationRequest {
      * other transformations.
      *
      * <p>For example, a 1920x1440 video can be scaled to 640x480 by calling setResolution(480).
-     *
-     * <p>The default value, {@link C#LENGTH_UNSET}, leaves the width and height unchanged unless
-     * {@linkplain #setScale(float,float) scaling} or @linkplain #setRotationDegrees(float)
-     * rotation} are requested.
      *
      * @param outputHeight The output height of the displayed video, in pixels.
      * @return This builder.
@@ -236,8 +209,6 @@ public final class TransformationRequest {
     /** Builds a {@link TransformationRequest} instance. */
     public TransformationRequest build() {
       return new TransformationRequest(
-          scaleX,
-          scaleY,
           rotationDegrees,
           outputHeight,
           audioMimeType,
@@ -248,20 +219,6 @@ public final class TransformationRequest {
     }
   }
 
-  /**
-   * The requested scale factor, on the x-axis, of the output video, or 1 if inferred from the
-   * input.
-   *
-   * @see Builder#setScale(float, float)
-   */
-  public final float scaleX;
-  /**
-   * The requested scale factor, on the y-axis, of the output video, or 1 if inferred from the
-   * input.
-   *
-   * @see Builder#setScale(float, float)
-   */
-  public final float scaleY;
   /**
    * The requested rotation, in degrees, of the output video, or 0 if inferred from the input.
    *
@@ -302,8 +259,6 @@ public final class TransformationRequest {
   public final boolean enableHdrEditing;
 
   private TransformationRequest(
-      float scaleX,
-      float scaleY,
       float rotationDegrees,
       int outputHeight,
       @Nullable String audioMimeType,
@@ -312,8 +267,6 @@ public final class TransformationRequest {
       boolean forceInterpretHdrVideoAsSdr,
       boolean enableHdrEditing) {
 
-    this.scaleX                      = scaleX;
-    this.scaleY                      = scaleY;
     this.rotationDegrees             = rotationDegrees;
     this.outputHeight                = outputHeight;
     this.audioMimeType               = audioMimeType;

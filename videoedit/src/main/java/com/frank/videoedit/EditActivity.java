@@ -1,7 +1,6 @@
 package com.frank.videoedit;
 
 import static com.google.android.exoplayer2.util.Assertions.checkNotNull;
-import static com.google.android.exoplayer2.util.Assertions.checkState;
 
 import android.Manifest;
 import android.content.DialogInterface;
@@ -31,18 +30,13 @@ import com.google.android.exoplayer2.util.Util;
 import com.google.android.material.slider.RangeSlider;
 import com.google.android.material.slider.Slider;
 
-import java.util.Arrays;
 import java.util.List;
 
 public class EditActivity extends AppCompatActivity {
 
-    public static final String SHOULD_REMOVE_AUDIO = "should_remove_audio";
-    public static final String SHOULD_REMOVE_VIDEO = "should_remove_video";
     public static final String AUDIO_MIME_TYPE = "audio_mime_type";
     public static final String VIDEO_MIME_TYPE = "video_mime_type";
     public static final String RESOLUTION_HEIGHT = "resolution_height";
-    public static final String SCALE_X = "scale_x";
-    public static final String SCALE_Y = "scale_y";
     public static final String ROTATE_DEGREES = "rotate_degrees";
     public static final String ENABLE_FALLBACK = "enable_fallback";
     public static final String ENABLE_DEBUG_PREVIEW = "enable_debug_preview";
@@ -103,11 +97,9 @@ public class EditActivity extends AppCompatActivity {
     private Button selectPresetFileButton;
     private Button selectLocalFileButton;
     private TextView selectedFileTextView;
-    private CheckBox flattenForSlowMotionCheckbox;
     private Spinner audioMimeSpinner;
     private Spinner videoMimeSpinner;
     private Spinner resolutionHeightSpinner;
-    private Spinner scaleSpinner;
     private CheckBox enableFallbackCheckBox;
     private CheckBox enableDebugPreviewCheckBox;
     private CheckBox enableRequestSdrToneMappingCheckBox;
@@ -169,13 +161,6 @@ public class EditActivity extends AppCompatActivity {
         resolutionHeightAdapter.addAll(
                 SAME_AS_INPUT_OPTION, "144", "240", "360", "480", "720", "1080", "1440", "2160");
 
-        ArrayAdapter<String> scaleAdapter =
-                new ArrayAdapter<>(/* context= */ this, R.layout.spinner_item);
-        scaleAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        scaleSpinner = findViewById(R.id.scale_spinner);
-        scaleSpinner.setAdapter(scaleAdapter);
-        scaleAdapter.addAll(SAME_AS_INPUT_OPTION, "-1, -1", "-1, 1", "1, 1", ".5, 1", ".5, .5", "2, 2");
-
         enableFallbackCheckBox = findViewById(R.id.enable_fallback_checkbox);
         enableDebugPreviewCheckBox = findViewById(R.id.enable_debug_preview_checkbox);
         enableRequestSdrToneMappingCheckBox = findViewById(R.id.request_sdr_tone_mapping_checkbox);
@@ -231,8 +216,6 @@ public class EditActivity extends AppCompatActivity {
     private void startTransformation(View view) {
         Intent transformerIntent = new Intent(/* packageContext= */ this, TransformerActivity.class);
         Bundle bundle = new Bundle();
-        bundle.putBoolean(SHOULD_REMOVE_AUDIO, false);
-        bundle.putBoolean(SHOULD_REMOVE_VIDEO, false);
         String selectedAudioMimeType = String.valueOf(audioMimeSpinner.getSelectedItem());
         if (!SAME_AS_INPUT_OPTION.equals(selectedAudioMimeType)) {
             bundle.putString(AUDIO_MIME_TYPE, selectedAudioMimeType);
@@ -244,13 +227,6 @@ public class EditActivity extends AppCompatActivity {
         String selectedResolutionHeight = String.valueOf(resolutionHeightSpinner.getSelectedItem());
         if (!SAME_AS_INPUT_OPTION.equals(selectedResolutionHeight)) {
             bundle.putInt(RESOLUTION_HEIGHT, Integer.parseInt(selectedResolutionHeight));
-        }
-        String selectedScale = String.valueOf(scaleSpinner.getSelectedItem());
-        if (!SAME_AS_INPUT_OPTION.equals(selectedScale)) {
-            List<String> scaleXY = Arrays.asList(selectedScale.split(", "));
-            checkState(scaleXY.size() == 2);
-            bundle.putFloat(SCALE_X, Float.parseFloat(scaleXY.get(0)));
-            bundle.putFloat(SCALE_Y, Float.parseFloat(scaleXY.get(1)));
         }
         bundle.putFloat(ROTATE_DEGREES, 0.0f);
         bundle.putBoolean(ENABLE_FALLBACK, enableFallbackCheckBox.isChecked());

@@ -105,12 +105,9 @@ import java.util.List;
 
     ImmutableList.Builder<Effect> effectsListBuilder =
         new ImmutableList.Builder<Effect>().addAll(effects);
-    if (transformationRequest.scaleX != 1f
-        || transformationRequest.scaleY != 1f
-        || transformationRequest.rotationDegrees != 0f) {
+    if (transformationRequest.rotationDegrees != 0f) {
       effectsListBuilder.add(
           new ScaleToFitTransformation.Builder()
-              .setScale(transformationRequest.scaleX, transformationRequest.scaleY)
               .setRotationDegrees(transformationRequest.rotationDegrees)
               .build());
     }

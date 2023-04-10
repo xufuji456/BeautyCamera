@@ -67,8 +67,6 @@ public final class Transformer {
     // Optional fields.
     private TransformationRequest transformationRequest;
     private ImmutableList<Effect> videoEffects;
-    private boolean removeAudio;
-    private boolean removeVideo;
     private ListenerSet<Listener> listeners;
     private MediaSource.Factory mediaSourceFactory;
     private Codec.DecoderFactory decoderFactory;
@@ -103,8 +101,6 @@ public final class Transformer {
       this.context = transformer.context;
       this.transformationRequest = transformer.transformationRequest;
       this.videoEffects = transformer.videoEffects;
-      this.removeAudio = transformer.removeAudio;
-      this.removeVideo = transformer.removeVideo;
       this.listeners = transformer.listeners;
       this.mediaSourceFactory = transformer.mediaSourceFactory;
       this.decoderFactory = transformer.decoderFactory;
@@ -123,16 +119,6 @@ public final class Transformer {
 
     public Builder setVideoEffects(List<Effect> effects) {
       this.videoEffects = ImmutableList.copyOf(effects);
-      return this;
-    }
-
-    public Builder setRemoveAudio(boolean removeAudio) {
-      this.removeAudio = removeAudio;
-      return this;
-    }
-
-    public Builder setRemoveVideo(boolean removeVideo) {
-      this.removeVideo = removeVideo;
       return this;
     }
 
@@ -226,8 +212,6 @@ public final class Transformer {
           context,
           transformationRequest,
           videoEffects,
-          removeAudio,
-          removeVideo,
           listeners,
           mediaSourceFactory,
           decoderFactory,
@@ -309,14 +293,12 @@ public final class Transformer {
   /** Indicates that there is no current transformation. */
   public static final int PROGRESS_STATE_NO_TRANSFORMATION = 4;
 
-  @VisibleForTesting /* package */ final Codec.DecoderFactory decoderFactory;
-  @VisibleForTesting /* package */ final Codec.EncoderFactory encoderFactory;
+  @VisibleForTesting final Codec.DecoderFactory decoderFactory;
+  @VisibleForTesting final Codec.EncoderFactory encoderFactory;
 
   private final Context context;
   private final TransformationRequest transformationRequest;
   private final ImmutableList<Effect> videoEffects;
-  private final boolean removeAudio;
-  private final boolean removeVideo;
   private final ListenerSet<Listener> listeners;
   private final MediaSource.Factory mediaSourceFactory;
   private final FrameProcessor.Factory frameProcessorFactory;
@@ -336,8 +318,6 @@ public final class Transformer {
       Context context,
       TransformationRequest transformationRequest,
       ImmutableList<Effect> videoEffects,
-      boolean removeAudio,
-      boolean removeVideo,
       ListenerSet<Listener> listeners,
       MediaSource.Factory mediaSourceFactory,
       Codec.DecoderFactory decoderFactory,
@@ -347,12 +327,9 @@ public final class Transformer {
       Looper looper,
       DebugViewProvider debugViewProvider,
       Clock clock) {
-    checkState(!removeAudio || !removeVideo, "Audio and video cannot both be removed.");
     this.context = context;
     this.transformationRequest = transformationRequest;
     this.videoEffects = videoEffects;
-    this.removeAudio = removeAudio;
-    this.removeVideo = removeVideo;
     this.listeners = listeners;
     this.mediaSourceFactory = mediaSourceFactory;
     this.decoderFactory = decoderFactory;
@@ -367,8 +344,6 @@ public final class Transformer {
             context,
             transformationRequest,
             videoEffects,
-            removeAudio,
-            removeVideo,
             mediaSourceFactory,
             decoderFactory,
             encoderFactory,

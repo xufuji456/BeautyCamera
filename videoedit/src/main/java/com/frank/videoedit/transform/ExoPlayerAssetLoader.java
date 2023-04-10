@@ -51,8 +51,6 @@ import com.google.common.collect.ImmutableList;
   private final Context context;
   private final TransformationRequest transformationRequest;
   private final ImmutableList<Effect> videoEffects;
-  private final boolean removeAudio;
-  private final boolean removeVideo;
   private final MediaSource.Factory mediaSourceFactory;
   private final Codec.DecoderFactory decoderFactory;
   private final Codec.EncoderFactory encoderFactory;
@@ -69,8 +67,6 @@ import com.google.common.collect.ImmutableList;
       Context context,
       TransformationRequest transformationRequest,
       ImmutableList<Effect> videoEffects,
-      boolean removeAudio,
-      boolean removeVideo,
       MediaSource.Factory mediaSourceFactory,
       Codec.DecoderFactory decoderFactory,
       Codec.EncoderFactory encoderFactory,
@@ -81,8 +77,6 @@ import com.google.common.collect.ImmutableList;
     this.context = context;
     this.transformationRequest = transformationRequest;
     this.videoEffects = videoEffects;
-    this.removeAudio = removeAudio;
-    this.removeVideo = removeVideo;
     this.mediaSourceFactory = mediaSourceFactory;
     this.decoderFactory = decoderFactory;
     this.encoderFactory = encoderFactory;
@@ -122,8 +116,6 @@ import com.google.common.collect.ImmutableList;
                 new RenderersFactoryImpl(
                     context,
                     muxerWrapper,
-                    removeAudio,
-                    removeVideo,
                     transformationRequest,
                     mediaItem.clippingConfiguration.startsAtKeyFrame,
                     videoEffects,
@@ -175,8 +167,6 @@ import com.google.common.collect.ImmutableList;
     private final Context context;
     private final MuxerWrapper muxerWrapper;
     private final TransformerMediaClock mediaClock;
-    private final boolean removeAudio;
-    private final boolean removeVideo;
     private final TransformationRequest transformationRequest;
     private final boolean clippingStartsAtKeyFrame;
     private final ImmutableList<Effect> videoEffects;
@@ -190,8 +180,6 @@ import com.google.common.collect.ImmutableList;
     public RenderersFactoryImpl(
         Context context,
         MuxerWrapper muxerWrapper,
-        boolean removeAudio,
-        boolean removeVideo,
         TransformationRequest transformationRequest,
         boolean clippingStartsAtKeyFrame,
         ImmutableList<Effect> videoEffects,
@@ -203,8 +191,6 @@ import com.google.common.collect.ImmutableList;
         DebugViewProvider debugViewProvider) {
       this.context = context;
       this.muxerWrapper = muxerWrapper;
-      this.removeAudio = removeAudio;
-      this.removeVideo = removeVideo;
       this.transformationRequest = transformationRequest;
       this.clippingStartsAtKeyFrame = clippingStartsAtKeyFrame;
       this.videoEffects = videoEffects;
@@ -224,38 +210,31 @@ import com.google.common.collect.ImmutableList;
         AudioRendererEventListener audioRendererEventListener,
         TextOutput textRendererOutput,
         MetadataOutput metadataRendererOutput) {
-      int rendererCount = removeAudio || removeVideo ? 1 : 2;
+      int rendererCount = 2;
       Renderer[] renderers = new Renderer[rendererCount];
-      int index = 0;
-      if (!removeAudio) {
-        renderers[index] =
-            new TransformerAudioRenderer(
-                muxerWrapper,
-                mediaClock,
-                transformationRequest,
-                encoderFactory,
-                decoderFactory,
-                asyncErrorListener,
-                fallbackListener);
-        index++;
-      }
-      if (!removeVideo) {
-        renderers[index] =
-            new TransformerVideoRenderer(
-                context,
-                muxerWrapper,
-                mediaClock,
-                transformationRequest,
-                clippingStartsAtKeyFrame,
-                videoEffects,
-                frameProcessorFactory,
-                encoderFactory,
-                decoderFactory,
-                asyncErrorListener,
-                fallbackListener,
-                debugViewProvider);
-        index++;
-      }
+      renderers[0] =
+          new TransformerAudioRenderer(
+              muxerWrapper,
+              mediaClock,
+              transformationRequest,
+              encoderFactory,
+              decoderFactory,
+              asyncErrorListener,
+              fallbackListener);
+      renderers[1] =
+          new TransformerVideoRenderer(
+              context,
+              muxerWrapper,
+              mediaClock,
+              transformationRequest,
+              clippingStartsAtKeyFrame,
+              videoEffects,
+              frameProcessorFactory,
+              encoderFactory,
+              decoderFactory,
+              asyncErrorListener,
+              fallbackListener,
+              debugViewProvider);
       return renderers;
     }
   }

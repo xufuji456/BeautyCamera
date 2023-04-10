@@ -106,17 +106,6 @@
             android:gravity="right" />
       </TableRow>
       <TableRow
-          android:layout_weight="1"
-          android:gravity="center_vertical" >
-        <TextView
-            android:id="@+id/scale"
-            android:text="@string/scale"/>
-        <Spinner
-            android:id="@+id/scale_spinner"
-            android:layout_gravity="right|center_vertical"
-            android:gravity="right" />
-      </TableRow>
-      <TableRow
         android:layout_weight="1">
         <TextView
           android:layout_gravity="center_vertical"

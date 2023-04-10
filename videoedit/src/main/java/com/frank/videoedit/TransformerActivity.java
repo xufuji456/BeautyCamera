@@ -205,10 +205,6 @@ public final class TransformerActivity extends AppCompatActivity {
         requestBuilder.setResolution(resolutionHeight);
       }
 
-      float scaleX = bundle.getFloat(EditActivity.SCALE_X,  1);
-      float scaleY = bundle.getFloat(EditActivity.SCALE_Y,  1);
-      requestBuilder.setScale(scaleX, scaleY);
-
       float rotateDegrees =
           bundle.getFloat(EditActivity.ROTATE_DEGREES,  0);
       requestBuilder.setRotationDegrees(rotateDegrees);
@@ -221,8 +217,6 @@ public final class TransformerActivity extends AppCompatActivity {
           bundle.getBoolean(EditActivity.ENABLE_HDR_EDITING));
       transformerBuilder
           .setTransformationRequest(requestBuilder.build())
-          .setRemoveAudio(bundle.getBoolean(EditActivity.SHOULD_REMOVE_AUDIO))
-          .setRemoveVideo(bundle.getBoolean(EditActivity.SHOULD_REMOVE_VIDEO))
           .setEncoderFactory(
               new DefaultEncoderFactory.Builder(this.getApplicationContext())
                   .setEnableFallback(bundle.getBoolean(EditActivity.ENABLE_FALLBACK))
