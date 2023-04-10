@@ -38,7 +38,6 @@ public class EditActivity extends AppCompatActivity {
     public static final String VIDEO_MIME_TYPE = "video_mime_type";
     public static final String RESOLUTION_HEIGHT = "resolution_height";
     public static final String ENABLE_FALLBACK = "enable_fallback";
-    public static final String ENABLE_DEBUG_PREVIEW = "enable_debug_preview";
     public static final String ENABLE_REQUEST_SDR_TONE_MAPPING = "enable_request_sdr_tone_mapping";
     public static final String FORCE_INTERPRET_HDR_VIDEO_AS_SDR = "force_interpret_hdr_video_as_sdr";
     public static final String ENABLE_HDR_EDITING = "enable_hdr_editing";
@@ -100,7 +99,6 @@ public class EditActivity extends AppCompatActivity {
     private Spinner videoMimeSpinner;
     private Spinner resolutionHeightSpinner;
     private CheckBox enableFallbackCheckBox;
-    private CheckBox enableDebugPreviewCheckBox;
     private CheckBox enableRequestSdrToneMappingCheckBox;
     private CheckBox forceInterpretHdrVideoAsSdrCheckBox;
     private CheckBox enableHdrEditingCheckBox;
@@ -161,7 +159,6 @@ public class EditActivity extends AppCompatActivity {
                 SAME_AS_INPUT_OPTION, "144", "240", "360", "480", "720", "1080", "1440", "2160");
 
         enableFallbackCheckBox = findViewById(R.id.enable_fallback_checkbox);
-        enableDebugPreviewCheckBox = findViewById(R.id.enable_debug_preview_checkbox);
         enableRequestSdrToneMappingCheckBox = findViewById(R.id.request_sdr_tone_mapping_checkbox);
         enableRequestSdrToneMappingCheckBox.setEnabled(isRequestSdrToneMappingSupported());
         findViewById(R.id.request_sdr_tone_mapping).setEnabled(isRequestSdrToneMappingSupported());
@@ -228,7 +225,6 @@ public class EditActivity extends AppCompatActivity {
             bundle.putInt(RESOLUTION_HEIGHT, Integer.parseInt(selectedResolutionHeight));
         }
         bundle.putBoolean(ENABLE_FALLBACK, enableFallbackCheckBox.isChecked());
-        bundle.putBoolean(ENABLE_DEBUG_PREVIEW, enableDebugPreviewCheckBox.isChecked());
         bundle.putBoolean(
                 ENABLE_REQUEST_SDR_TONE_MAPPING, enableRequestSdrToneMappingCheckBox.isChecked());
         bundle.putBoolean(

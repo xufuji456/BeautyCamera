@@ -3,7 +3,6 @@ package com.frank.videoedit;
 
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static com.google.android.exoplayer2.util.Assertions.checkNotNull;
-import static com.google.android.exoplayer2.util.Assertions.checkState;
 
 import android.app.Activity;
 import android.content.Context;
@@ -12,8 +11,6 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -35,10 +32,8 @@ import com.frank.videoedit.transform.Transformer;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
-import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.google.android.exoplayer2.ui.StyledPlayerView;
 import com.google.android.exoplayer2.util.DebugTextViewHelper;
-import com.google.android.exoplayer2.util.DebugViewProvider;
 import com.google.android.exoplayer2.util.Effect;
 import com.google.android.exoplayer2.util.Log;
 import com.google.android.exoplayer2.util.Util;
@@ -50,7 +45,6 @@ import com.google.common.collect.ImmutableList;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 /** An {@link Activity} that transforms and plays media using {@link Transformer}. */
@@ -66,7 +60,6 @@ public final class TransformerActivity extends AppCompatActivity {
   private ViewGroup progressViewGroup;
   private LinearProgressIndicator progressIndicator;
   private Stopwatch transformationStopwatch;
-  private AspectRatioFrameLayout debugFrame;
 
   @Nullable private DebugTextViewHelper debugTextViewHelper;
   @Nullable private ExoPlayer inputPlayer;
@@ -86,7 +79,6 @@ public final class TransformerActivity extends AppCompatActivity {
     informationTextView = findViewById(R.id.information_text_view);
     progressViewGroup = findViewById(R.id.progress_view_group);
     progressIndicator = findViewById(R.id.progress_indicator);
-    debugFrame = findViewById(R.id.debug_aspect_ratio_frame_layout);
     displayInputButton = findViewById(R.id.display_input_button);
     displayInputButton.setOnClickListener(this::toggleInputVideoDisplay);
 
@@ -112,7 +104,6 @@ public final class TransformerActivity extends AppCompatActivity {
     checkNotNull(outputPlayerView);
     checkNotNull(debugTextView);
     checkNotNull(progressViewGroup);
-    checkNotNull(debugFrame);
     checkNotNull(displayInputButton);
     startTransformation();
 
@@ -219,10 +210,6 @@ public final class TransformerActivity extends AppCompatActivity {
                   .build());
 
       transformerBuilder.setVideoEffects(createVideoEffectsListFromBundle(bundle));
-
-      if (bundle.getBoolean(EditActivity.ENABLE_DEBUG_PREVIEW)) {
-//        transformerBuilder.setDebugViewProvider(new DemoDebugViewProvider()); // TODO
-      }
     }
     return transformerBuilder
         .addListener(
@@ -301,7 +288,6 @@ public final class TransformerActivity extends AppCompatActivity {
     transformationStopwatch.stop();
     informationTextView.setText(R.string.transformation_error);
     progressViewGroup.setVisibility(View.GONE);
-    debugFrame.removeAllViews();
     Toast.makeText(getApplicationContext(), "Transformation error: " + exception, Toast.LENGTH_LONG)
         .show();
     Log.e(TAG, "Transformation error", exception);
@@ -313,7 +299,6 @@ public final class TransformerActivity extends AppCompatActivity {
         getString(
             R.string.transformation_completed, transformationStopwatch.elapsed(TimeUnit.SECONDS)));
     progressViewGroup.setVisibility(View.GONE);
-    debugFrame.removeAllViews();
     inputCardView.setVisibility(View.VISIBLE);
     outputPlayerView.setVisibility(View.VISIBLE);
     displayInputButton.setVisibility(View.VISIBLE);
@@ -383,67 +368,4 @@ public final class TransformerActivity extends AppCompatActivity {
     }
   }
 
-  private final class DemoDebugViewProvider implements DebugViewProvider {
-
-    private SurfaceView surfaceView;
-    private int width;
-    private int height;
-
-    public DemoDebugViewProvider() {
-      width = C.LENGTH_UNSET;
-      height = C.LENGTH_UNSET;
-    }
-
-    @Nullable
-    @Override
-    public SurfaceView getDebugPreviewSurfaceView(int width, int height) {
-      checkState(
-          surfaceView == null || (this.width == width && this.height == height),
-          "Transformer should not change the output size mid-transformation.");
-      if (surfaceView != null) {
-        return surfaceView;
-      }
-
-      this.width = width;
-      this.height = height;
-
-      // Update the UI on the main thread and wait for the output surface to be available.
-      CountDownLatch surfaceCreatedCountDownLatch = new CountDownLatch(1);
-      SurfaceView surfaceView = new SurfaceView(/* context= */ TransformerActivity.this);
-      runOnUiThread(
-          () -> {
-            AspectRatioFrameLayout debugFrame = checkNotNull(TransformerActivity.this.debugFrame);
-            debugFrame.addView(surfaceView);
-            debugFrame.setAspectRatio((float) width / height);
-            surfaceView
-                .getHolder()
-                .addCallback(
-                    new SurfaceHolder.Callback() {
-                      @Override
-                      public void surfaceCreated(SurfaceHolder surfaceHolder) {
-                        surfaceCreatedCountDownLatch.countDown();
-                      }
-
-                      @Override
-                      public void surfaceChanged(SurfaceHolder surfaceHolder, int format, int width, int height) {
-
-                      }
-
-                      @Override
-                      public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
-
-                      }
-                    });
-          });
-      try {
-        surfaceCreatedCountDownLatch.await();
-      } catch (InterruptedException e) {
-        Log.e(TAG, "Interrupted waiting for debug surface.");
-        Thread.currentThread().interrupt();
-        return null;
-      }
-      this.surfaceView = surfaceView;
-      return surfaceView;
-    }
-  }
 }
