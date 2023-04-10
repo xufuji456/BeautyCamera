@@ -2,7 +2,6 @@
 package com.frank.videoedit;
 
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
-import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static com.google.android.exoplayer2.util.Assertions.checkNotNull;
 
 import android.app.Activity;
@@ -38,7 +37,6 @@ import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.ui.StyledPlayerView;
 import com.google.android.exoplayer2.util.Effect;
 import com.google.android.exoplayer2.util.Log;
-import com.google.android.exoplayer2.util.Util;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.common.base.Stopwatch;
@@ -345,7 +343,7 @@ public final class TransformerActivity extends AppCompatActivity {
   }
 
   private void requestTransformerPermission() {
-    if (Util.SDK_INT < 23) {
+    if (Build.VERSION.SDK_INT < 23) {
       return;
     }
     if (checkSelfPermission(READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {

@@ -4,7 +4,6 @@ import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static com.google.android.exoplayer2.util.Assertions.checkNotNull;
 
-import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -29,7 +28,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import com.google.android.exoplayer2.util.MimeTypes;
-import com.google.android.exoplayer2.util.Util;
 import com.google.android.material.slider.RangeSlider;
 import com.google.android.material.slider.Slider;
 
@@ -149,7 +147,7 @@ public class EditActivity extends AppCompatActivity {
         videoMimeSpinner.setAdapter(videoMimeAdapter);
         videoMimeAdapter.addAll(
                 SAME_AS_INPUT_OPTION, MimeTypes.VIDEO_H263, MimeTypes.VIDEO_H264, MimeTypes.VIDEO_MP4V);
-        if (Util.SDK_INT >= 24) {
+        if (Build.VERSION.SDK_INT >= 24) {
             videoMimeAdapter.add(MimeTypes.VIDEO_H265);
         }
 
@@ -276,13 +274,13 @@ public class EditActivity extends AppCompatActivity {
     private void selectLocalFile(View view) {
         int permissionStatus =
                 ActivityCompat.checkSelfPermission(
-                        EditActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE);
+                        EditActivity.this, READ_EXTERNAL_STORAGE);
         if (permissionStatus != PackageManager.PERMISSION_GRANTED) {
             String[] neededPermissions;
             if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
                 neededPermissions = new String[]{WRITE_EXTERNAL_STORAGE};
             } else {
-                neededPermissions = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE};
+                neededPermissions = new String[]{READ_EXTERNAL_STORAGE};
             }
             ActivityCompat.requestPermissions(
                     EditActivity.this, neededPermissions, FILE_PERMISSION_REQUEST_CODE);
@@ -397,6 +395,6 @@ public class EditActivity extends AppCompatActivity {
     }
 
     private static boolean isRequestSdrToneMappingSupported() {
-        return Util.SDK_INT >= 31;
+        return Build.VERSION.SDK_INT >= 31;
     }
 }

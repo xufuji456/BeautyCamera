@@ -73,7 +73,6 @@ import com.google.common.collect.ImmutableList;
       Codec.EncoderFactory encoderFactory,
       FrameProcessor.Factory frameProcessorFactory,
       Looper looper,
-      DebugViewProvider debugViewProvider,
       Clock clock) {
     this.context = context;
     this.transformationRequest = transformationRequest;

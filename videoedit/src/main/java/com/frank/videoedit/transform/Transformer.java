@@ -27,7 +27,6 @@ import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.util.Clock;
-import com.google.android.exoplayer2.util.DebugViewProvider;
 import com.google.android.exoplayer2.util.Effect;
 import com.google.android.exoplayer2.util.ListenerSet;
 import com.google.android.exoplayer2.util.MimeTypes;
@@ -77,7 +76,6 @@ public final class Transformer {
     private FrameProcessor.Factory frameProcessorFactory;
     private Muxer.Factory muxerFactory;
     private Looper looper;
-    private DebugViewProvider debugViewProvider;
     private Clock clock;
 
     /**
@@ -94,7 +92,6 @@ public final class Transformer {
       frameProcessorFactory = new GlEffectsFrameProcessor.Factory();
       muxerFactory = new DefaultMuxer.Factory();
       looper = Util.getCurrentOrMainLooper();
-      debugViewProvider = DebugViewProvider.NONE;
       clock = Clock.DEFAULT;
       listeners = new ListenerSet<>(looper, clock, (listener, flags) -> {});
     }
@@ -111,7 +108,6 @@ public final class Transformer {
       this.frameProcessorFactory = transformer.frameProcessorFactory;
       this.muxerFactory = transformer.muxerFactory;
       this.looper = transformer.looper;
-      this.debugViewProvider = transformer.debugViewProvider;
       this.clock = transformer.clock;
     }
 
@@ -178,11 +174,6 @@ public final class Transformer {
       return this;
     }
 
-    public Builder setDebugViewProvider(DebugViewProvider debugViewProvider) {
-      this.debugViewProvider = debugViewProvider;
-      return this;
-    }
-
     @VisibleForTesting
     /* package */ Builder setClock(Clock clock) {
       this.clock = clock;
@@ -222,7 +213,6 @@ public final class Transformer {
           frameProcessorFactory,
           muxerFactory,
           looper,
-          debugViewProvider,
           clock);
     }
 
@@ -307,7 +297,6 @@ public final class Transformer {
   private final FrameProcessor.Factory frameProcessorFactory;
   private final Muxer.Factory muxerFactory;
   private final Looper looper;
-  private final DebugViewProvider debugViewProvider;
   private final Clock clock;
   private final ExoPlayerAssetLoader exoPlayerAssetLoader;
 
@@ -328,7 +317,6 @@ public final class Transformer {
       FrameProcessor.Factory frameProcessorFactory,
       Muxer.Factory muxerFactory,
       Looper looper,
-      DebugViewProvider debugViewProvider,
       Clock clock) {
     this.context = context;
     this.transformationRequest = transformationRequest;
@@ -340,7 +328,6 @@ public final class Transformer {
     this.frameProcessorFactory = frameProcessorFactory;
     this.muxerFactory = muxerFactory;
     this.looper = looper;
-    this.debugViewProvider = debugViewProvider;
     this.clock = clock;
     exoPlayerAssetLoader =
         new ExoPlayerAssetLoader(
@@ -352,7 +339,6 @@ public final class Transformer {
             encoderFactory,
             frameProcessorFactory,
             looper,
-            debugViewProvider,
             clock);
   }
 
