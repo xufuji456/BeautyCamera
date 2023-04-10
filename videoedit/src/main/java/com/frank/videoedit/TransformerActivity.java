@@ -8,17 +8,21 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -32,9 +36,7 @@ import com.frank.videoedit.transform.TransformationRequest;
 import com.frank.videoedit.transform.TransformationResult;
 import com.frank.videoedit.transform.Transformer;
 import com.google.android.exoplayer2.C;
-import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
-import com.google.android.exoplayer2.ui.StyledPlayerView;
 import com.google.android.exoplayer2.util.Effect;
 import com.google.android.exoplayer2.util.Log;
 import com.google.android.material.card.MaterialCardView;
@@ -53,17 +55,17 @@ public final class TransformerActivity extends AppCompatActivity {
 
   private Button displayInputButton;
   private MaterialCardView inputCardView;
-  private StyledPlayerView inputPlayerView;
-  private StyledPlayerView outputPlayerView;
+  private SurfaceView inputPlayerView;
+  private SurfaceView outputPlayerView;
   private TextView informationTextView;
   private ViewGroup progressViewGroup;
   private LinearProgressIndicator progressIndicator;
   private Stopwatch transformationStopwatch;
 
-  @Nullable private ExoPlayer inputPlayer;
-  @Nullable private ExoPlayer outputPlayer;
-  @Nullable private Transformer transformer;
-  @Nullable private File externalCacheFile;
+  private MediaPlayer inputPlayer;
+  private MediaPlayer outputPlayer;
+  private Transformer transformer;
+  private File externalCacheFile;
 
   @Override
   protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -93,18 +95,7 @@ public final class TransformerActivity extends AppCompatActivity {
   protected void onStart() {
     super.onStart();
 
-    checkNotNull(progressIndicator);
-    checkNotNull(informationTextView);
-    checkNotNull(transformationStopwatch);
-    checkNotNull(inputCardView);
-    checkNotNull(inputPlayerView);
-    checkNotNull(outputPlayerView);
-    checkNotNull(progressViewGroup);
-    checkNotNull(displayInputButton);
     startTransformation();
-
-    inputPlayerView.onResume();
-    outputPlayerView.onResume();
   }
 
   @Override
@@ -118,8 +109,7 @@ public final class TransformerActivity extends AppCompatActivity {
     // stop watch to be stopped in a transformer callback.
     checkNotNull(transformationStopwatch).reset();
 
-    checkNotNull(inputPlayerView).onPause();
-    checkNotNull(outputPlayerView).onPause();
+    // TODO: pause
     releasePlayer();
 
     checkNotNull(externalCacheFile).delete();
@@ -134,7 +124,6 @@ public final class TransformerActivity extends AppCompatActivity {
     try {
       externalCacheFile = createExternalCacheFile("transform_output.mp4");
       String filePath = externalCacheFile.getAbsolutePath();
-      Log.e(TAG, "output path=" + filePath);
       Bundle bundle = intent.getExtras();
       MediaItem mediaItem = createMediaItem(bundle, uri);
       Transformer transformer = createTransformer(bundle, filePath);
@@ -303,32 +292,50 @@ public final class TransformerActivity extends AppCompatActivity {
     inputCardView.setVisibility(View.VISIBLE);
     outputPlayerView.setVisibility(View.VISIBLE);
     displayInputButton.setVisibility(View.VISIBLE);
-    playMediaItems(inputMediaItem, MediaItem.fromUri("file://" + filePath));
+    Uri inputPath = null;
+    if (inputMediaItem.localConfiguration != null) {
+      inputPath = inputMediaItem.localConfiguration.uri;
+    }
+    playMediaItems(inputPath, Uri.parse("file://" + filePath));
     Log.d(TAG, "Output file path: file://" + filePath);
   }
 
-  private void playMediaItems(MediaItem inputMediaItem, MediaItem outputMediaItem) {
-    inputPlayerView.setPlayer(null);
-    outputPlayerView.setPlayer(null);
+  private MediaPlayer startUp(SurfaceView surfaceView, Uri path, boolean disableAudio) {
+    MediaPlayer player = new MediaPlayer();
+    surfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
+
+      @Override
+      public void surfaceCreated(@NonNull SurfaceHolder surfaceHolder) {
+        player.setSurface(surfaceHolder.getSurface());
+      }
+
+      @Override
+      public void surfaceChanged(@NonNull SurfaceHolder surfaceHolder, int i, int i1, int i2) {
+      }
+
+      @Override
+      public void surfaceDestroyed(@NonNull SurfaceHolder surfaceHolder) {
+      }
+    });
+    try {
+      player.setDataSource(this, path);
+      player.prepare();
+      player.start();
+      if (disableAudio) {
+        player.setVolume(0, 0);
+      }
+    } catch (IOException e) {
+      Log.e(TAG, "");
+      return null;
+    }
+    return player;
+  }
+
+  private void playMediaItems(Uri inputPath, Uri outputPath) {
     releasePlayer();
 
-    ExoPlayer inputPlayer = new ExoPlayer.Builder(/* context= */ this).build();
-    inputPlayerView.setPlayer(inputPlayer);
-    inputPlayerView.setControllerAutoShow(false);
-    inputPlayer.setMediaItem(inputMediaItem);
-    inputPlayer.prepare();
-    this.inputPlayer = inputPlayer;
-    inputPlayer.setVolume(0f);
-
-    ExoPlayer outputPlayer = new ExoPlayer.Builder(/* context= */ this).build();
-    outputPlayerView.setPlayer(outputPlayer);
-    outputPlayerView.setControllerAutoShow(false);
-    outputPlayer.setMediaItem(outputMediaItem);
-    outputPlayer.prepare();
-    this.outputPlayer = outputPlayer;
-
-    inputPlayer.play();
-    outputPlayer.play();
+    inputPlayer  = startUp(inputPlayerView, inputPath, false);
+    outputPlayer = startUp(outputPlayerView, outputPath, true);
   }
 
   private void releasePlayer() {

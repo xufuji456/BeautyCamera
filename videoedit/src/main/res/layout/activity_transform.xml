@@ -64,7 +64,7 @@
       android:layout_width="match_parent"
       android:layout_height="wrap_content" >
 
-      <com.google.android.exoplayer2.ui.StyledPlayerView
+      <SurfaceView
         android:id="@+id/input_player_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
@@ -103,7 +103,7 @@
         android:layout_gravity="center"
         android:layout_height="wrap_content">
 
-        <com.google.android.exoplayer2.ui.StyledPlayerView
+        <SurfaceView
           android:id="@+id/output_player_view"
           android:layout_width="match_parent"
           android:layout_height="wrap_content" />
