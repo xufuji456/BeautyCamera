@@ -205,10 +205,6 @@ public final class TransformerActivity extends AppCompatActivity {
         requestBuilder.setResolution(resolutionHeight);
       }
 
-      float rotateDegrees =
-          bundle.getFloat(EditActivity.ROTATE_DEGREES,  0);
-      requestBuilder.setRotationDegrees(rotateDegrees);
-
       requestBuilder.setEnableRequestSdrToneMapping(
           bundle.getBoolean(EditActivity.ENABLE_REQUEST_SDR_TONE_MAPPING));
       requestBuilder.experimental_setForceInterpretHdrVideoAsSdr(

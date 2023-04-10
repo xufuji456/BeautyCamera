@@ -11,7 +11,6 @@ public final class TransformationRequest {
   /** A builder for {@link TransformationRequest} instances. */
   public static final class Builder {
 
-    private float rotationDegrees;
     private int outputHeight;
     @Nullable private String audioMimeType;
     @Nullable private String videoMimeType;
@@ -30,30 +29,12 @@ public final class TransformationRequest {
     }
 
     private Builder(TransformationRequest transformationRequest) {
-      this.rotationDegrees = transformationRequest.rotationDegrees;
-      this.outputHeight = transformationRequest.outputHeight;
+      this.outputHeight  = transformationRequest.outputHeight;
       this.audioMimeType = transformationRequest.audioMimeType;
       this.videoMimeType = transformationRequest.videoMimeType;
       this.enableRequestSdrToneMapping = transformationRequest.enableRequestSdrToneMapping;
       this.forceInterpretHdrVideoAsSdr = transformationRequest.forceInterpretHdrVideoAsSdr;
       this.enableHdrEditing = transformationRequest.enableHdrEditing;
-    }
-
-    /**
-     * Sets the rotation, in degrees, counterclockwise, to apply to each frame.
-     *
-     * <p>The output frame's width and height are automatically adjusted to preserve all input
-     * pixels. The rotated input frame is fitted inside an enclosing black rectangle if its edges
-     * aren't parallel to the x and y axes.
-     *
-     * <p>The default value, 0, corresponds to not applying any rotation.
-     *
-     * @param rotationDegrees The counterclockwise rotation, in degrees.
-     * @return This builder.
-     */
-    public Builder setRotationDegrees(float rotationDegrees) {
-      this.rotationDegrees = rotationDegrees;
-      return this;
     }
 
     /**
@@ -209,7 +190,6 @@ public final class TransformationRequest {
     /** Builds a {@link TransformationRequest} instance. */
     public TransformationRequest build() {
       return new TransformationRequest(
-          rotationDegrees,
           outputHeight,
           audioMimeType,
           videoMimeType,
@@ -219,12 +199,6 @@ public final class TransformationRequest {
     }
   }
 
-  /**
-   * The requested rotation, in degrees, of the output video, or 0 if inferred from the input.
-   *
-   * @see Builder#setRotationDegrees(float)
-   */
-  public final float rotationDegrees;
   /**
    * The requested height of the output video, or {@link C#LENGTH_UNSET} if inferred from the input.
    *
@@ -259,7 +233,6 @@ public final class TransformationRequest {
   public final boolean enableHdrEditing;
 
   private TransformationRequest(
-      float rotationDegrees,
       int outputHeight,
       @Nullable String audioMimeType,
       @Nullable String videoMimeType,
@@ -267,7 +240,6 @@ public final class TransformationRequest {
       boolean forceInterpretHdrVideoAsSdr,
       boolean enableHdrEditing) {
 
-    this.rotationDegrees             = rotationDegrees;
     this.outputHeight                = outputHeight;
     this.audioMimeType               = audioMimeType;
     this.videoMimeType               = videoMimeType;

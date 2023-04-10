@@ -37,7 +37,6 @@ public class EditActivity extends AppCompatActivity {
     public static final String AUDIO_MIME_TYPE = "audio_mime_type";
     public static final String VIDEO_MIME_TYPE = "video_mime_type";
     public static final String RESOLUTION_HEIGHT = "resolution_height";
-    public static final String ROTATE_DEGREES = "rotate_degrees";
     public static final String ENABLE_FALLBACK = "enable_fallback";
     public static final String ENABLE_DEBUG_PREVIEW = "enable_debug_preview";
     public static final String ENABLE_REQUEST_SDR_TONE_MAPPING = "enable_request_sdr_tone_mapping";
@@ -228,7 +227,6 @@ public class EditActivity extends AppCompatActivity {
         if (!SAME_AS_INPUT_OPTION.equals(selectedResolutionHeight)) {
             bundle.putInt(RESOLUTION_HEIGHT, Integer.parseInt(selectedResolutionHeight));
         }
-        bundle.putFloat(ROTATE_DEGREES, 0.0f);
         bundle.putBoolean(ENABLE_FALLBACK, enableFallbackCheckBox.isChecked());
         bundle.putBoolean(ENABLE_DEBUG_PREVIEW, enableDebugPreviewCheckBox.isChecked());
         bundle.putBoolean(

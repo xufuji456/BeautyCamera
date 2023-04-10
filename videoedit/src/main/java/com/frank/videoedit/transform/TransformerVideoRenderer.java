@@ -129,9 +129,6 @@ import com.google.common.collect.ImmutableList;
     if (inputFormat.pixelWidthHeightRatio != 1f) {
       return true;
     }
-    if (transformationRequest.rotationDegrees != 0f) {
-      return true;
-    }
     // The decoder rotates encoded frames for display by inputFormat.rotationDegrees.
     int decodedHeight =
         (inputFormat.rotationDegrees % 180 == 0) ? inputFormat.height : inputFormat.width;

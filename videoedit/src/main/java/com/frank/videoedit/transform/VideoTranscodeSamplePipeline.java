@@ -15,7 +15,6 @@ import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
 import com.frank.videoedit.effect.Presentation;
-import com.frank.videoedit.effect.ScaleToFitTransformation;
 import com.google.android.exoplayer2.util.DebugViewProvider;
 import com.google.android.exoplayer2.util.Effect;
 import com.google.android.exoplayer2.util.FrameInfo;
@@ -105,12 +104,7 @@ import java.util.List;
 
     ImmutableList.Builder<Effect> effectsListBuilder =
         new ImmutableList.Builder<Effect>().addAll(effects);
-    if (transformationRequest.rotationDegrees != 0f) {
-      effectsListBuilder.add(
-          new ScaleToFitTransformation.Builder()
-              .setRotationDegrees(transformationRequest.rotationDegrees)
-              .build());
-    }
+
     if (transformationRequest.outputHeight != C.LENGTH_UNSET) {
       effectsListBuilder.add(Presentation.createForHeight(transformationRequest.outputHeight));
     }

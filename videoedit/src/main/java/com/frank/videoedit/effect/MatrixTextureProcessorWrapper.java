@@ -322,12 +322,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
       SurfaceInfo outputSurfaceInfo) throws FrameProcessingException {
     ImmutableList.Builder<GlMatrixTransformation> matrixTransformationListBuilder =
         new ImmutableList.Builder<GlMatrixTransformation>().addAll(matrixTransformations);
-    if (outputSurfaceInfo.orientationDegrees != 0) {
-      matrixTransformationListBuilder.add(
-          new ScaleToFitTransformation.Builder()
-              .setRotationDegrees(outputSurfaceInfo.orientationDegrees)
-              .build());
-    }
+
     matrixTransformationListBuilder.add(
         Presentation.createForWidthAndHeight(
             outputSurfaceInfo.width, outputSurfaceInfo.height, Presentation.LAYOUT_SCALE_TO_FIT));
