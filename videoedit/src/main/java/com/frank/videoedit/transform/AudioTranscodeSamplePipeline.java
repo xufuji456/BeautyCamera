@@ -8,7 +8,6 @@ import androidx.annotation.Nullable;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
-import com.google.android.exoplayer2.audio.AudioProcessor;
 import com.google.android.exoplayer2.audio.AudioProcessor.AudioFormat;
 import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
 import com.google.android.exoplayer2.util.Util;
@@ -25,14 +24,10 @@ import java.nio.ByteBuffer;
   private final Codec decoder;
   private final DecoderInputBuffer decoderInputBuffer;
 
-  @Nullable private final SpeedChangingAudioProcessor speedChangingAudioProcessor;
-
   private final Codec encoder;
   private final AudioFormat encoderInputAudioFormat;
   private final DecoderInputBuffer encoderInputBuffer;
   private final DecoderInputBuffer encoderOutputBuffer;
-
-  private ByteBuffer processorOutputBuffer;
 
   private long nextEncoderInputBufferTimeUs;
   private long encoderBufferDurationRemainder;
@@ -69,19 +64,6 @@ import java.nio.ByteBuffer;
             // The decoder uses ENCODING_PCM_16BIT by default.
             // https://developer.android.com/reference/android/media/MediaCodec#raw-audio-buffers
             C.ENCODING_PCM_16BIT);
-    if (transformationRequest.flattenForSlowMotion) {
-      speedChangingAudioProcessor =
-          new SpeedChangingAudioProcessor(new SegmentSpeedProvider(inputFormat));
-      try {
-        encoderInputAudioFormat = speedChangingAudioProcessor.configure(encoderInputAudioFormat);
-      } catch (AudioProcessor.UnhandledAudioFormatException impossible) {
-        throw new IllegalStateException(impossible);
-      }
-      speedChangingAudioProcessor.flush();
-    } else {
-      speedChangingAudioProcessor = null;
-    }
-    processorOutputBuffer = AudioProcessor.EMPTY_BUFFER;
 
     this.encoderInputAudioFormat = encoderInputAudioFormat;
     Format requestedOutputFormat =
@@ -108,9 +90,6 @@ import java.nio.ByteBuffer;
 
   @Override
   public void release() {
-    if (speedChangingAudioProcessor != null) {
-      speedChangingAudioProcessor.reset();
-    }
     decoder.release();
     encoder.release();
   }
@@ -128,11 +107,7 @@ import java.nio.ByteBuffer;
 
   @Override
   protected boolean processDataUpToMuxer() throws TransformationException {
-    if (speedChangingAudioProcessor != null) {
-      return feedEncoderFromProcessor() || feedProcessorFromDecoder();
-    } else {
-      return feedEncoderFromDecoder();
-    }
+    return feedEncoderFromDecoder();
   }
 
   @Override
@@ -183,51 +158,6 @@ import java.nio.ByteBuffer;
     }
 
     feedEncoder(decoderOutputBuffer);
-    if (!decoderOutputBuffer.hasRemaining()) {
-      decoder.releaseOutputBuffer(/* render= */ false);
-    }
-    return true;
-  }
-
-  private boolean feedEncoderFromProcessor() throws TransformationException {
-    if (!encoder.maybeDequeueInputBuffer(encoderInputBuffer)) {
-      return false;
-    }
-
-    if (!processorOutputBuffer.hasRemaining()) {
-      processorOutputBuffer = speedChangingAudioProcessor.getOutput();
-      if (!processorOutputBuffer.hasRemaining()) {
-        if (decoder.isEnded() && speedChangingAudioProcessor.isEnded()) {
-          queueEndOfStreamToEncoder();
-        }
-        return false;
-      }
-    }
-
-    feedEncoder(processorOutputBuffer);
-    return true;
-  }
-
-  private boolean feedProcessorFromDecoder() throws TransformationException {
-    // Audio processors invalidate any previous output buffer when more input is queued, so we don't
-    // queue if there is output still to be processed.
-    if (processorOutputBuffer.hasRemaining()
-        || speedChangingAudioProcessor.getOutput().hasRemaining()) {
-      return false;
-    }
-
-    if (decoder.isEnded()) {
-      speedChangingAudioProcessor.queueEndOfStream();
-      return false;
-    }
-    checkState(!speedChangingAudioProcessor.isEnded());
-
-    @Nullable ByteBuffer decoderOutputBuffer = decoder.getOutputBuffer();
-    if (decoderOutputBuffer == null) {
-      return false;
-    }
-
-    speedChangingAudioProcessor.queueInput(decoderOutputBuffer);
     if (!decoderOutputBuffer.hasRemaining()) {
       decoder.releaseOutputBuffer(/* render= */ false);
     }

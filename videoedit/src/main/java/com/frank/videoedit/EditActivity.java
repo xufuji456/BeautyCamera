@@ -38,7 +38,6 @@ public class EditActivity extends AppCompatActivity {
 
     public static final String SHOULD_REMOVE_AUDIO = "should_remove_audio";
     public static final String SHOULD_REMOVE_VIDEO = "should_remove_video";
-    public static final String SHOULD_FLATTEN_FOR_SLOW_MOTION = "should_flatten_for_slow_motion";
     public static final String AUDIO_MIME_TYPE = "audio_mime_type";
     public static final String VIDEO_MIME_TYPE = "video_mime_type";
     public static final String RESOLUTION_HEIGHT = "resolution_height";
@@ -69,7 +68,6 @@ public class EditActivity extends AppCompatActivity {
             "https://storage.googleapis.com/exoplayer-test-media-0/BigBuckBunny_320x180.mp4",
             "https://storage.googleapis.com/exoplayer-test-media-1/mp4/portrait_avc_aac.mp4",
             "https://storage.googleapis.com/exoplayer-test-media-1/mp4/portrait_rotated_avc_aac.mp4",
-            "https://storage.googleapis.com/exoplayer-test-media-1/mp4/slow-motion/slowMotion_stopwatch_240fps_long.mp4",
             "https://storage.googleapis.com/exoplayer-test-media-1/mp4/samsung-s21-hdr-hdr10.mp4",
     };
     private static final String[] PRESET_FILE_URI_DESCRIPTIONS = { // same order as PRESET_FILE_URIS
@@ -134,8 +132,6 @@ public class EditActivity extends AppCompatActivity {
         setContentView(R.layout.activity_edit);
 
         findViewById(R.id.transform_button).setOnClickListener(this::startTransformation);
-
-        flattenForSlowMotionCheckbox = findViewById(R.id.flatten_for_slow_motion_checkbox);
 
         selectedFileTextView = findViewById(R.id.selected_file_text_view);
         selectedFileTextView.setText(PRESET_FILE_URI_DESCRIPTIONS[inputUriPosition]);
@@ -237,7 +233,6 @@ public class EditActivity extends AppCompatActivity {
         Bundle bundle = new Bundle();
         bundle.putBoolean(SHOULD_REMOVE_AUDIO, false);
         bundle.putBoolean(SHOULD_REMOVE_VIDEO, false);
-        bundle.putBoolean(SHOULD_FLATTEN_FOR_SLOW_MOTION, flattenForSlowMotionCheckbox.isChecked());
         String selectedAudioMimeType = String.valueOf(audioMimeSpinner.getSelectedItem());
         if (!SAME_AS_INPUT_OPTION.equals(selectedAudioMimeType)) {
             bundle.putString(AUDIO_MIME_TYPE, selectedAudioMimeType);

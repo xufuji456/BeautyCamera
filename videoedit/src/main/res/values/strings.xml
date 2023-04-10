@@ -3,7 +3,6 @@
 
     <string name="select_preset_file_title" translatable="false">Choose preset file</string>
     <string name="select_local_file_title">Choose local file</string>
-    <string name="flatten_for_slow_motion" translatable="false">Flatten for slow motion</string>
     <string name="audio_mime" translatable="false">Output audio MIME type</string>
     <string name="video_mime" translatable="false">Output video MIME type</string>
     <string name="resolution_height" translatable="false">Output video resolution</string>

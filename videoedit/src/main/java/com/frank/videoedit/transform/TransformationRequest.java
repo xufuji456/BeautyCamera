@@ -1,14 +1,9 @@
 package com.frank.videoedit.transform;
 
-import static com.google.android.exoplayer2.util.Assertions.checkArgument;
-
 import androidx.annotation.Nullable;
 
 import com.google.android.exoplayer2.C;
-import com.google.android.exoplayer2.extractor.mp4.Mp4Extractor;
-import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.util.MimeTypes;
-import com.google.android.exoplayer2.util.Util;
 
 /** A media transformation request. */
 public final class TransformationRequest {
@@ -16,7 +11,6 @@ public final class TransformationRequest {
   /** A builder for {@link TransformationRequest} instances. */
   public static final class Builder {
 
-    private boolean flattenForSlowMotion;
     private float scaleX;
     private float scaleY;
     private float rotationDegrees;
@@ -40,7 +34,6 @@ public final class TransformationRequest {
     }
 
     private Builder(TransformationRequest transformationRequest) {
-      this.flattenForSlowMotion = transformationRequest.flattenForSlowMotion;
       this.scaleX = transformationRequest.scaleX;
       this.scaleY = transformationRequest.scaleY;
       this.rotationDegrees = transformationRequest.rotationDegrees;
@@ -50,40 +43,6 @@ public final class TransformationRequest {
       this.enableRequestSdrToneMapping = transformationRequest.enableRequestSdrToneMapping;
       this.forceInterpretHdrVideoAsSdr = transformationRequest.forceInterpretHdrVideoAsSdr;
       this.enableHdrEditing = transformationRequest.enableHdrEditing;
-    }
-
-    /**
-     * Sets whether the input should be flattened for media containing slow motion markers.
-     *
-     * <p>The transformed output is obtained by removing the slow motion metadata and by actually
-     * slowing down the parts of the video and audio streams defined in this metadata. The default
-     * value for {@code flattenForSlowMotion} is {@code false}.
-     *
-     * <p>Only Samsung Extension Format (SEF) slow motion metadata type is supported. The
-     * transformation has no effect if the input does not contain this metadata type.
-     *
-     * <p>For SEF slow motion media, the following assumptions are made on the input:
-     *
-     * <ul>
-     *   <li>The input container format is (unfragmented) MP4.
-     *   <li>The input contains an AVC video elementary stream with temporal SVC.
-     *   <li>The recording frame rate of the video is 120 or 240 fps.
-     * </ul>
-     *
-     * <p>If specifying a {@link MediaSource.Factory} using {@link
-     * Transformer.Builder#setMediaSourceFactory(MediaSource.Factory)}, make sure that {@link
-     * Mp4Extractor#FLAG_READ_SEF_DATA} is set on the {@link Mp4Extractor} used. Otherwise, the slow
-     * motion metadata will be ignored and the input won't be flattened.
-     *
-     * <p>Using slow motion flattening together with {@link
-     * com.google.android.exoplayer2.MediaItem.ClippingConfiguration} is not supported yet.
-     *
-     * @param flattenForSlowMotion Whether to flatten for slow motion.
-     * @return This builder.
-     */
-    public Builder setFlattenForSlowMotion(boolean flattenForSlowMotion) {
-      this.flattenForSlowMotion = flattenForSlowMotion;
-      return this;
     }
 
     /**
@@ -159,9 +118,6 @@ public final class TransformationRequest {
      *     {@linkplain MimeTypes MIME type}.
      */
     public Builder setVideoMimeType(@Nullable String videoMimeType) {
-      checkArgument(
-          videoMimeType == null || MimeTypes.isVideo(videoMimeType),
-          "Not a video MIME type: " + videoMimeType);
       this.videoMimeType = videoMimeType;
       return this;
     }
@@ -184,9 +140,6 @@ public final class TransformationRequest {
      *     {@linkplain MimeTypes MIME type}.
      */
     public Builder setAudioMimeType(@Nullable String audioMimeType) {
-      checkArgument(
-          audioMimeType == null || MimeTypes.isAudio(audioMimeType),
-          "Not an audio MIME type: " + audioMimeType);
       this.audioMimeType = audioMimeType;
       return this;
     }
@@ -283,7 +236,6 @@ public final class TransformationRequest {
     /** Builds a {@link TransformationRequest} instance. */
     public TransformationRequest build() {
       return new TransformationRequest(
-          flattenForSlowMotion,
           scaleX,
           scaleY,
           rotationDegrees,
@@ -296,12 +248,6 @@ public final class TransformationRequest {
     }
   }
 
-  /**
-   * Whether the input should be flattened for media containing slow motion markers.
-   *
-   * @see Builder#setFlattenForSlowMotion(boolean)
-   */
-  public final boolean flattenForSlowMotion;
   /**
    * The requested scale factor, on the x-axis, of the output video, or 1 if inferred from the
    * input.
@@ -356,7 +302,6 @@ public final class TransformationRequest {
   public final boolean enableHdrEditing;
 
   private TransformationRequest(
-      boolean flattenForSlowMotion,
       float scaleX,
       float scaleY,
       float rotationDegrees,
@@ -366,56 +311,16 @@ public final class TransformationRequest {
       boolean enableRequestSdrToneMapping,
       boolean forceInterpretHdrVideoAsSdr,
       boolean enableHdrEditing) {
-    checkArgument(!forceInterpretHdrVideoAsSdr || !enableRequestSdrToneMapping);
-    checkArgument(!enableHdrEditing || !forceInterpretHdrVideoAsSdr);
-    checkArgument(!enableHdrEditing || !enableRequestSdrToneMapping);
 
-    this.flattenForSlowMotion = flattenForSlowMotion;
-    this.scaleX = scaleX;
-    this.scaleY = scaleY;
-    this.rotationDegrees = rotationDegrees;
-    this.outputHeight = outputHeight;
-    this.audioMimeType = audioMimeType;
-    this.videoMimeType = videoMimeType;
+    this.scaleX                      = scaleX;
+    this.scaleY                      = scaleY;
+    this.rotationDegrees             = rotationDegrees;
+    this.outputHeight                = outputHeight;
+    this.audioMimeType               = audioMimeType;
+    this.videoMimeType               = videoMimeType;
+    this.enableHdrEditing            = enableHdrEditing;
     this.enableRequestSdrToneMapping = enableRequestSdrToneMapping;
     this.forceInterpretHdrVideoAsSdr = forceInterpretHdrVideoAsSdr;
-    this.enableHdrEditing = enableHdrEditing;
-  }
-
-  @Override
-  public boolean equals(@Nullable Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (!(o instanceof TransformationRequest)) {
-      return false;
-    }
-    TransformationRequest that = (TransformationRequest) o;
-    return flattenForSlowMotion == that.flattenForSlowMotion
-        && scaleX == that.scaleX
-        && scaleY == that.scaleY
-        && rotationDegrees == that.rotationDegrees
-        && outputHeight == that.outputHeight
-        && Util.areEqual(audioMimeType, that.audioMimeType)
-        && Util.areEqual(videoMimeType, that.videoMimeType)
-        && enableRequestSdrToneMapping == that.enableRequestSdrToneMapping
-        && forceInterpretHdrVideoAsSdr == that.forceInterpretHdrVideoAsSdr
-        && enableHdrEditing == that.enableHdrEditing;
-  }
-
-  @Override
-  public int hashCode() {
-    int result = (flattenForSlowMotion ? 1 : 0);
-    result = 31 * result + Float.floatToIntBits(scaleX);
-    result = 31 * result + Float.floatToIntBits(scaleY);
-    result = 31 * result + Float.floatToIntBits(rotationDegrees);
-    result = 31 * result + outputHeight;
-    result = 31 * result + (audioMimeType != null ? audioMimeType.hashCode() : 0);
-    result = 31 * result + (videoMimeType != null ? videoMimeType.hashCode() : 0);
-    result = 31 * result + (enableRequestSdrToneMapping ? 1 : 0);
-    result = 31 * result + (forceInterpretHdrVideoAsSdr ? 1 : 0);
-    result = 31 * result + (enableHdrEditing ? 1 : 0);
-    return result;
   }
 
   /**

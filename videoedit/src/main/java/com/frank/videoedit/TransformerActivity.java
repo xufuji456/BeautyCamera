@@ -191,7 +191,6 @@ public final class TransformerActivity extends AppCompatActivity {
     Transformer.Builder transformerBuilder = new Transformer.Builder(/* context= */ this);
     if (bundle != null) {
       TransformationRequest.Builder requestBuilder = new TransformationRequest.Builder();
-      requestBuilder.setFlattenForSlowMotion(bundle.getBoolean(EditActivity.SHOULD_FLATTEN_FOR_SLOW_MOTION));
       String audioMimeType = bundle.getString(EditActivity.AUDIO_MIME_TYPE);
       if (audioMimeType != null) {
         requestBuilder.setAudioMimeType(audioMimeType);

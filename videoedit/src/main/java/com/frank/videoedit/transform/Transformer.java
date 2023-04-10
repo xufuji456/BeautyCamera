@@ -20,7 +20,6 @@ import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.PlaybackException;
 import com.frank.videoedit.effect.GlEffectsFrameProcessor;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
-import com.google.android.exoplayer2.extractor.mp4.Mp4Extractor;
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.util.Clock;
@@ -138,13 +137,6 @@ public final class Transformer {
     }
 
     @Deprecated
-    public Builder setFlattenForSlowMotion(boolean flattenForSlowMotion) {
-      transformationRequest =
-          transformationRequest.buildUpon().setFlattenForSlowMotion(flattenForSlowMotion).build();
-      return this;
-    }
-
-    @Deprecated
     public Builder setListener(Listener listener) {
       this.listeners.clear();
       this.listeners.add(listener);
@@ -219,8 +211,6 @@ public final class Transformer {
      * @throws IllegalStateException If the muxer doesn't support the requested video MIME type.
      */
     public Transformer build() {
-      // TODO(huangdarwin): Remove this checkNotNull after deprecated {@link #setContext(Context)}
-      // is removed.
       checkNotNull(context);
       if (transformationRequest.audioMimeType != null) {
         checkSampleMimeType(transformationRequest.audioMimeType);
@@ -230,9 +220,6 @@ public final class Transformer {
       }
       if (mediaSourceFactory == null) {
         DefaultExtractorsFactory defaultExtractorsFactory = new DefaultExtractorsFactory();
-        if (transformationRequest.flattenForSlowMotion) {
-          defaultExtractorsFactory.setMp4ExtractorFlags(Mp4Extractor.FLAG_READ_SEF_DATA);
-        }
         mediaSourceFactory = new DefaultMediaSourceFactory(context, defaultExtractorsFactory);
       }
       return new Transformer(
@@ -494,12 +481,6 @@ public final class Transformer {
   }
 
   private void startTransformationInternal(MediaItem mediaItem) {
-    if (!mediaItem.clippingConfiguration.equals(MediaItem.ClippingConfiguration.UNSET)
-        && transformationRequest.flattenForSlowMotion) {
-      // TODO(b/233986762): Support clipping with SEF flattening.
-      throw new IllegalArgumentException(
-          "Clipping is not supported when slow motion flattening is requested");
-    }
     verifyApplicationThread();
     if (transformationInProgress) {
       throw new IllegalStateException("There is already a transformation in progress.");
