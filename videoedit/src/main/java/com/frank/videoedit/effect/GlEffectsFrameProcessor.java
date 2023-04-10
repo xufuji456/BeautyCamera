@@ -10,6 +10,7 @@ import android.opengl.EGLContext;
 import android.opengl.EGLDisplay;
 import android.view.Surface;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 
@@ -35,14 +36,15 @@ public final class GlEffectsFrameProcessor implements FrameProcessor {
   /** A factory for {@link GlEffectsFrameProcessor} instances. */
   public static class Factory implements FrameProcessor.Factory {
 
+    @NonNull
     @Override
     public GlEffectsFrameProcessor create(
-        Context context,
-        Listener listener,
-        List<Effect> effects,
-        DebugViewProvider debugViewProvider,
-        ColorInfo colorInfo,
-        boolean releaseFramesAutomatically)
+            @NonNull Context context,
+            @NonNull Listener listener,
+            @NonNull List<Effect> effects,
+            @NonNull DebugViewProvider debugViewProvider,
+            @NonNull ColorInfo colorInfo,
+            boolean releaseFramesAutomatically)
         throws FrameProcessingException {
 
       ExecutorService singleThreadExecutorService = Util.newSingleThreadExecutor(THREAD_NAME);
@@ -240,13 +242,14 @@ public final class GlEffectsFrameProcessor implements FrameProcessor {
     previousStreamOffsetUs = C.TIME_UNSET;
   }
 
+  @NonNull
   @Override
   public Surface getInputSurface() {
     return inputSurface;
   }
 
   @Override
-  public void setInputFrameInfo(FrameInfo inputFrameInfo) {
+  public void setInputFrameInfo(@NonNull FrameInfo inputFrameInfo) {
     nextInputFrameInfo = adjustForPixelWidthHeightRatio(inputFrameInfo);
 
     if (nextInputFrameInfo.streamOffsetUs != previousStreamOffsetUs) {

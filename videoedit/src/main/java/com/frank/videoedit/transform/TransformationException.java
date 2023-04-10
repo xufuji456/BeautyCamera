@@ -2,7 +2,6 @@ package com.frank.videoedit.transform;
 
 import static java.lang.annotation.ElementType.TYPE_USE;
 
-import android.media.MediaCodec;
 import android.media.MediaFormat;
 import android.os.SystemClock;
 

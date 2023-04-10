@@ -10,7 +10,6 @@ import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
 import com.google.android.exoplayer2.util.MimeTypes;
 
-import java.nio.ByteBuffer;
 
 /* package */ abstract class BaseSamplePipeline implements SamplePipeline {
 
@@ -18,7 +17,6 @@ import java.nio.ByteBuffer;
   private final long streamStartPositionUs;
   private final MuxerWrapper muxerWrapper;
   private final @C.TrackType int trackType;
-  private final SefSlowMotionFlattener sefVideoSlowMotionFlattener;
 
   @Nullable private DecoderInputBuffer inputBuffer;
   private boolean muxerWrapperTrackAdded;
@@ -28,16 +26,11 @@ import java.nio.ByteBuffer;
       Format inputFormat,
       long streamOffsetUs,
       long streamStartPositionUs,
-      boolean flattenForSlowMotion,
       MuxerWrapper muxerWrapper) {
     this.streamOffsetUs = streamOffsetUs;
     this.streamStartPositionUs = streamStartPositionUs;
     this.muxerWrapper = muxerWrapper;
     trackType = MimeTypes.getTrackType(inputFormat.sampleMimeType);
-    sefVideoSlowMotionFlattener =
-        flattenForSlowMotion && trackType == C.TRACK_TYPE_VIDEO
-            ? new SefSlowMotionFlattener(inputFormat)
-            : null;
   }
 
   @Nullable
@@ -51,9 +44,7 @@ import java.nio.ByteBuffer;
   public void queueInputBuffer() throws TransformationException {
     checkNotNull(inputBuffer);
     checkNotNull(inputBuffer.data);
-    if (!shouldDropInputBuffer()) {
-      queueInputBufferInternal();
-    }
+    queueInputBufferInternal();
   }
 
   @Override
@@ -82,30 +73,6 @@ import java.nio.ByteBuffer;
   protected abstract void releaseMuxerInputBuffer() throws TransformationException;
 
   protected abstract boolean isMuxerInputEnded();
-
-  /**
-   * Preprocesses an {@linkplain DecoderInputBuffer input buffer} queued to the pipeline and returns
-   * whether it should be dropped.
-   */
-  private boolean shouldDropInputBuffer() {
-    ByteBuffer inputBytes = inputBuffer.data;
-
-    if (sefVideoSlowMotionFlattener == null || inputBuffer.isEndOfStream()) {
-      return false;
-    }
-
-    long presentationTimeUs = inputBuffer.timeUs - streamOffsetUs;
-    DecoderInputBuffer inputBuffer = this.inputBuffer;
-    boolean shouldDropInputBuffer =
-        sefVideoSlowMotionFlattener.dropOrTransformSample(inputBytes, presentationTimeUs);
-    if (shouldDropInputBuffer) {
-      inputBytes.clear();
-    } else {
-      inputBuffer.timeUs =
-          streamOffsetUs + sefVideoSlowMotionFlattener.getSamplePresentationTimeUs();
-    }
-    return shouldDropInputBuffer;
-  }
 
   /**
    * Attempts to pass encoded data to the muxer, and returns whether it may be possible to pass more

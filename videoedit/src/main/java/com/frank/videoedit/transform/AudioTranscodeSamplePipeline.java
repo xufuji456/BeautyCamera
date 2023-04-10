@@ -51,7 +51,6 @@ import java.nio.ByteBuffer;
         inputFormat,
         streamOffsetUs,
         streamStartPositionUs,
-        transformationRequest.flattenForSlowMotion,
         muxerWrapper);
 
     decoderInputBuffer =

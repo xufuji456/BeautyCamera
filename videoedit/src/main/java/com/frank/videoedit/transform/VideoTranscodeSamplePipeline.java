@@ -7,7 +7,6 @@ import static com.google.android.exoplayer2.util.Util.SDK_INT;
 import android.content.Context;
 import android.media.MediaCodec;
 import android.os.Build;
-import android.view.Surface;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
@@ -67,7 +66,6 @@ import java.util.List;
         inputFormat,
         streamOffsetUs,
         streamStartPositionUs,
-        transformationRequest.flattenForSlowMotion,
         muxerWrapper);
 
     if (ColorInfo.isTransferHdr(inputFormat.colorInfo)) {

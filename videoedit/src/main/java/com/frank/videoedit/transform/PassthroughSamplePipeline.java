@@ -24,7 +24,6 @@ import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
         format,
         streamOffsetUs,
         streamStartPositionUs,
-        transformationRequest.flattenForSlowMotion,
         muxerWrapper);
     this.format = format;
     buffer = new DecoderInputBuffer(DecoderInputBuffer.BUFFER_REPLACEMENT_MODE_DIRECT);
