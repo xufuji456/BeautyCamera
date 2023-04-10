@@ -6,7 +6,7 @@
   android:keepScreenOn="true"
   android:orientation="vertical">
 
-  <com.google.android.material.card.MaterialCardView
+  <com.frank.videoedit.view.MaterialCardView
     android:layout_margin="8dp"
     android:layout_height="wrap_content"
     android:layout_width="match_parent"
@@ -37,9 +37,9 @@
 
     </LinearLayout>
 
-  </com.google.android.material.card.MaterialCardView>
+  </com.frank.videoedit.view.MaterialCardView>
 
-  <com.google.android.material.card.MaterialCardView
+  <com.frank.videoedit.view.MaterialCardView
     android:id="@+id/input_card_view"
     android:layout_width="match_parent"
     android:layout_height="0dp"
@@ -69,17 +69,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-        <com.google.android.exoplayer2.ui.AspectRatioFrameLayout
-          android:id="@+id/input_debug_aspect_ratio_frame_layout"
-          android:layout_width="match_parent"
-          android:layout_height="match_parent" />
       </FrameLayout>
     </LinearLayout>
 
 
-  </com.google.android.material.card.MaterialCardView>
+  </com.frank.videoedit.view.MaterialCardView>
 
-  <com.google.android.material.card.MaterialCardView
+  <com.frank.videoedit.view.MaterialCardView
     android:id="@+id/output_card_view"
     android:layout_width="match_parent"
     android:layout_height="0dp"
@@ -130,5 +126,5 @@
 
     </LinearLayout>
 
-  </com.google.android.material.card.MaterialCardView>
+  </com.frank.videoedit.view.MaterialCardView>
 </LinearLayout>

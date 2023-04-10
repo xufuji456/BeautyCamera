@@ -35,11 +35,12 @@ import com.frank.videoedit.transform.TransformationException;
 import com.frank.videoedit.transform.TransformationRequest;
 import com.frank.videoedit.transform.TransformationResult;
 import com.frank.videoedit.transform.Transformer;
+import com.frank.videoedit.view.MaterialCardView;
+
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.util.Effect;
 import com.google.android.exoplayer2.util.Log;
-import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Ticker;
