@@ -5,15 +5,15 @@ import static com.google.android.exoplayer2.util.Assertions.checkNotNull;
 
 import android.content.Context;
 
+import com.frank.videoedit.listener.FrameProcessor;
 import com.frank.videoedit.transform.listener.Codec;
+
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.FormatHolder;
 import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
 import com.google.android.exoplayer2.source.SampleStream.ReadDataResult;
-import com.google.android.exoplayer2.util.DebugViewProvider;
 import com.google.android.exoplayer2.util.Effect;
-import com.google.android.exoplayer2.util.FrameProcessor;
 import com.google.common.collect.ImmutableList;
 
 /* package */ final class TransformerVideoRenderer extends TransformerBaseRenderer {
@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableList;
   private final FrameProcessor.Factory frameProcessorFactory;
   private final Codec.EncoderFactory encoderFactory;
   private final Codec.DecoderFactory decoderFactory;
-  private final DebugViewProvider debugViewProvider;
   private final DecoderInputBuffer decoderInputBuffer;
 
   public TransformerVideoRenderer(
@@ -40,8 +39,7 @@ import com.google.common.collect.ImmutableList;
       Codec.EncoderFactory encoderFactory,
       Codec.DecoderFactory decoderFactory,
       Transformer.AsyncErrorListener asyncErrorListener,
-      FallbackListener fallbackListener,
-      DebugViewProvider debugViewProvider) {
+      FallbackListener fallbackListener) {
     super(
         C.TRACK_TYPE_VIDEO,
         muxerWrapper,
@@ -55,7 +53,6 @@ import com.google.common.collect.ImmutableList;
     this.frameProcessorFactory = frameProcessorFactory;
     this.encoderFactory = encoderFactory;
     this.decoderFactory = decoderFactory;
-    this.debugViewProvider = debugViewProvider;
     decoderInputBuffer =
         new DecoderInputBuffer(DecoderInputBuffer.BUFFER_REPLACEMENT_MODE_DISABLED);
   }
@@ -91,8 +88,7 @@ import com.google.common.collect.ImmutableList;
               encoderFactory,
               muxerWrapper,
               fallbackListener,
-              asyncErrorListener,
-              debugViewProvider);
+              asyncErrorListener);
     } else {
       samplePipeline =
           new PassthroughSamplePipeline(

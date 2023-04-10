@@ -17,7 +17,9 @@ import android.os.Looper;
 
 import androidx.annotation.Nullable;
 
+import com.frank.videoedit.listener.FrameProcessor;
 import com.frank.videoedit.transform.listener.Codec;
+
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlayer;
@@ -36,7 +38,6 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.util.Clock;
 import com.google.android.exoplayer2.util.DebugViewProvider;
 import com.google.android.exoplayer2.util.Effect;
-import com.google.android.exoplayer2.util.FrameProcessor;
 import com.google.android.exoplayer2.video.VideoRendererEventListener;
 import com.google.common.collect.ImmutableList;
 
@@ -57,7 +58,6 @@ import com.google.common.collect.ImmutableList;
   private final Codec.EncoderFactory encoderFactory;
   private final FrameProcessor.Factory frameProcessorFactory;
   private final Looper looper;
-  private final DebugViewProvider debugViewProvider;
   private final Clock clock;
 
   private MuxerWrapper muxerWrapper;
@@ -83,7 +83,6 @@ import com.google.common.collect.ImmutableList;
     this.encoderFactory = encoderFactory;
     this.frameProcessorFactory = frameProcessorFactory;
     this.looper = looper;
-    this.debugViewProvider = debugViewProvider;
     this.clock = clock;
     progressState = PROGRESS_STATE_NO_TRANSFORMATION;
   }
@@ -124,8 +123,7 @@ import com.google.common.collect.ImmutableList;
                     encoderFactory,
                     decoderFactory,
                     fallbackListener,
-                    asyncErrorListener,
-                    debugViewProvider))
+                    asyncErrorListener))
             .setMediaSourceFactory(mediaSourceFactory)
             .setTrackSelector(trackSelector)
             .setLoadControl(loadControl)
@@ -176,7 +174,6 @@ import com.google.common.collect.ImmutableList;
     private final Codec.DecoderFactory decoderFactory;
     private final FallbackListener fallbackListener;
     private final Transformer.AsyncErrorListener asyncErrorListener;
-    private final DebugViewProvider debugViewProvider;
 
     public RenderersFactoryImpl(
         Context context,
@@ -188,8 +185,7 @@ import com.google.common.collect.ImmutableList;
         Codec.EncoderFactory encoderFactory,
         Codec.DecoderFactory decoderFactory,
         FallbackListener fallbackListener,
-        Transformer.AsyncErrorListener asyncErrorListener,
-        DebugViewProvider debugViewProvider) {
+        Transformer.AsyncErrorListener asyncErrorListener) {
       this.context = context;
       this.muxerWrapper = muxerWrapper;
       this.transformationRequest = transformationRequest;
@@ -200,7 +196,6 @@ import com.google.common.collect.ImmutableList;
       this.decoderFactory = decoderFactory;
       this.fallbackListener = fallbackListener;
       this.asyncErrorListener = asyncErrorListener;
-      this.debugViewProvider = debugViewProvider;
       mediaClock = new TransformerMediaClock();
     }
 
@@ -234,8 +229,7 @@ import com.google.common.collect.ImmutableList;
               encoderFactory,
               decoderFactory,
               asyncErrorListener,
-              fallbackListener,
-              debugViewProvider);
+              fallbackListener);
       return renderers;
     }
   }

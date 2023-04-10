@@ -11,16 +11,16 @@ import android.os.Build;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import com.frank.videoedit.listener.FrameProcessor;
 import com.frank.videoedit.transform.listener.Codec;
+import com.frank.videoedit.effect.Presentation;
+
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
-import com.frank.videoedit.effect.Presentation;
-import com.google.android.exoplayer2.util.DebugViewProvider;
 import com.google.android.exoplayer2.util.Effect;
 import com.google.android.exoplayer2.util.FrameInfo;
 import com.google.android.exoplayer2.util.FrameProcessingException;
-import com.google.android.exoplayer2.util.FrameProcessor;
 import com.google.android.exoplayer2.util.Log;
 import com.google.android.exoplayer2.util.SurfaceInfo;
 import com.google.android.exoplayer2.util.Util;
@@ -59,8 +59,7 @@ import java.util.List;
       Codec.EncoderFactory encoderFactory,
       MuxerWrapper muxerWrapper,
       FallbackListener fallbackListener,
-      Transformer.AsyncErrorListener asyncErrorListener,
-      DebugViewProvider debugViewProvider)
+      Transformer.AsyncErrorListener asyncErrorListener)
       throws TransformationException {
     super(
         inputFormat,
@@ -155,7 +154,6 @@ import java.util.List;
                 }
               },
               effectsListBuilder.build(),
-              debugViewProvider,
               // HDR colors are only used if the MediaCodec encoder supports FEATURE_HdrEditing.
               // This implies that the OpenGL EXT_YUV_target extension is supported and hence the
               // default FrameProcessor, GlEffectsFrameProcessor, also supports HDR. Otherwise, tone

@@ -18,12 +18,11 @@ import com.frank.videoedit.effect.listener.ExternalTextureProcessor;
 import com.frank.videoedit.effect.listener.GlEffect;
 import com.frank.videoedit.effect.listener.GlMatrixTransformation;
 import com.frank.videoedit.effect.listener.GlTextureProcessor;
+import com.frank.videoedit.listener.FrameProcessor;
 import com.google.android.exoplayer2.C;
-import com.google.android.exoplayer2.util.DebugViewProvider;
 import com.google.android.exoplayer2.util.Effect;
 import com.google.android.exoplayer2.util.FrameInfo;
 import com.google.android.exoplayer2.util.FrameProcessingException;
-import com.google.android.exoplayer2.util.FrameProcessor;
 import com.google.android.exoplayer2.util.GlUtil;
 import com.google.android.exoplayer2.util.SurfaceInfo;
 import com.google.android.exoplayer2.util.Util;
@@ -46,7 +45,6 @@ public final class GlEffectsFrameProcessor implements FrameProcessor {
             @NonNull Context context,
             @NonNull Listener listener,
             @NonNull List<Effect> effects,
-            @NonNull DebugViewProvider debugViewProvider,
             @NonNull ColorInfo colorInfo,
             boolean releaseFramesAutomatically)
         throws FrameProcessingException {
@@ -60,7 +58,6 @@ public final class GlEffectsFrameProcessor implements FrameProcessor {
                       context,
                       listener,
                       effects,
-                      debugViewProvider,
                       colorInfo,
                       releaseFramesAutomatically,
                       singleThreadExecutorService));
@@ -81,7 +78,6 @@ public final class GlEffectsFrameProcessor implements FrameProcessor {
       Context context,
       Listener listener,
       List<Effect> effects,
-      DebugViewProvider debugViewProvider,
       ColorInfo colorInfo,
       boolean releaseFramesAutomatically,
       ExecutorService singleThreadExecutorService)
@@ -104,7 +100,6 @@ public final class GlEffectsFrameProcessor implements FrameProcessor {
             eglDisplay,
             eglContext,
             listener,
-            debugViewProvider,
             colorInfo,
             releaseFramesAutomatically);
     FrameProcessingTaskExecutor frameProcessingTaskExecutor =
@@ -125,7 +120,6 @@ public final class GlEffectsFrameProcessor implements FrameProcessor {
       EGLDisplay eglDisplay,
       EGLContext eglContext,
       Listener listener,
-      DebugViewProvider debugViewProvider,
       ColorInfo colorInfo,
       boolean releaseFramesAutomatically)
       throws FrameProcessingException {
@@ -174,7 +168,6 @@ public final class GlEffectsFrameProcessor implements FrameProcessor {
             eglContext,
             matrixTransformationListBuilder.build(),
             listener,
-            debugViewProvider,
             sampleFromExternalTexture,
             colorInfo,
             releaseFramesAutomatically));

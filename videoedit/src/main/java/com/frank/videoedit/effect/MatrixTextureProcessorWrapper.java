@@ -9,25 +9,18 @@ import android.opengl.EGLContext;
 import android.opengl.EGLDisplay;
 import android.opengl.EGLExt;
 import android.opengl.EGLSurface;
-import android.opengl.GLES20;
 import android.util.Pair;
-import android.view.Surface;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 
 import androidx.annotation.GuardedBy;
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 
 import com.frank.videoedit.effect.listener.ExternalTextureProcessor;
-import com.frank.videoedit.effect.listener.FrameProcessingTask;
 import com.frank.videoedit.effect.listener.GlMatrixTransformation;
-import com.google.android.exoplayer2.C;
-import com.google.android.exoplayer2.util.DebugViewProvider;
+import com.frank.videoedit.listener.FrameProcessor;
+
 import com.google.android.exoplayer2.util.FrameProcessingException;
-import com.google.android.exoplayer2.util.FrameProcessor;
 import com.google.android.exoplayer2.util.GlUtil;
-import com.google.android.exoplayer2.util.Log;
 import com.google.android.exoplayer2.util.SurfaceInfo;
 import com.google.android.exoplayer2.util.Util;
 import com.google.android.exoplayer2.video.ColorInfo;
@@ -38,13 +31,10 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 /* package */ final class MatrixTextureProcessorWrapper implements ExternalTextureProcessor {
 
-  private static final String TAG = "FinalProcessorWrapper";
-
   private final Context context;
   private final ImmutableList<GlMatrixTransformation> matrixTransformations;
   private final EGLDisplay eglDisplay;
   private final EGLContext eglContext;
-  private final DebugViewProvider debugViewProvider;
   private final FrameProcessor.Listener frameProcessorListener;
   private final boolean sampleFromExternalTexture;
   private final ColorInfo colorInfo;
@@ -56,10 +46,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
   private int inputWidth;
   private int inputHeight;
   @Nullable private MatrixTextureProcessor matrixTextureProcessor;
-  @Nullable private SurfaceViewWrapper debugSurfaceViewWrapper;
   private InputListener inputListener;
   private Pair<Integer, Integer> outputSizeBeforeSurfaceTransformation;
-  @Nullable private SurfaceView debugSurfaceView;
 
   private volatile boolean outputSizeOrRotationChanged;
 
@@ -77,7 +65,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
       EGLContext eglContext,
       ImmutableList<GlMatrixTransformation> matrixTransformations,
       FrameProcessor.Listener frameProcessorListener,
-      DebugViewProvider debugViewProvider,
       boolean sampleFromExternalTexture,
       ColorInfo colorInfo,
       boolean releaseFramesAutomatically) {
@@ -85,7 +72,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
     this.matrixTransformations = matrixTransformations;
     this.eglDisplay = eglDisplay;
     this.eglContext = eglContext;
-    this.debugViewProvider = debugViewProvider;
     this.frameProcessorListener = frameProcessorListener;
     this.sampleFromExternalTexture = sampleFromExternalTexture;
     this.colorInfo = colorInfo;
@@ -221,7 +207,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
       frameProcessorListener.onFrameProcessingError(
           FrameProcessingException.from(e, presentationTimeUs));
     }
-    maybeRenderFrameToDebugSurface(inputTexture, presentationTimeUs);
     inputListener.onInputFrameProcessed(inputTexture);
   }
 
@@ -295,16 +280,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
               colorInfoIsHdr
                   ? GlUtil.EGL_CONFIG_ATTRIBUTES_RGBA_1010102
                   : GlUtil.EGL_CONFIG_ATTRIBUTES_RGBA_8888);
-
-      @Nullable
-      SurfaceView debugSurfaceView =
-          debugViewProvider.getDebugPreviewSurfaceView(
-              outputSurfaceInfo.width, outputSurfaceInfo.height);
-      if (debugSurfaceView != null && !Util.areEqual(this.debugSurfaceView, debugSurfaceView)) {
-        debugSurfaceViewWrapper =
-            new SurfaceViewWrapper(eglDisplay, eglContext, colorInfoIsHdr, debugSurfaceView);
-      }
-      this.debugSurfaceView = debugSurfaceView;
     }
 
     if (matrixTextureProcessor != null && outputSizeOrRotationChanged) {
@@ -350,104 +325,4 @@ import java.util.concurrent.ConcurrentLinkedQueue;
     return matrixTextureProcessor;
   }
 
-  private void maybeRenderFrameToDebugSurface(TextureInfo inputTexture, long presentationTimeUs) {
-    if (debugSurfaceViewWrapper == null || this.matrixTextureProcessor == null) {
-      return;
-    }
-
-    MatrixTextureProcessor matrixTextureProcessor = this.matrixTextureProcessor;
-    try {
-      debugSurfaceViewWrapper.maybeRenderToSurfaceView(
-          () -> {
-            GlUtil.clearOutputFrame();
-            matrixTextureProcessor.drawFrame(inputTexture.texId, presentationTimeUs);
-          });
-    } catch (FrameProcessingException | GlUtil.GlException e) {
-      Log.d(TAG, "Error rendering to debug preview", e);
-    }
-  }
-
-  /**
-   * Wrapper around a {@link SurfaceView} that keeps track of whether the output surface is valid,
-   * and makes rendering a no-op if not.
-   */
-  private static final class SurfaceViewWrapper implements SurfaceHolder.Callback {
-    private final EGLDisplay eglDisplay;
-    private final EGLContext eglContext;
-    private final boolean useHdr;
-
-    @GuardedBy("this")
-    @Nullable
-    private Surface surface;
-
-    @GuardedBy("this")
-    @Nullable
-    private EGLSurface eglSurface;
-
-    private int width;
-    private int height;
-
-    public SurfaceViewWrapper(
-        EGLDisplay eglDisplay, EGLContext eglContext, boolean useHdr, SurfaceView surfaceView) {
-      this.eglDisplay = eglDisplay;
-      this.eglContext = eglContext;
-      this.useHdr = useHdr;
-      surfaceView.getHolder().addCallback(this);
-      surface = surfaceView.getHolder().getSurface();
-      width = surfaceView.getWidth();
-      height = surfaceView.getHeight();
-    }
-
-    /**
-     * Focuses the wrapped surface view's surface as an {@link EGLSurface}, renders using {@code
-     * renderingTask} and swaps buffers, if the view's holder has a valid surface. Does nothing
-     * otherwise.
-     */
-    @WorkerThread
-    public synchronized void maybeRenderToSurfaceView(FrameProcessingTask renderingTask)
-        throws GlUtil.GlException, FrameProcessingException {
-      if (surface == null) {
-        return;
-      }
-
-      if (eglSurface == null) {
-        eglSurface =
-            GlUtil.getEglSurface(
-                eglDisplay,
-                surface,
-                useHdr
-                    ? GlUtil.EGL_CONFIG_ATTRIBUTES_RGBA_1010102
-                    : GlUtil.EGL_CONFIG_ATTRIBUTES_RGBA_8888);
-      }
-      EGLSurface eglSurface = this.eglSurface;
-      GlUtil.focusEglSurface(eglDisplay, eglContext, eglSurface, width, height);
-      renderingTask.run();
-      EGL14.eglSwapBuffers(eglDisplay, eglSurface);
-      // Prevents white flashing on the debug SurfaceView when frames are rendered too fast.
-      GLES20.glFinish();
-    }
-
-    @Override
-    public void surfaceCreated(SurfaceHolder holder) {}
-
-    @Override
-    public synchronized void surfaceChanged(
-        SurfaceHolder holder, int format, int width, int height) {
-      this.width = width;
-      this.height = height;
-      Surface newSurface = holder.getSurface();
-      if (surface == null || !surface.equals(newSurface)) {
-        surface = newSurface;
-        eglSurface = null;
-      }
-    }
-
-    @Override
-    public synchronized void surfaceDestroyed(SurfaceHolder holder) {
-      surface = null;
-      eglSurface = null;
-      width = C.LENGTH_UNSET;
-      height = C.LENGTH_UNSET;
-    }
-  }
 }
