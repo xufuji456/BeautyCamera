@@ -22,7 +22,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.frank.videoedit.effect.Contrast;
 import com.frank.videoedit.effect.HslAdjustment;
-import com.frank.videoedit.effect.GlEffect;
+import com.frank.videoedit.effect.listener.GlEffect;
 import com.frank.videoedit.transform.DefaultEncoderFactory;
 import com.frank.videoedit.transform.ProgressHolder;
 import com.frank.videoedit.transform.TransformationException;

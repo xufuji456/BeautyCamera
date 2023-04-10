@@ -3,7 +3,7 @@ package com.frank.videoedit;
 
 import android.graphics.Matrix;
 
-import com.frank.videoedit.effect.MatrixTransformation;
+import com.frank.videoedit.effect.listener.MatrixTransformation;
 import com.google.android.exoplayer2.C;
 
 /* package */ final class MatrixTransformationFactory {

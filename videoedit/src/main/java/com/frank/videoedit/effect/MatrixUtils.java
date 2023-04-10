@@ -5,12 +5,13 @@ import static com.google.android.exoplayer2.util.Assertions.checkArgument;
 import android.opengl.Matrix;
 import android.util.Pair;
 
+import com.frank.videoedit.effect.listener.GlMatrixTransformation;
 import com.google.common.collect.ImmutableList;
 
 import java.util.Arrays;
 
 /** Utility functions for working with matrices, vertices, and polygons. */
-/* package */ final class MatrixUtils {
+public final class MatrixUtils {
   /**
    * Contains the normal vectors of the clipping planes in homogeneous coordinates which
    * conveniently also double as origin vectors and parameters of the normal form of the planes ax +

@@ -1,5 +1,6 @@
-package com.frank.videoedit.effect;
+package com.frank.videoedit.effect.listener;
 
+import com.frank.videoedit.effect.TextureInfo;
 import com.google.android.exoplayer2.util.FrameProcessingException;
 
 /**

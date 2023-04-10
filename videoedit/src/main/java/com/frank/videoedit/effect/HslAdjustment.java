@@ -4,6 +4,7 @@ import static com.google.android.exoplayer2.util.Assertions.checkArgument;
 
 import android.content.Context;
 
+import com.frank.videoedit.effect.listener.GlEffect;
 import com.google.android.exoplayer2.util.FrameProcessingException;
 
 /** Adjusts the HSL (Hue, Saturation, and Lightness) of a frame. */

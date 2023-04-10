@@ -2,6 +2,7 @@ package com.frank.videoedit.effect;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
+import com.frank.videoedit.effect.listener.FrameProcessingTask;
 import com.google.android.exoplayer2.util.FrameProcessingException;
 import com.google.android.exoplayer2.util.FrameProcessor;
 import com.google.android.exoplayer2.util.GlUtil;

@@ -8,6 +8,8 @@ import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.util.Pair;
 
+import com.frank.videoedit.effect.listener.ExternalTextureProcessor;
+import com.frank.videoedit.effect.listener.GlMatrixTransformation;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.util.FrameProcessingException;
@@ -21,7 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @SuppressWarnings("FunctionalInterfaceClash") // b/228192298
-/* package */ final class MatrixTextureProcessor extends SingleFrameGlTextureProcessor
+public final class MatrixTextureProcessor extends SingleFrameGlTextureProcessor
     implements ExternalTextureProcessor {
 
   private static final String VERTEX_SHADER_TRANSFORMATION_PATH =

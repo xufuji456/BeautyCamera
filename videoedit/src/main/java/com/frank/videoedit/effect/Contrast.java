@@ -5,6 +5,7 @@ import static com.google.android.exoplayer2.util.Assertions.checkArgument;
 
 import android.content.Context;
 
+import com.frank.videoedit.effect.listener.GlEffect;
 import com.google.android.exoplayer2.util.FrameProcessingException;
 
 /** A {@link GlEffect} to control the contrast of video frames. */

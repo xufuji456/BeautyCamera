@@ -1,6 +1,8 @@
-package com.frank.videoedit.effect;
+package com.frank.videoedit.effect.listener;
 
 import android.graphics.Matrix;
+
+import com.frank.videoedit.effect.MatrixUtils;
 
 /**
  * Specifies a 3x3 transformation {@link Matrix} to apply in the vertex shader for each frame.

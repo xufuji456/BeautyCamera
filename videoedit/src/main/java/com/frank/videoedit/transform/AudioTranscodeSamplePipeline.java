@@ -6,6 +6,7 @@ import static java.lang.Math.min;
 
 import androidx.annotation.Nullable;
 
+import com.frank.videoedit.transform.listener.Codec;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.audio.AudioProcessor.AudioFormat;

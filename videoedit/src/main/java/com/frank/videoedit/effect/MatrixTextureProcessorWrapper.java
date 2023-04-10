@@ -19,6 +19,9 @@ import androidx.annotation.GuardedBy;
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 
+import com.frank.videoedit.effect.listener.ExternalTextureProcessor;
+import com.frank.videoedit.effect.listener.FrameProcessingTask;
+import com.frank.videoedit.effect.listener.GlMatrixTransformation;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.util.DebugViewProvider;
 import com.google.android.exoplayer2.util.FrameProcessingException;

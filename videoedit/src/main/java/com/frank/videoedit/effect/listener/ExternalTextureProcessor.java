@@ -1,6 +1,6 @@
-package com.frank.videoedit.effect;
+package com.frank.videoedit.effect.listener;
 
-/* package */ interface ExternalTextureProcessor extends GlTextureProcessor {
+public interface ExternalTextureProcessor extends GlTextureProcessor {
 
   /**
    * Sets the texture transform matrix for converting an external surface texture's coordinates to

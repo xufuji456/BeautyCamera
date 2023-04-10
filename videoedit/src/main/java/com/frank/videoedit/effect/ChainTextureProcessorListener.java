@@ -5,9 +5,10 @@ import android.util.Pair;
 import androidx.annotation.GuardedBy;
 import androidx.annotation.Nullable;
 
+import com.frank.videoedit.effect.listener.GlTextureProcessor;
 import com.google.android.exoplayer2.C;
-import com.frank.videoedit.effect.GlTextureProcessor.InputListener;
-import com.frank.videoedit.effect.GlTextureProcessor.OutputListener;
+import com.frank.videoedit.effect.listener.GlTextureProcessor.InputListener;
+import com.frank.videoedit.effect.listener.GlTextureProcessor.OutputListener;
 
 import java.util.ArrayDeque;
 import java.util.Queue;

@@ -7,8 +7,9 @@ import android.graphics.SurfaceTexture;
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 
+import com.frank.videoedit.effect.listener.ExternalTextureProcessor;
 import com.google.android.exoplayer2.C;
-import com.frank.videoedit.effect.GlTextureProcessor.InputListener;
+import com.frank.videoedit.effect.listener.GlTextureProcessor.InputListener;
 import com.google.android.exoplayer2.util.FrameInfo;
 import com.google.android.exoplayer2.util.FrameProcessingException;
 import com.google.android.exoplayer2.util.FrameProcessor;

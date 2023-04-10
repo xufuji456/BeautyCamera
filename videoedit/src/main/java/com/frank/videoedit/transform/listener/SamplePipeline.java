@@ -1,7 +1,8 @@
-package com.frank.videoedit.transform;
+package com.frank.videoedit.transform.listener;
 
 import androidx.annotation.Nullable;
 
+import com.frank.videoedit.transform.TransformationException;
 import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
 
 /**
@@ -9,7 +10,7 @@ import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
  *
  * <p>This pipeline can be used to implement transformations of audio or video samples.
  */
-/* package */ interface SamplePipeline {
+public interface SamplePipeline {
 
   /** Returns a buffer if the pipeline is ready to accept input, and {@code null} otherwise. */
   @Nullable

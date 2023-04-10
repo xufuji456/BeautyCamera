@@ -2,6 +2,7 @@ package com.frank.videoedit.transform;
 
 import android.os.Build;
 
+import com.frank.videoedit.transform.listener.EncoderBitrateProvider;
 import com.google.android.exoplayer2.util.Util;
 
 /** Provides encoder bitrates that should target 0.95 SSIM or higher, accounting for device used. */

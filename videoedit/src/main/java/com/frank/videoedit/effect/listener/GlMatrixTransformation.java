@@ -1,9 +1,11 @@
-package com.frank.videoedit.effect;
+package com.frank.videoedit.effect.listener;
 
 import android.content.Context;
 import android.opengl.Matrix;
 import android.util.Pair;
 
+import com.frank.videoedit.effect.MatrixTextureProcessor;
+import com.frank.videoedit.effect.SingleFrameGlTextureProcessor;
 import com.google.android.exoplayer2.util.FrameProcessingException;
 import com.google.common.collect.ImmutableList;
 
