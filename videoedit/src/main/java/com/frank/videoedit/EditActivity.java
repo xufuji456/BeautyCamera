@@ -1,5 +1,7 @@
 package com.frank.videoedit;
 
+import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
+import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static com.google.android.exoplayer2.util.Assertions.checkNotNull;
 
 import android.Manifest;
@@ -7,6 +9,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -275,7 +278,12 @@ public class EditActivity extends AppCompatActivity {
                 ActivityCompat.checkSelfPermission(
                         EditActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE);
         if (permissionStatus != PackageManager.PERMISSION_GRANTED) {
-            String[] neededPermissions = {Manifest.permission.READ_EXTERNAL_STORAGE};
+            String[] neededPermissions;
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
+                neededPermissions = new String[]{WRITE_EXTERNAL_STORAGE};
+            } else {
+                neededPermissions = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE};
+            }
             ActivityCompat.requestPermissions(
                     EditActivity.this, neededPermissions, FILE_PERMISSION_REQUEST_CODE);
         } else {

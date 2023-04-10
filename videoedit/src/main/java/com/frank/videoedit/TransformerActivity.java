@@ -2,6 +2,7 @@
 package com.frank.videoedit;
 
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
+import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static com.google.android.exoplayer2.util.Assertions.checkNotNull;
 
 import android.app.Activity;
@@ -9,7 +10,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,7 +36,6 @@ import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.ui.StyledPlayerView;
-import com.google.android.exoplayer2.util.DebugTextViewHelper;
 import com.google.android.exoplayer2.util.Effect;
 import com.google.android.exoplayer2.util.Log;
 import com.google.android.exoplayer2.util.Util;
@@ -55,13 +57,11 @@ public final class TransformerActivity extends AppCompatActivity {
   private MaterialCardView inputCardView;
   private StyledPlayerView inputPlayerView;
   private StyledPlayerView outputPlayerView;
-  private TextView debugTextView;
   private TextView informationTextView;
   private ViewGroup progressViewGroup;
   private LinearProgressIndicator progressIndicator;
   private Stopwatch transformationStopwatch;
 
-  @Nullable private DebugTextViewHelper debugTextViewHelper;
   @Nullable private ExoPlayer inputPlayer;
   @Nullable private ExoPlayer outputPlayer;
   @Nullable private Transformer transformer;
@@ -75,7 +75,6 @@ public final class TransformerActivity extends AppCompatActivity {
     inputCardView = findViewById(R.id.input_card_view);
     inputPlayerView = findViewById(R.id.input_player_view);
     outputPlayerView = findViewById(R.id.output_player_view);
-    debugTextView = findViewById(R.id.debug_text_view);
     informationTextView = findViewById(R.id.information_text_view);
     progressViewGroup = findViewById(R.id.progress_view_group);
     progressIndicator = findViewById(R.id.progress_indicator);
@@ -102,7 +101,6 @@ public final class TransformerActivity extends AppCompatActivity {
     checkNotNull(inputCardView);
     checkNotNull(inputPlayerView);
     checkNotNull(outputPlayerView);
-    checkNotNull(debugTextView);
     checkNotNull(progressViewGroup);
     checkNotNull(displayInputButton);
     startTransformation();
@@ -136,9 +134,10 @@ public final class TransformerActivity extends AppCompatActivity {
     Intent intent = getIntent();
     Uri uri = checkNotNull(intent.getData());
     try {
-      externalCacheFile = createExternalCacheFile("transformer-output.mp4");
+      externalCacheFile = createExternalCacheFile("transform_output.mp4");
       String filePath = externalCacheFile.getAbsolutePath();
-      @Nullable Bundle bundle = intent.getExtras();
+      Log.e(TAG, "output path=" + filePath);
+      Bundle bundle = intent.getExtras();
       MediaItem mediaItem = createMediaItem(bundle, uri);
       Transformer transformer = createTransformer(bundle, filePath);
       transformationStopwatch.start();
@@ -231,7 +230,11 @@ public final class TransformerActivity extends AppCompatActivity {
 
   /** Creates a cache file, resetting it if it already exists. */
   private File createExternalCacheFile(String fileName) throws IOException {
-    File file = new File(getExternalCacheDir(), fileName);
+    String path = Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q
+            ? Environment.getExternalStorageDirectory().getPath()
+            : getExternalCacheDir().getAbsolutePath();
+
+    File file = new File(path, fileName);
     if (file.exists() && !file.delete()) {
       throw new IllegalStateException("Could not delete the previous transformer output file");
     }
@@ -328,16 +331,9 @@ public final class TransformerActivity extends AppCompatActivity {
 
     inputPlayer.play();
     outputPlayer.play();
-
-    debugTextViewHelper = new DebugTextViewHelper(outputPlayer, debugTextView);
-    debugTextViewHelper.start();
   }
 
   private void releasePlayer() {
-    if (debugTextViewHelper != null) {
-      debugTextViewHelper.stop();
-      debugTextViewHelper = null;
-    }
     if (inputPlayer != null) {
       inputPlayer.release();
       inputPlayer = null;
