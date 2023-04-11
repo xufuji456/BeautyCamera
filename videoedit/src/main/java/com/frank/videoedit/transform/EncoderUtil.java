@@ -18,13 +18,14 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 import com.frank.videoedit.transform.listener.EncoderSelector;
+import com.frank.videoedit.effect.entity.ColorInfo;
+
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.C.ColorTransfer;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.util.MediaFormatUtil;
 import com.google.android.exoplayer2.util.MimeTypes;
 import com.google.android.exoplayer2.util.Util;
-import com.google.android.exoplayer2.video.ColorInfo;
 import com.google.common.base.Ascii;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;

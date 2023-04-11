@@ -18,12 +18,13 @@ import androidx.annotation.Nullable;
 
 import com.frank.videoedit.transform.listener.Codec;
 import com.frank.videoedit.transform.listener.EncoderSelector;
+import com.frank.videoedit.effect.entity.ColorInfo;
+
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.util.Log;
 import com.google.android.exoplayer2.util.MediaFormatUtil;
 import com.google.android.exoplayer2.util.MimeTypes;
 import com.google.android.exoplayer2.util.Util;
-import com.google.android.exoplayer2.video.ColorInfo;
 import com.google.common.collect.ImmutableList;
 
 import java.util.ArrayList;
@@ -155,6 +156,17 @@ public final class DefaultEncoderFactory implements Codec.EncoderFactory {
         /* outputSurface= */ null);
   }
 
+  // TODO
+  private ColorInfo convertColorInfo(Format format) {
+    if (format == null || format.colorInfo == null) {
+      return null;
+    }
+    return new ColorInfo(format.colorInfo.colorSpace,
+            format.colorInfo.colorRange,
+            format.colorInfo.colorTransfer,
+            format.colorInfo.hdrStaticInfo);
+  }
+
   @Override
   public Codec createForVideoEncoding(Format format, List<String> allowedMimeTypes)
       throws TransformationException {
@@ -227,12 +239,13 @@ public final class DefaultEncoderFactory implements Codec.EncoderFactory {
       mediaFormat.setInteger(MediaFormat.KEY_LEVEL, supportedVideoEncoderSettings.level);
     }
 
+    ColorInfo colorInfo = convertColorInfo(format);
     if (mimeType.equals(MimeTypes.VIDEO_H264)) {
-      adjustMediaFormatForH264EncoderSettings(format.colorInfo, encoderInfo, mediaFormat);
+      adjustMediaFormatForH264EncoderSettings(/*format.colorInfo*/colorInfo, encoderInfo, mediaFormat);
     }
 
     MediaFormatUtil.maybeSetColorInfo(mediaFormat, encoderSupportedFormat.colorInfo);
-    if (Util.SDK_INT >= 31 && ColorInfo.isTransferHdr(format.colorInfo)) {
+    if (Util.SDK_INT >= 31 && ColorInfo.isTransferHdr(/*format.colorInfo*/colorInfo)) {
       if (EncoderUtil.getSupportedColorFormats(encoderInfo, mimeType)
           .contains(MediaCodecInfo.CodecCapabilities.COLOR_Format32bitABGR2101010)) {
         mediaFormat.setInteger(

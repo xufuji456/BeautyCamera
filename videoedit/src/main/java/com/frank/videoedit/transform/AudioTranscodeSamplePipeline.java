@@ -83,7 +83,7 @@ import java.nio.ByteBuffer;
 
     fallbackListener.onTransformationRequestFinalized(
         createFallbackTransformationRequest(
-            transformationRequest, requestedOutputFormat, encoder.getConfigurationFormat()));
+            transformationRequest, requestedOutputFormat, encoder.getConfigFormat()));
 
     // Use the same stream offset as the input stream for encoder input buffers.
     nextEncoderInputBufferTimeUs = streamOffsetUs;

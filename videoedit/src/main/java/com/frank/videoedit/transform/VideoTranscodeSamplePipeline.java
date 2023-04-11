@@ -16,6 +16,7 @@ import com.frank.videoedit.transform.listener.Codec;
 import com.frank.videoedit.effect.Presentation;
 import com.frank.videoedit.effect.entity.SurfaceInfo;
 import com.frank.videoedit.effect.entity.FrameInfo;
+import com.frank.videoedit.effect.entity.ColorInfo;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
@@ -24,7 +25,6 @@ import com.google.android.exoplayer2.util.Effect;
 import com.google.android.exoplayer2.util.FrameProcessingException;
 import com.google.android.exoplayer2.util.Log;
 import com.google.android.exoplayer2.util.Util;
-import com.google.android.exoplayer2.video.ColorInfo;
 import com.google.common.collect.ImmutableList;
 
 import java.nio.ByteBuffer;
@@ -47,6 +47,17 @@ import java.util.List;
   private final EncoderWrapper encoderWrapper;
   private final DecoderInputBuffer encoderOutputBuffer;
 
+  // TODO
+  private static ColorInfo convertColorInfo(Format format) {
+    if (format == null || format.colorInfo == null) {
+      return null;
+    }
+    return new ColorInfo(format.colorInfo.colorSpace,
+            format.colorInfo.colorRange,
+            format.colorInfo.colorTransfer,
+            format.colorInfo.hdrStaticInfo);
+  }
+
   public VideoTranscodeSamplePipeline(
       Context context,
       Format inputFormat,
@@ -67,7 +78,8 @@ import java.util.List;
         streamStartPositionUs,
         muxerWrapper);
 
-    if (ColorInfo.isTransferHdr(inputFormat.colorInfo)) {
+    ColorInfo colorInfo = convertColorInfo(inputFormat);
+    if (ColorInfo.isTransferHdr(/*inputFormat.colorInfo*/colorInfo)) {
       if (transformationRequest.forceInterpretHdrVideoAsSdr) {
         if (SDK_INT < 29) {
           throw TransformationException.createForCodec(
@@ -78,7 +90,8 @@ import java.util.List;
               /* mediaCodecName= */ null,
               TransformationException.ERROR_CODE_HDR_DECODING_UNSUPPORTED);
         }
-        inputFormat = inputFormat.buildUpon().setColorInfo(ColorInfo.SDR_BT709_LIMITED).build();
+        inputFormat = inputFormat.buildUpon().
+                setColorInfo(com.google.android.exoplayer2.video.ColorInfo.SDR_BT709_LIMITED).build();
       } else if (SDK_INT < 31 || deviceNeedsNoToneMappingWorkaround()) {
         throw TransformationException.createForCodec(
             new IllegalArgumentException("HDR editing and tone mapping is not supported."),
@@ -169,7 +182,7 @@ import java.util.List;
             decodedWidth, decodedHeight, inputFormat.pixelWidthHeightRatio, streamOffsetUs));
 
     boolean isToneMappingRequired =
-        ColorInfo.isTransferHdr(inputFormat.colorInfo)
+        ColorInfo.isTransferHdr(/*inputFormat.colorInfo*/colorInfo)
             && !ColorInfo.isTransferHdr(encoderWrapper.getSupportedInputColor());
     decoder =
         decoderFactory.createForVideoDecoding(
@@ -342,12 +355,13 @@ import java.util.List;
       this.transformationRequest = transformationRequest;
       this.fallbackListener = fallbackListener;
 
+      ColorInfo colorInfo = convertColorInfo(inputFormat);
       requestedOutputMimeType =
           transformationRequest.videoMimeType != null
               ? transformationRequest.videoMimeType
               : checkNotNull(inputFormat.sampleMimeType);
       supportedEncoderNamesForHdrEditing = EncoderUtil.getSupportedEncoderNamesForHdrEditing(
-              requestedOutputMimeType, inputFormat.colorInfo);
+              requestedOutputMimeType, /*inputFormat.colorInfo*/colorInfo);
     }
 
     /** Returns the {@link ColorInfo} expected from the input surface. */
@@ -356,8 +370,9 @@ import java.util.List;
           transformationRequest.enableHdrEditing
               && !transformationRequest.enableRequestSdrToneMapping
               && !supportedEncoderNamesForHdrEditing.isEmpty();
+      ColorInfo colorInfo = convertColorInfo(inputFormat);
       boolean isInputToneMapped =
-          !isHdrEditingEnabled && ColorInfo.isTransferHdr(inputFormat.colorInfo);
+          !isHdrEditingEnabled && ColorInfo.isTransferHdr(/*inputFormat.colorInfo*/colorInfo);
       if (isInputToneMapped) {
         // When tone-mapping HDR to SDR is enabled, assume we get BT.709 to avoid having the encoder
         // populate default color info, which depends on the resolution.
@@ -368,7 +383,7 @@ import java.util.List;
         Log.d(TAG, "colorInfo is null. Defaulting to SDR_BT709_LIMITED.");
         return ColorInfo.SDR_BT709_LIMITED;
       }
-      return inputFormat.colorInfo;
+      return colorInfo;//inputFormat.colorInfo;
     }
 
     @Nullable
@@ -393,6 +408,9 @@ import java.util.List;
         outputRotationDegrees = 90;
       }
 
+      ColorInfo curInfo = getSupportedInputColor();
+      com.google.android.exoplayer2.video.ColorInfo newInfo = new com.google.android.exoplayer2.video.ColorInfo(
+              curInfo.colorSpace, curInfo.colorRange, curInfo.colorTransfer, curInfo.hdrStaticInfo);
       Format requestedEncoderFormat =
           new Format.Builder()
               .setWidth(requestedWidth)
@@ -400,14 +418,15 @@ import java.util.List;
               .setRotationDegrees(0)
               .setFrameRate(inputFormat.frameRate)
               .setSampleMimeType(requestedOutputMimeType)
-              .setColorInfo(getSupportedInputColor())
+              .setColorInfo(/*getSupportedInputColor()*/newInfo)
               .build();
 
       encoder =
           encoderFactory.createForVideoEncoding(requestedEncoderFormat, allowedOutputMimeTypes);
 
-      Format encoderSupportedFormat = encoder.getConfigurationFormat();
-      if (ColorInfo.isTransferHdr(requestedEncoderFormat.colorInfo)) {
+      Format encoderSupportedFormat = encoder.getConfigFormat();
+      ColorInfo colorInfo = convertColorInfo(inputFormat);
+      if (ColorInfo.isTransferHdr(/*requestedEncoderFormat.colorInfo*/colorInfo)) {
         if (!requestedOutputMimeType.equals(encoderSupportedFormat.sampleMimeType)) {
           throw createEncodingException(
               new IllegalStateException("MIME type fallback unsupported with HDR editing"),
@@ -419,8 +438,8 @@ import java.util.List;
         }
       }
       boolean isInputToneMapped =
-          ColorInfo.isTransferHdr(inputFormat.colorInfo)
-              && !ColorInfo.isTransferHdr(requestedEncoderFormat.colorInfo);
+          ColorInfo.isTransferHdr(/*inputFormat.colorInfo*/colorInfo)
+              && !ColorInfo.isTransferHdr(/*requestedEncoderFormat.colorInfo*/colorInfo);
       fallbackListener.onTransformationRequestFinalized(
           createSupportedTransformationRequest(
               transformationRequest,

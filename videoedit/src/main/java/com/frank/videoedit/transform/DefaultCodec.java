@@ -19,6 +19,8 @@ import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
 
 import com.frank.videoedit.transform.listener.Codec;
+import com.frank.videoedit.effect.entity.ColorInfo;
+
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
@@ -26,7 +28,6 @@ import com.google.android.exoplayer2.util.Log;
 import com.google.android.exoplayer2.util.MediaFormatUtil;
 import com.google.android.exoplayer2.util.MimeTypes;
 import com.google.android.exoplayer2.util.TraceUtil;
-import com.google.android.exoplayer2.video.ColorInfo;
 import com.google.common.base.Ascii;
 import com.google.common.collect.ImmutableList;
 
@@ -46,7 +47,7 @@ public final class DefaultCodec implements Codec {
   /** The {@link MediaFormat} used to configure the underlying {@link MediaCodec}. */
   private final MediaFormat configurationMediaFormat;
 
-  private final Format configurationFormat;
+  private final Format configFormat;
   private final MediaCodec mediaCodec;
   @Nullable private final Surface inputSurface;
   private final boolean decoderNeedsFrameDroppingWorkaround;
@@ -64,7 +65,7 @@ public final class DefaultCodec implements Codec {
    *
    * @param context The {@link Context}.
    * @param configurationFormat The {@link Format} to configure the {@code DefaultCodec}. See {@link
-   *     #getConfigurationFormat()}. The {@link Format#sampleMimeType sampleMimeType} must not be
+   *     #getConfigFormat()}. The {@link Format#sampleMimeType sampleMimeType} must not be
    *     {@code null}.
    * @param configurationMediaFormat The {@link MediaFormat} to configure the underlying {@link
    *     MediaCodec}.
@@ -80,7 +81,7 @@ public final class DefaultCodec implements Codec {
       boolean isDecoder,
       @Nullable Surface outputSurface)
       throws TransformationException {
-    this.configurationFormat = configurationFormat;
+    this.configFormat = configurationFormat;
     this.configurationMediaFormat = configurationMediaFormat;
     outputBufferInfo = new BufferInfo();
     inputBufferIndex = C.INDEX_UNSET;
@@ -123,8 +124,8 @@ public final class DefaultCodec implements Codec {
   }
 
   @Override
-  public Format getConfigurationFormat() {
-    return configurationFormat;
+  public Format getConfigFormat() {
+    return configFormat;
   }
 
   @Override
@@ -281,15 +282,17 @@ public final class DefaultCodec implements Codec {
     return configurationMediaFormat;
   }
 
-  /**
-   * Attempts to dequeue an output buffer if there is no output buffer pending. Does nothing
-   * otherwise.
-   *
-   * @param setOutputBuffer Whether to read the bytes of the dequeued output buffer and copy them
-   *     into {@link #outputBuffer}.
-   * @return Whether there is an output buffer available.
-   * @throws TransformationException If the underlying {@link MediaCodec} encounters a problem.
-   */
+  // TODO
+  private ColorInfo convertColorInfo(Format format) {
+    if (format == null || format.colorInfo == null) {
+      return null;
+    }
+    return new ColorInfo(format.colorInfo.colorSpace,
+            format.colorInfo.colorRange,
+            format.colorInfo.colorTransfer,
+            format.colorInfo.hdrStaticInfo);
+  }
+
   private boolean maybeDequeueOutputBuffer(boolean setOutputBuffer) throws TransformationException {
     if (outputBufferIndex >= 0) {
       return true;
@@ -308,9 +311,10 @@ public final class DefaultCodec implements Codec {
         outputFormat = convertToFormat(mediaCodec.getOutputFormat());
         boolean isToneMappingEnabled =
             SDK_INT >= 29 && Api29.isSdrToneMappingEnabled(configurationMediaFormat);
+        ColorInfo colorInfo = convertColorInfo(configFormat);
         ColorInfo expectedColorInfo =
-            isToneMappingEnabled ? ColorInfo.SDR_BT709_LIMITED : configurationFormat.colorInfo;
-        if (!areColorTransfersEqual(expectedColorInfo, outputFormat.colorInfo)) {
+            isToneMappingEnabled ? ColorInfo.SDR_BT709_LIMITED : /*configFormat.colorInfo*/colorInfo;
+        if (!areColorTransfersEqual(expectedColorInfo, /*configFormat.colorInfo*/colorInfo)) {
           // TODO(b/237674316): The container ColorInfo's transfer doesn't match the decoder output
           //   MediaFormat, or we requested tone-mapping but it hasn't been applied. We should
           //   reconfigure downstream components for this case instead.
@@ -351,7 +355,7 @@ public final class DefaultCodec implements Codec {
 
   private TransformationException createTransformationException(Exception cause) {
     boolean isDecoder = !mediaCodec.getCodecInfo().isEncoder();
-    boolean isVideo = MimeTypes.isVideo(configurationFormat.sampleMimeType);
+    boolean isVideo = MimeTypes.isVideo(configFormat.sampleMimeType);
     return TransformationException.createForCodec(
         cause,
         isVideo,

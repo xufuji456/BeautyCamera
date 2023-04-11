@@ -111,7 +111,7 @@ public interface Codec {
    * DecoderFactory} or output {@link Format} used by the {@link EncoderFactory} for selecting and
    * configuring the underlying decoder or encoder.
    */
-  Format getConfigurationFormat();
+  Format getConfigFormat();
 
   /** Returns the name of the underlying codec. */
   String getName();
