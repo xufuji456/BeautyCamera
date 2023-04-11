@@ -3,10 +3,11 @@ package com.frank.videoedit.listener;
 import android.content.Context;
 import android.view.Surface;
 
+import com.frank.videoedit.effect.entity.SurfaceInfo;
+
 import com.google.android.exoplayer2.util.Effect;
 import com.google.android.exoplayer2.util.FrameInfo;
 import com.google.android.exoplayer2.util.FrameProcessingException;
-import com.google.android.exoplayer2.util.SurfaceInfo;
 import com.google.android.exoplayer2.video.ColorInfo;
 import java.util.List;
 
