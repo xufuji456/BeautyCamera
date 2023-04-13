@@ -3,7 +3,6 @@ package com.frank.videoedit.transform;
 import static com.google.android.exoplayer2.util.Assertions.checkNotNull;
 import static com.google.android.exoplayer2.util.Util.SDK_INT;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.media.MediaFormat;
 import android.util.Pair;
@@ -11,10 +10,12 @@ import android.view.Surface;
 
 import androidx.annotation.Nullable;
 
+import com.frank.videoedit.entity.ColorInfo;
 import com.frank.videoedit.transform.listener.Codec;
+import com.frank.videoedit.transform.util.MediaUtil;
+
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.mediacodec.MediaCodecUtil;
-import com.google.android.exoplayer2.util.MediaFormatUtil;
 import com.google.android.exoplayer2.util.MimeTypes;
 
 /** A default implementation of {@link Codec.DecoderFactory}. */
@@ -37,9 +38,9 @@ import com.google.android.exoplayer2.util.MimeTypes;
     MediaFormat mediaFormat =
         MediaFormat.createAudioFormat(
             checkNotNull(format.sampleMimeType), format.sampleRate, format.channelCount);
-    MediaFormatUtil.maybeSetInteger(
+    MediaUtil.maybeSetInteger(
         mediaFormat, MediaFormat.KEY_MAX_INPUT_SIZE, format.maxInputSize);
-    MediaFormatUtil.setCsdBuffers(mediaFormat, format.initializationData);
+    MediaUtil.setCsdBuffers(mediaFormat, format.initializationData);
 
     @Nullable
     String mediaCodecName = EncoderUtil.findCodecForFormat(mediaFormat, /* isDecoder= */ true);
@@ -55,7 +56,17 @@ import com.google.android.exoplayer2.util.MimeTypes;
         /* outputSurface= */ null);
   }
 
-  @SuppressLint("InlinedApi")
+  // TODO
+  private ColorInfo convertColorInfo(Format format) {
+    if (format == null || format.colorInfo == null) {
+      return null;
+    }
+    return new ColorInfo(format.colorInfo.colorSpace,
+            format.colorInfo.colorRange,
+            format.colorInfo.colorTransfer,
+            format.colorInfo.hdrStaticInfo);
+  }
+
   @Override
   public Codec createForVideoDecoding(
       Format format, Surface outputSurface, boolean enableRequestSdrToneMapping)
@@ -63,11 +74,11 @@ import com.google.android.exoplayer2.util.MimeTypes;
     MediaFormat mediaFormat =
         MediaFormat.createVideoFormat(
             checkNotNull(format.sampleMimeType), format.width, format.height);
-    MediaFormatUtil.maybeSetInteger(mediaFormat, MediaFormat.KEY_ROTATION, format.rotationDegrees);
-    MediaFormatUtil.maybeSetInteger(
+    MediaUtil.maybeSetInteger(mediaFormat, MediaFormat.KEY_ROTATION, format.rotationDegrees);
+    MediaUtil.maybeSetInteger(
         mediaFormat, MediaFormat.KEY_MAX_INPUT_SIZE, format.maxInputSize);
-    MediaFormatUtil.setCsdBuffers(mediaFormat, format.initializationData);
-    MediaFormatUtil.maybeSetColorInfo(mediaFormat, format.colorInfo);
+    MediaUtil.setCsdBuffers(mediaFormat, format.initializationData);
+    MediaUtil.maybeSetColorInfo(mediaFormat, /*format.colorInfo*/convertColorInfo(format));
     if (decoderSupportsKeyAllowFrameDrop) {
       // This key ensures no frame dropping when the decoder's output surface is full. This allows
       // transformer to decode as many frames as possible in one render cycle.
@@ -81,7 +92,7 @@ import com.google.android.exoplayer2.util.MimeTypes;
     @Nullable
     Pair<Integer, Integer> codecProfileAndLevel = MediaCodecUtil.getCodecProfileAndLevel(format);
     if (codecProfileAndLevel != null) {
-      MediaFormatUtil.maybeSetInteger(
+      MediaUtil.maybeSetInteger(
           mediaFormat, MediaFormat.KEY_PROFILE, codecProfileAndLevel.first);
     }
 

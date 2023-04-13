@@ -19,11 +19,11 @@ import androidx.annotation.RequiresApi;
 
 import com.frank.videoedit.transform.listener.EncoderSelector;
 import com.frank.videoedit.entity.ColorInfo;
+import com.frank.videoedit.transform.util.MediaUtil;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.C.ColorTransfer;
 import com.google.android.exoplayer2.Format;
-import com.google.android.exoplayer2.util.MediaFormatUtil;
 import com.google.android.exoplayer2.util.MimeTypes;
 import com.google.android.exoplayer2.util.Util;
 import com.google.common.base.Ascii;
@@ -323,7 +323,7 @@ public final class EncoderUtil {
             : mediaCodecList.findEncoderForFormat(format);
 
     if (Util.SDK_INT == 21) {
-      MediaFormatUtil.maybeSetInteger(format, MediaFormat.KEY_FRAME_RATE, round(frameRate));
+      MediaUtil.maybeSetInteger(format, MediaFormat.KEY_FRAME_RATE, round(frameRate));
     }
     return mediaCodecName;
   }

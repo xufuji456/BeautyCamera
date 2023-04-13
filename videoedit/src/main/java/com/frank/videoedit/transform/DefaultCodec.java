@@ -20,12 +20,12 @@ import androidx.annotation.VisibleForTesting;
 
 import com.frank.videoedit.transform.listener.Codec;
 import com.frank.videoedit.entity.ColorInfo;
+import com.frank.videoedit.transform.util.MediaUtil;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
 import com.google.android.exoplayer2.util.Log;
-import com.google.android.exoplayer2.util.MediaFormatUtil;
 import com.google.android.exoplayer2.util.MimeTypes;
 import com.google.android.exoplayer2.util.TraceUtil;
 import com.google.common.base.Ascii;
@@ -431,7 +431,7 @@ public final class DefaultCodec implements Codec {
       formatBuilder
           .setWidth(mediaFormat.getInteger(MediaFormat.KEY_WIDTH))
           .setHeight(mediaFormat.getInteger(MediaFormat.KEY_HEIGHT))
-          .setColorInfo(MediaFormatUtil.getColorInfo(mediaFormat));
+          .setColorInfo(reconvertColorInfo(MediaUtil.getColorInfo(mediaFormat)));
     } else if (MimeTypes.isAudio(mimeType)) {
       // TODO(b/178685617): Only set the PCM encoding for audio/raw, once we have a way to
       // simulate more realistic codec input/output formats in tests.
@@ -441,6 +441,17 @@ public final class DefaultCodec implements Codec {
           .setPcmEncoding(MEDIA_CODEC_PCM_ENCODING);
     }
     return formatBuilder.build();
+  }
+
+  // TODO
+  private static com.google.android.exoplayer2.video.ColorInfo reconvertColorInfo(ColorInfo colorInfo) {
+    if (colorInfo == null) {
+      return null;
+    }
+    return new com.google.android.exoplayer2.video.ColorInfo(colorInfo.colorSpace,
+            colorInfo.colorRange,
+            colorInfo.colorTransfer,
+            colorInfo.hdrStaticInfo);
   }
 
   /** Calls and traces {@link MediaCodec#configure(MediaFormat, Surface, MediaCrypto, int)}. */

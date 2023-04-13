@@ -14,10 +14,12 @@ import android.util.SparseLongArray;
 
 import androidx.annotation.RequiresApi;
 
+import com.frank.videoedit.entity.ColorInfo;
 import com.frank.videoedit.transform.listener.Muxer;
+import com.frank.videoedit.transform.util.MediaUtil;
+
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
-import com.google.android.exoplayer2.util.MediaFormatUtil;
 import com.google.android.exoplayer2.util.MimeTypes;
 import com.google.android.exoplayer2.util.Util;
 import com.google.common.collect.ImmutableList;
@@ -102,6 +104,17 @@ import java.nio.ByteBuffer;
     trackIndexToLastPresentationTimeUs = new SparseLongArray();
   }
 
+  // TODO
+  private ColorInfo convertColorInfo(Format format) {
+    if (format == null || format.colorInfo == null) {
+      return null;
+    }
+    return new ColorInfo(format.colorInfo.colorSpace,
+            format.colorInfo.colorRange,
+            format.colorInfo.colorTransfer,
+            format.colorInfo.hdrStaticInfo);
+  }
+
   @Override
   public int addTrack(Format format) throws MuxerException {
     String sampleMimeType = checkNotNull(format.sampleMimeType);
@@ -113,7 +126,7 @@ import java.nio.ByteBuffer;
     } else {
       mediaFormat =
           MediaFormat.createVideoFormat(castNonNull(sampleMimeType), format.width, format.height);
-      MediaFormatUtil.maybeSetColorInfo(mediaFormat, format.colorInfo);
+      MediaUtil.maybeSetColorInfo(mediaFormat, /*format.colorInfo*/convertColorInfo(format));
       try {
         mediaMuxer.setOrientationHint(format.rotationDegrees);
       } catch (RuntimeException e) {
@@ -121,7 +134,7 @@ import java.nio.ByteBuffer;
             "Failed to set orientation hint with rotationDegrees=" + format.rotationDegrees, e);
       }
     }
-    MediaFormatUtil.setCsdBuffers(mediaFormat, format.initializationData);
+    MediaUtil.setCsdBuffers(mediaFormat, format.initializationData);
     int trackIndex;
     try {
       trackIndex = mediaMuxer.addTrack(mediaFormat);

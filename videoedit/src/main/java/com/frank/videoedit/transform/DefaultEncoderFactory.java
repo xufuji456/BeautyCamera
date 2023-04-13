@@ -19,10 +19,10 @@ import androidx.annotation.Nullable;
 import com.frank.videoedit.transform.listener.Codec;
 import com.frank.videoedit.transform.listener.EncoderSelector;
 import com.frank.videoedit.entity.ColorInfo;
+import com.frank.videoedit.transform.util.MediaUtil;
 
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.util.Log;
-import com.google.android.exoplayer2.util.MediaFormatUtil;
 import com.google.android.exoplayer2.util.MimeTypes;
 import com.google.android.exoplayer2.util.Util;
 import com.google.common.collect.ImmutableList;
@@ -244,7 +244,7 @@ public final class DefaultEncoderFactory implements Codec.EncoderFactory {
       adjustMediaFormatForH264EncoderSettings(/*format.colorInfo*/colorInfo, encoderInfo, mediaFormat);
     }
 
-    MediaFormatUtil.maybeSetColorInfo(mediaFormat, encoderSupportedFormat.colorInfo);
+    MediaUtil.maybeSetColorInfo(mediaFormat, /*encoderSupportedFormat.colorInfo*/colorInfo);
     if (Util.SDK_INT >= 31 && ColorInfo.isTransferHdr(/*format.colorInfo*/colorInfo)) {
       if (EncoderUtil.getSupportedColorFormats(encoderInfo, mimeType)
           .contains(MediaCodecInfo.CodecCapabilities.COLOR_Format32bitABGR2101010)) {
