@@ -1,12 +1,10 @@
 
 package com.frank.videoedit.effect;
 
-import static com.google.android.exoplayer2.util.Assertions.checkArgument;
-
 import android.content.Context;
 
 import com.frank.videoedit.effect.listener.GlEffect;
-import com.google.android.exoplayer2.util.FrameProcessingException;
+import com.frank.videoedit.util.FrameProcessingException;
 
 /** A {@link GlEffect} to control the contrast of video frames. */
 public class Contrast implements GlEffect {
@@ -21,7 +19,9 @@ public class Contrast implements GlEffect {
    * to add no contrast and leaves the frames unchanged.
    */
   public Contrast(float contrast) {
-    checkArgument(-1 <= contrast && contrast <= 1, "Contrast needs to be in the interval [-1, 1].");
+    if (contrast < -1 || contrast > 1) {
+      throw new IllegalArgumentException("Contrast needs to be in the interval [-1, 1].");
+    }
     this.contrast = contrast;
   }
 

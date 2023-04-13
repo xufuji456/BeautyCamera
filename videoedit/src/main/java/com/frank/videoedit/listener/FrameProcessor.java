@@ -6,9 +6,10 @@ import android.view.Surface;
 import com.frank.videoedit.effect.entity.FrameInfo;
 import com.frank.videoedit.effect.entity.SurfaceInfo;
 import com.frank.videoedit.effect.entity.ColorInfo;
+import com.frank.videoedit.util.FrameProcessingException;
 
 import com.google.android.exoplayer2.util.Effect;
-import com.google.android.exoplayer2.util.FrameProcessingException;
+
 import java.util.List;
 
 public interface FrameProcessor {

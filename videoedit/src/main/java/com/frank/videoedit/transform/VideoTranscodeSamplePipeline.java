@@ -17,12 +17,12 @@ import com.frank.videoedit.effect.Presentation;
 import com.frank.videoedit.effect.entity.SurfaceInfo;
 import com.frank.videoedit.effect.entity.FrameInfo;
 import com.frank.videoedit.effect.entity.ColorInfo;
+import com.frank.videoedit.util.FrameProcessingException;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
 import com.google.android.exoplayer2.util.Effect;
-import com.google.android.exoplayer2.util.FrameProcessingException;
 import com.google.android.exoplayer2.util.Log;
 import com.google.android.exoplayer2.util.Util;
 import com.google.common.collect.ImmutableList;

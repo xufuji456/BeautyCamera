@@ -1,7 +1,7 @@
 package com.frank.videoedit.effect.listener;
 
 import com.frank.videoedit.effect.TextureInfo;
-import com.google.android.exoplayer2.util.FrameProcessingException;
+import com.frank.videoedit.util.FrameProcessingException;
 
 /**
  * Processes frames from one OpenGL 2D texture to another.

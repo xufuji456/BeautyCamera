@@ -7,7 +7,7 @@ import android.util.Pair;
 import androidx.annotation.CallSuper;
 
 import com.frank.videoedit.effect.listener.GlTextureProcessor;
-import com.google.android.exoplayer2.util.FrameProcessingException;
+import com.frank.videoedit.util.FrameProcessingException;
 import com.google.android.exoplayer2.util.GlUtil;
 
 /**

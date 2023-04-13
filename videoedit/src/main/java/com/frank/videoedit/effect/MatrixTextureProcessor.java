@@ -11,10 +11,10 @@ import android.util.Pair;
 import com.frank.videoedit.effect.listener.ExternalTextureProcessor;
 import com.frank.videoedit.effect.listener.GlMatrixTransformation;
 import com.frank.videoedit.effect.entity.ColorInfo;
+import com.frank.videoedit.util.FrameProcessingException;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
-import com.google.android.exoplayer2.util.FrameProcessingException;
 import com.google.android.exoplayer2.util.GlProgram;
 import com.google.android.exoplayer2.util.GlUtil;
 import com.google.common.collect.ImmutableList;

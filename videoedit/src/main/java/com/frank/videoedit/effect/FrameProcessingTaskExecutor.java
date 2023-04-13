@@ -4,8 +4,8 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import com.frank.videoedit.effect.listener.FrameProcessingTask;
 import com.frank.videoedit.listener.FrameProcessor;
+import com.frank.videoedit.util.FrameProcessingException;
 
-import com.google.android.exoplayer2.util.FrameProcessingException;
 import com.google.android.exoplayer2.util.GlUtil;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -15,19 +15,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/**
- * Wrapper around a single thread {@link ExecutorService} for executing {@link FrameProcessingTask}
- * instances.
- *
- * <p>The wrapper handles calling {@link
- * FrameProcessor.Listener#onFrameProcessingError(FrameProcessingException)} for errors that occur
- * during these tasks. Errors are assumed to be non-recoverable, so the {@code
- * FrameProcessingTaskExecutor} should be released if an error occurs.
- *
- * <p>{@linkplain #submitWithHighPriority(FrameProcessingTask) High priority tasks} are always
- * executed before {@linkplain #submit(FrameProcessingTask) default priority tasks}. Tasks with
- * equal priority are executed in FIFO order.
- */
 /* package */ final class FrameProcessingTaskExecutor {
 
   private final ExecutorService singleThreadExecutorService;

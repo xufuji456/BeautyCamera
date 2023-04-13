@@ -2,8 +2,8 @@ package com.frank.videoedit.effect.listener;
 
 import android.content.Context;
 
+import com.frank.videoedit.util.FrameProcessingException;
 import com.google.android.exoplayer2.util.Effect;
-import com.google.android.exoplayer2.util.FrameProcessingException;
 
 public interface GlEffect extends Effect {
 
