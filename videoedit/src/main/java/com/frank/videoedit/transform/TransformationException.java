@@ -8,10 +8,10 @@ import android.os.SystemClock;
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
+import com.frank.videoedit.transform.listener.AudioProcessor.AudioFormat;
+
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.PlaybackException;
-import com.google.android.exoplayer2.audio.AudioProcessor;
-import com.google.android.exoplayer2.audio.AudioProcessor.AudioFormat;
 import com.google.android.exoplayer2.util.Clock;
 import com.google.android.exoplayer2.util.FrameProcessingException;
 import com.google.android.exoplayer2.util.FrameProcessor;
@@ -208,15 +208,6 @@ public final class TransformationException extends Exception {
     return new TransformationException(errorMessage, cause, errorCode);
   }
 
-  /**
-   * Creates an instance for an {@link AudioProcessor} related exception.
-   *
-   * @param cause The cause of the failure.
-   * @param componentName The name of the {@link AudioProcessor} used.
-   * @param audioFormat The {@link AudioFormat} used.
-   * @param errorCode See {@link #errorCode}.
-   * @return The created instance.
-   */
   public static TransformationException createForAudioProcessor(
       Throwable cause, String componentName, AudioFormat audioFormat, int errorCode) {
     return new TransformationException(

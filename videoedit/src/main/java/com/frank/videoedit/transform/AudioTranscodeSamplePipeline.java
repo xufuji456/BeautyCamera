@@ -6,10 +6,10 @@ import static java.lang.Math.min;
 
 import androidx.annotation.Nullable;
 
+import com.frank.videoedit.transform.listener.AudioProcessor.AudioFormat;
 import com.frank.videoedit.transform.listener.Codec;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
-import com.google.android.exoplayer2.audio.AudioProcessor.AudioFormat;
 import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
 import com.google.android.exoplayer2.util.Util;
 
