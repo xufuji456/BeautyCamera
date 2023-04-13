@@ -1,16 +1,12 @@
 package com.frank.videoedit.transform;
 
-import static com.google.android.exoplayer2.util.Assertions.checkArgument;
-import static com.google.android.exoplayer2.util.Assertions.checkNotNull;
-import static com.google.android.exoplayer2.util.Assertions.checkState;
-import static com.google.android.exoplayer2.util.Assertions.checkStateNotNull;
-import static com.google.android.exoplayer2.util.Util.SDK_INT;
-
 import android.content.Context;
 import android.media.MediaCodec;
 import android.media.MediaCodec.BufferInfo;
 import android.media.MediaCrypto;
 import android.media.MediaFormat;
+import android.os.Build;
+import android.util.Log;
 import android.view.Surface;
 
 import androidx.annotation.DoNotInline;
@@ -25,7 +21,6 @@ import com.frank.videoedit.transform.util.MediaUtil;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
-import com.google.android.exoplayer2.util.Log;
 import com.google.android.exoplayer2.util.MimeTypes;
 import com.google.android.exoplayer2.util.TraceUtil;
 import com.google.common.base.Ascii;
@@ -87,21 +82,21 @@ public final class DefaultCodec implements Codec {
     inputBufferIndex = C.INDEX_UNSET;
     outputBufferIndex = C.INDEX_UNSET;
 
-    boolean isVideo = MimeTypes.isVideo(checkNotNull(configurationFormat.sampleMimeType));
+    boolean isVideo = MimeTypes.isVideo(configurationFormat.sampleMimeType);
     @Nullable MediaCodec mediaCodec = null;
     @Nullable Surface inputSurface = null;
     try {
       boolean requestedHdrToneMapping =
-          SDK_INT >= 29 && Api29.isSdrToneMappingEnabled(configurationMediaFormat);
+              Build.VERSION.SDK_INT >= 29 && Api29.isSdrToneMappingEnabled(configurationMediaFormat);
       mediaCodec = MediaCodec.createByCodecName(mediaCodecName);
       configureCodec(mediaCodec, configurationMediaFormat, isDecoder, outputSurface);
-      if (SDK_INT >= 29 && requestedHdrToneMapping) {
+      if (Build.VERSION.SDK_INT >= 29 && requestedHdrToneMapping) {
         // The MediaCodec input format reflects whether tone-mapping is possible after configure().
         // See
         // https://developer.android.com/reference/android/media/MediaFormat#KEY_COLOR_TRANSFER_REQUEST.
-        checkArgument(
-            Api29.isSdrToneMappingEnabled(mediaCodec.getInputFormat()),
-            "Tone-mapping requested but not supported by the decoder.");
+        if(!Api29.isSdrToneMappingEnabled(mediaCodec.getInputFormat())) {
+            throw new IllegalArgumentException("Tone-mapping requested but not supported by the decoder.");
+        }
       }
       if (isVideo && !isDecoder) {
         inputSurface = mediaCodec.createInputSurface();
@@ -130,7 +125,7 @@ public final class DefaultCodec implements Codec {
 
   @Override
   public Surface getInputSurface() {
-    return checkStateNotNull(inputSurface);
+    return inputSurface;
   }
 
   @Override
@@ -175,15 +170,11 @@ public final class DefaultCodec implements Codec {
       }
       inputBuffer.clear();
     }
-    checkNotNull(inputBuffer.data);
     return true;
   }
 
   @Override
   public void queueInputBuffer(DecoderInputBuffer inputBuffer) throws TransformationException {
-    checkState(
-        !inputStreamEnded, "Input buffer can not be queued after the input stream has ended.");
-
     int offset = 0;
     int size = 0;
     if (inputBuffer.data != null && inputBuffer.data.hasRemaining()) {
@@ -240,7 +231,7 @@ public final class DefaultCodec implements Codec {
       if (render) {
         mediaCodec.releaseOutputBuffer(
             outputBufferIndex,
-            /* renderTimestampNs= */ checkStateNotNull(outputBufferInfo).presentationTimeUs * 1000);
+            /* renderTimestampNs= */ outputBufferInfo.presentationTimeUs * 1000);
       } else {
         mediaCodec.releaseOutputBuffer(outputBufferIndex, /* render= */ false);
       }
@@ -274,7 +265,7 @@ public final class DefaultCodec implements Codec {
    */
   @Override
   public String getName() {
-    return SDK_INT >= 29 ? Api29.getCanonicalName(mediaCodec) : mediaCodec.getName();
+    return Build.VERSION.SDK_INT >= 29 ? Api29.getCanonicalName(mediaCodec) : mediaCodec.getName();
   }
 
   @VisibleForTesting
@@ -310,7 +301,7 @@ public final class DefaultCodec implements Codec {
       if (outputBufferIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
         outputFormat = convertToFormat(mediaCodec.getOutputFormat());
         boolean isToneMappingEnabled =
-            SDK_INT >= 29 && Api29.isSdrToneMappingEnabled(configurationMediaFormat);
+                Build.VERSION.SDK_INT >= 29 && Api29.isSdrToneMappingEnabled(configurationMediaFormat);
         ColorInfo colorInfo = convertColorInfo(configFormat);
         ColorInfo expectedColorInfo =
             isToneMappingEnabled ? ColorInfo.SDR_BT709_LIMITED : /*configFormat.colorInfo*/colorInfo;
@@ -318,7 +309,7 @@ public final class DefaultCodec implements Codec {
           // TODO(b/237674316): The container ColorInfo's transfer doesn't match the decoder output
           //   MediaFormat, or we requested tone-mapping but it hasn't been applied. We should
           //   reconfigure downstream components for this case instead.
-          Log.w(
+          Log.e(
               TAG,
               "Codec output color format does not match configured color format. Expected: "
                   + expectedColorInfo
@@ -343,7 +334,7 @@ public final class DefaultCodec implements Codec {
 
     if (setOutputBuffer) {
       try {
-        outputBuffer = checkNotNull(mediaCodec.getOutputBuffer(outputBufferIndex));
+        outputBuffer = mediaCodec.getOutputBuffer(outputBufferIndex);
       } catch (RuntimeException e) {
         throw createTransformationException(e);
       }
@@ -481,7 +472,7 @@ public final class DefaultCodec implements Codec {
     // bounds. From API 29, if the app targets API 29 or later, the {@link
     // MediaFormat#KEY_ALLOW_FRAME_DROP} key prevents frame dropping even when the surface is full.
     // Frame dropping is never desired, so a workaround is needed for older API levels.
-    return SDK_INT < 29
+    return Build.VERSION.SDK_INT < 29
         || context.getApplicationContext().getApplicationInfo().targetSdkVersion < 29;
   }
 
@@ -496,7 +487,7 @@ public final class DefaultCodec implements Codec {
     public static boolean isSdrToneMappingEnabled(MediaFormat mediaFormat) {
       // MediaFormat.getInteger(String, int) was added in API 29 but applying a color transfer
       // request is only possible from API 31.
-      return SDK_INT >= 31
+      return Build.VERSION.SDK_INT >= 31
           && mediaFormat.getInteger(MediaFormat.KEY_COLOR_TRANSFER_REQUEST, /* defaultValue= */ 0)
               == MediaFormat.COLOR_TRANSFER_SDR_VIDEO;
     }

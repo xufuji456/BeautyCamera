@@ -1,10 +1,8 @@
 package com.frank.videoedit.transform;
 
-import static com.google.android.exoplayer2.util.Assertions.checkNotNull;
-import static com.google.android.exoplayer2.util.Util.SDK_INT;
-
 import android.content.Context;
 import android.media.MediaFormat;
+import android.os.Build;
 import android.util.Pair;
 import android.view.Surface;
 
@@ -29,7 +27,7 @@ import com.google.android.exoplayer2.util.MimeTypes;
     this.context = context;
 
     decoderSupportsKeyAllowFrameDrop =
-        SDK_INT >= 29
+            Build.VERSION.SDK_INT >= 29
             && context.getApplicationContext().getApplicationInfo().targetSdkVersion >= 29;
   }
 
@@ -37,7 +35,7 @@ import com.google.android.exoplayer2.util.MimeTypes;
   public Codec createForAudioDecoding(Format format) throws TransformationException {
     MediaFormat mediaFormat =
         MediaFormat.createAudioFormat(
-            checkNotNull(format.sampleMimeType), format.sampleRate, format.channelCount);
+            format.sampleMimeType, format.sampleRate, format.channelCount);
     MediaUtil.maybeSetInteger(
         mediaFormat, MediaFormat.KEY_MAX_INPUT_SIZE, format.maxInputSize);
     MediaUtil.setCsdBuffers(mediaFormat, format.initializationData);
@@ -73,7 +71,7 @@ import com.google.android.exoplayer2.util.MimeTypes;
       throws TransformationException {
     MediaFormat mediaFormat =
         MediaFormat.createVideoFormat(
-            checkNotNull(format.sampleMimeType), format.width, format.height);
+            format.sampleMimeType, format.width, format.height);
     MediaUtil.maybeSetInteger(mediaFormat, MediaFormat.KEY_ROTATION, format.rotationDegrees);
     MediaUtil.maybeSetInteger(
         mediaFormat, MediaFormat.KEY_MAX_INPUT_SIZE, format.maxInputSize);
@@ -84,7 +82,7 @@ import com.google.android.exoplayer2.util.MimeTypes;
       // transformer to decode as many frames as possible in one render cycle.
       mediaFormat.setInteger(MediaFormat.KEY_ALLOW_FRAME_DROP, 0);
     }
-    if (SDK_INT >= 31 && enableRequestSdrToneMapping) {
+    if (Build.VERSION.SDK_INT >= 31 && enableRequestSdrToneMapping) {
       mediaFormat.setInteger(
           MediaFormat.KEY_COLOR_TRANSFER_REQUEST, MediaFormat.COLOR_TRANSFER_SDR_VIDEO);
     }

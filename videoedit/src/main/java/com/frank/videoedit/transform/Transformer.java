@@ -1,7 +1,5 @@
 package com.frank.videoedit.transform;
 
-import static com.google.android.exoplayer2.util.Assertions.checkNotNull;
-import static com.google.android.exoplayer2.util.Assertions.checkState;
 import static java.lang.annotation.ElementType.TYPE_USE;
 
 import android.content.Context;
@@ -17,6 +15,7 @@ import androidx.annotation.VisibleForTesting;
 import com.frank.videoedit.listener.FrameProcessor;
 import com.frank.videoedit.transform.listener.Codec;
 import com.frank.videoedit.transform.listener.Muxer;
+import com.frank.videoedit.transform.util.CommonUtil;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlayerLibraryInfo;
@@ -29,8 +28,6 @@ import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.util.Clock;
 import com.google.android.exoplayer2.util.Effect;
 import com.google.android.exoplayer2.util.ListenerSet;
-import com.google.android.exoplayer2.util.MimeTypes;
-import com.google.android.exoplayer2.util.Util;
 import com.google.common.collect.ImmutableList;
 
 import java.io.File;
@@ -91,7 +88,7 @@ public final class Transformer {
       encoderFactory = new DefaultEncoderFactory.Builder(this.context).build();
       frameProcessorFactory = new GlEffectsFrameProcessor.Factory();
       muxerFactory = new DefaultMuxer.Factory();
-      looper = Util.getCurrentOrMainLooper();
+      looper = CommonUtil.getCurrentOrMainLooper();
       clock = Clock.DEFAULT;
       listeners = new ListenerSet<>(looper, clock, (listener, flags) -> {});
     }
@@ -191,13 +188,6 @@ public final class Transformer {
      * @throws IllegalStateException If the muxer doesn't support the requested video MIME type.
      */
     public Transformer build() {
-      checkNotNull(context);
-      if (transformationRequest.audioMimeType != null) {
-        checkSampleMimeType(transformationRequest.audioMimeType);
-      }
-      if (transformationRequest.videoMimeType != null) {
-        checkSampleMimeType(transformationRequest.videoMimeType);
-      }
       if (mediaSourceFactory == null) {
         DefaultExtractorsFactory defaultExtractorsFactory = new DefaultExtractorsFactory();
         mediaSourceFactory = new DefaultMediaSourceFactory(context, defaultExtractorsFactory);
@@ -216,13 +206,6 @@ public final class Transformer {
           clock);
     }
 
-    private void checkSampleMimeType(String sampleMimeType) {
-      checkState(
-          muxerFactory
-              .getSupportedSampleMimeTypes(MimeTypes.getTrackType(sampleMimeType))
-              .contains(sampleMimeType),
-          "Unsupported sample MIME type " + sampleMimeType);
-    }
   }
 
   /** A listener for the transformation events. */
@@ -633,7 +616,7 @@ public final class Transformer {
       } else {
         TransformationResult result =
             new TransformationResult.Builder()
-                .setDurationMs(checkNotNull(muxerWrapper).getDurationMs())
+                .setDurationMs(muxerWrapper.getDurationMs())
                 .setAverageAudioBitrate(muxerWrapper.getTrackAverageBitrate(C.TRACK_TYPE_AUDIO))
                 .setAverageVideoBitrate(muxerWrapper.getTrackAverageBitrate(C.TRACK_TYPE_VIDEO))
                 .setVideoFrameCount(muxerWrapper.getTrackSampleCount(C.TRACK_TYPE_VIDEO))

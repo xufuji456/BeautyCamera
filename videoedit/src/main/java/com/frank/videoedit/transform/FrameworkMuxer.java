@@ -1,14 +1,10 @@
 package com.frank.videoedit.transform;
 
-import static com.google.android.exoplayer2.util.Assertions.checkNotNull;
-import static com.google.android.exoplayer2.util.Assertions.checkState;
-import static com.google.android.exoplayer2.util.Util.SDK_INT;
-import static com.google.android.exoplayer2.util.Util.castNonNull;
-
 import android.annotation.SuppressLint;
 import android.media.MediaCodec;
 import android.media.MediaFormat;
 import android.media.MediaMuxer;
+import android.os.Build;
 import android.os.ParcelFileDescriptor;
 import android.util.SparseLongArray;
 
@@ -21,7 +17,6 @@ import com.frank.videoedit.transform.util.MediaUtil;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.util.MimeTypes;
-import com.google.android.exoplayer2.util.Util;
 import com.google.common.collect.ImmutableList;
 
 import java.io.IOException;
@@ -33,7 +28,7 @@ import java.nio.ByteBuffer;
 
   // MediaMuxer supported sample formats are documented in MediaMuxer.addTrack(MediaFormat).
   private static final ImmutableList<String> SUPPORTED_VIDEO_SAMPLE_MIME_TYPES =
-      Util.SDK_INT >= 24
+      Build.VERSION.SDK_INT >= 24
           ? ImmutableList.of(
               MimeTypes.VIDEO_H263,
               MimeTypes.VIDEO_H264,
@@ -117,15 +112,15 @@ import java.nio.ByteBuffer;
 
   @Override
   public int addTrack(Format format) throws MuxerException {
-    String sampleMimeType = checkNotNull(format.sampleMimeType);
+    String sampleMimeType = format.sampleMimeType;
     MediaFormat mediaFormat;
     if (MimeTypes.isAudio(sampleMimeType)) {
       mediaFormat =
           MediaFormat.createAudioFormat(
-              castNonNull(sampleMimeType), format.sampleRate, format.channelCount);
+              sampleMimeType, format.sampleRate, format.channelCount);
     } else {
       mediaFormat =
-          MediaFormat.createVideoFormat(castNonNull(sampleMimeType), format.width, format.height);
+          MediaFormat.createVideoFormat(sampleMimeType, format.width, format.height);
       MediaUtil.maybeSetColorInfo(mediaFormat, /*format.colorInfo*/convertColorInfo(format));
       try {
         mediaMuxer.setOrientationHint(format.rotationDegrees);
@@ -161,16 +156,8 @@ import java.nio.ByteBuffer;
     int size = data.limit() - offset;
     int flags = isKeyFrame ? C.BUFFER_FLAG_KEY_FRAME : 0;
     bufferInfo.set(offset, size, presentationTimeUs, flags);
-    long lastSamplePresentationTimeUs = trackIndexToLastPresentationTimeUs.get(trackIndex);
     try {
       // writeSampleData blocks on old API versions, so check here to avoid calling the method.
-      checkState(
-          Util.SDK_INT > 24 || presentationTimeUs >= lastSamplePresentationTimeUs,
-          "Samples not in presentation order ("
-              + presentationTimeUs
-              + " < "
-              + lastSamplePresentationTimeUs
-              + ") unsupported on this API version");
       trackIndexToLastPresentationTimeUs.put(trackIndex, presentationTimeUs);
       mediaMuxer.writeSampleData(trackIndex, data, bufferInfo);
     } catch (RuntimeException e) {
@@ -217,7 +204,7 @@ import java.nio.ByteBuffer;
     try {
       mediaMuxer.stop();
     } catch (RuntimeException e) {
-      if (SDK_INT < 30) {
+      if (Build.VERSION.SDK_INT < 30) {
         // Set the muxer state to stopped even if mediaMuxer.stop() failed so that
         // mediaMuxer.release() doesn't attempt to stop the muxer and therefore doesn't throw the
         // same exception without releasing its resources. This is already implemented in MediaMuxer
@@ -225,7 +212,7 @@ import java.nio.ByteBuffer;
         try {
           Field muxerStoppedStateField = MediaMuxer.class.getDeclaredField("MUXER_STATE_STOPPED");
           muxerStoppedStateField.setAccessible(true);
-          int muxerStoppedState = castNonNull((Integer) muxerStoppedStateField.get(mediaMuxer));
+          int muxerStoppedState = (Integer) muxerStoppedStateField.get(mediaMuxer);
           Field muxerStateField = MediaMuxer.class.getDeclaredField("mState");
           muxerStateField.setAccessible(true);
           muxerStateField.set(mediaMuxer, muxerStoppedState);

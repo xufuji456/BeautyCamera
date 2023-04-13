@@ -11,6 +11,7 @@ import static java.lang.Math.round;
 import android.content.Context;
 import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
+import android.os.Build;
 import android.util.Pair;
 import android.util.Size;
 
@@ -24,11 +25,11 @@ import com.frank.videoedit.transform.util.MediaUtil;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.util.Log;
 import com.google.android.exoplayer2.util.MimeTypes;
-import com.google.android.exoplayer2.util.Util;
 import com.google.common.collect.ImmutableList;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /** A default implementation of {@link Codec.EncoderFactory}. */
 // TODO(b/224949986) Split audio and video encoder factory.
@@ -232,7 +233,7 @@ public final class DefaultEncoderFactory implements Codec.EncoderFactory {
 
     if (supportedVideoEncoderSettings.profile != VideoEncoderSettings.NO_VALUE
         && supportedVideoEncoderSettings.level != VideoEncoderSettings.NO_VALUE
-        && Util.SDK_INT >= 23) {
+        && Build.VERSION.SDK_INT >= 23) {
       // Set profile and level at the same time to maximize compatibility, or the encoder will pick
       // the values.
       mediaFormat.setInteger(MediaFormat.KEY_PROFILE, supportedVideoEncoderSettings.profile);
@@ -245,7 +246,7 @@ public final class DefaultEncoderFactory implements Codec.EncoderFactory {
     }
 
     MediaUtil.maybeSetColorInfo(mediaFormat, /*encoderSupportedFormat.colorInfo*/colorInfo);
-    if (Util.SDK_INT >= 31 && ColorInfo.isTransferHdr(/*format.colorInfo*/colorInfo)) {
+    if (Build.VERSION.SDK_INT >= 31 && ColorInfo.isTransferHdr(/*format.colorInfo*/colorInfo)) {
       if (EncoderUtil.getSupportedColorFormats(encoderInfo, mimeType)
           .contains(MediaCodecInfo.CodecCapabilities.COLOR_Format32bitABGR2101010)) {
         mediaFormat.setInteger(
@@ -259,7 +260,7 @@ public final class DefaultEncoderFactory implements Codec.EncoderFactory {
           MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
     }
 
-    if (Util.SDK_INT >= 25) {
+    if (Build.VERSION.SDK_INT >= 25) {
       mediaFormat.setFloat(
           MediaFormat.KEY_I_FRAME_INTERVAL, supportedVideoEncoderSettings.iFrameIntervalSeconds);
     } else {
@@ -273,7 +274,7 @@ public final class DefaultEncoderFactory implements Codec.EncoderFactory {
               : (int) floor(iFrameIntervalSeconds));
     }
 
-    if (Util.SDK_INT >= 23) {
+    if (Build.VERSION.SDK_INT >= 23) {
       // Setting operating rate and priority is supported from API 23.
       if (supportedVideoEncoderSettings.operatingRate == VideoEncoderSettings.NO_VALUE
           && supportedVideoEncoderSettings.priority == VideoEncoderSettings.NO_VALUE) {
@@ -470,14 +471,14 @@ public final class DefaultEncoderFactory implements Codec.EncoderFactory {
    * <p>The adjustment is applied in-place to {@code mediaFormat}.
    */
   private static void adjustMediaFormatForEncoderPerformanceSettings(MediaFormat mediaFormat) {
-    if (Util.SDK_INT < 25) {
+    if (Build.VERSION.SDK_INT < 25) {
       // Not setting priority and operating rate achieves better encoding performance.
       return;
     }
 
     mediaFormat.setInteger(MediaFormat.KEY_PRIORITY, PRIORITY_BEST_EFFORT);
 
-    if (Util.SDK_INT == 26) {
+    if (Build.VERSION.SDK_INT == 26) {
       mediaFormat.setInteger(MediaFormat.KEY_OPERATING_RATE, DEFAULT_FRAME_RATE);
     } else {
       mediaFormat.setInteger(MediaFormat.KEY_OPERATING_RATE, Integer.MAX_VALUE);
@@ -495,7 +496,7 @@ public final class DefaultEncoderFactory implements Codec.EncoderFactory {
     // TODO(b/210593256): Remove overriding profile/level (before API 29) after switching to in-app
     // muxing.
     String mimeType = MimeTypes.VIDEO_H264;
-    if (Util.SDK_INT >= 29) {
+    if (Build.VERSION.SDK_INT >= 29) {
       int expectedEncodingProfile = MediaCodecInfo.CodecProfileLevel.AVCProfileHigh;
       if (colorInfo != null) {
         int colorTransfer = colorInfo.colorTransfer;
@@ -515,7 +516,7 @@ public final class DefaultEncoderFactory implements Codec.EncoderFactory {
         mediaFormat.setInteger(MediaFormat.KEY_LEVEL, supportedEncodingLevel);
         mediaFormat.setInteger(MediaFormat.KEY_MAX_B_FRAMES, 1);
       }
-    } else if (Util.SDK_INT >= 26) {
+    } else if (Build.VERSION.SDK_INT >= 26) {
       int expectedEncodingProfile = MediaCodecInfo.CodecProfileLevel.AVCProfileHigh;
       int supportedEncodingLevel =
           EncoderUtil.findHighestSupportedEncodingLevel(
@@ -530,7 +531,7 @@ public final class DefaultEncoderFactory implements Codec.EncoderFactory {
         // in-app muxing.
         mediaFormat.setInteger(MediaFormat.KEY_LATENCY, 1);
       }
-    } else if (Util.SDK_INT >= 24) {
+    } else if (Build.VERSION.SDK_INT >= 24) {
       int expectedEncodingProfile = MediaCodecInfo.CodecProfileLevel.AVCProfileBaseline;
       int supportedLevel =
           EncoderUtil.findHighestSupportedEncodingLevel(
@@ -592,7 +593,7 @@ public final class DefaultEncoderFactory implements Codec.EncoderFactory {
         new StringBuilder("Encoders removed for ").append(filterName).append(":\n");
     for (int i = 0; i < removedEncoders.size(); i++) {
       MediaCodecInfo encoderInfo = removedEncoders.get(i);
-      stringBuilder.append(Util.formatInvariant("  %s\n", encoderInfo.getName()));
+      stringBuilder.append(String.format(Locale.getDefault(), "  %s\n", encoderInfo.getName()));
     }
     Log.d(TAG, stringBuilder.toString());
 

@@ -1,12 +1,6 @@
 
 package com.frank.videoedit.transform;
 
-import static com.google.android.exoplayer2.util.Assertions.checkNotNull;
-import static com.google.android.exoplayer2.util.Assertions.checkState;
-import static com.google.android.exoplayer2.util.Util.maxValue;
-import static com.google.android.exoplayer2.util.Util.minValue;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-
 import android.os.ParcelFileDescriptor;
 import android.util.SparseIntArray;
 import android.util.SparseLongArray;
@@ -14,16 +8,17 @@ import android.util.SparseLongArray;
 import androidx.annotation.Nullable;
 
 import com.frank.videoedit.transform.listener.Muxer;
+import com.frank.videoedit.transform.util.CommonUtil;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.util.MimeTypes;
-import com.google.android.exoplayer2.util.Util;
 import com.google.common.collect.ImmutableList;
 
 import java.nio.ByteBuffer;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
  * A wrapper around a media muxer.
@@ -38,7 +33,7 @@ import java.util.concurrent.ScheduledFuture;
    * <p>The value of this constant has been chosen based on the interleaving observed in a few media
    * files, where continuous chunks of the same track were about 0.5 seconds long.
    */
-  private static final long MAX_TRACK_WRITE_AHEAD_US = Util.msToUs(500);
+  private static final long MAX_TRACK_WRITE_AHEAD_US = CommonUtil.msToUs(500);
 
   @Nullable private final String outputPath;
   @Nullable private final ParcelFileDescriptor outputParcelFileDescriptor;
@@ -91,8 +86,6 @@ import java.util.concurrent.ScheduledFuture;
    *     before calling this method.
    */
   public void registerTrack() {
-    checkState(
-        trackFormatCount == 0, "Tracks cannot be registered after track formats have been added.");
     trackCount++;
   }
 
@@ -124,16 +117,8 @@ import java.util.concurrent.ScheduledFuture;
    *     track.
    */
   public void addTrackFormat(Format format) throws Muxer.MuxerException {
-    checkState(trackCount > 0, "All tracks should be registered before the formats are added.");
-    checkState(trackFormatCount < trackCount, "All track formats have already been added.");
     @Nullable String sampleMimeType = format.sampleMimeType;
-    boolean isAudio = MimeTypes.isAudio(sampleMimeType);
-    boolean isVideo = MimeTypes.isVideo(sampleMimeType);
-    checkState(isAudio || isVideo, "Unsupported track format: " + sampleMimeType);
     @C.TrackType int trackType = MimeTypes.getTrackType(sampleMimeType);
-    checkState(
-        trackTypeToIndex.get(trackType, /* valueIfKeyNotFound= */ C.INDEX_UNSET) == C.INDEX_UNSET,
-        "There is already a track of type " + trackType);
 
     ensureMuxerInitialized();
 
@@ -168,9 +153,6 @@ import java.util.concurrent.ScheduledFuture;
       @C.TrackType int trackType, ByteBuffer data, boolean isKeyFrame, long presentationTimeUs)
       throws Muxer.MuxerException {
     int trackIndex = trackTypeToIndex.get(trackType, /* valueIfKeyNotFound= */ C.INDEX_UNSET);
-    checkState(
-        trackIndex != C.INDEX_UNSET,
-        "Could not write sample because there is no track of type " + trackType);
 
     if (!canWriteSampleOfType(trackType)) {
       return false;
@@ -183,7 +165,6 @@ import java.util.concurrent.ScheduledFuture;
       trackTypeToTimeUs.put(trackType, presentationTimeUs);
     }
 
-    checkNotNull(muxer);
     resetAbortTimer();
     muxer.writeSampleData(trackIndex, data, isKeyFrame, presentationTimeUs);
     previousTrackType = trackType;
@@ -239,7 +220,7 @@ import java.util.concurrent.ScheduledFuture;
     // The number of bytes written is not a timestamp, however this utility method provides
     // overflow-safe multiplication & division.
     return (int)
-        Util.scaleLargeTimestamp(
+        CommonUtil.scaleLargeTimestamp(
             /* timestamp= */ trackBytes,
             /* multiplier= */ C.BITS_PER_BYTE * C.MICROS_PER_SECOND,
             /* divisor= */ trackDurationUs);
@@ -252,7 +233,7 @@ import java.util.concurrent.ScheduledFuture;
 
   /** Returns the duration of the longest track in milliseconds. */
   public long getDurationMs() {
-    return Util.usToMs(maxValue(trackTypeToTimeUs));
+    return CommonUtil.usToMs(CommonUtil.maxValue(trackTypeToTimeUs));
   }
 
   /**
@@ -268,7 +249,6 @@ import java.util.concurrent.ScheduledFuture;
    */
   private boolean canWriteSampleOfType(int trackType) {
     long trackTimeUs = trackTypeToTimeUs.get(trackType, /* valueIfKeyNotFound= */ C.TIME_UNSET);
-    checkState(trackTimeUs != C.TIME_UNSET);
     if (!isReady) {
       return false;
     }
@@ -276,7 +256,7 @@ import java.util.concurrent.ScheduledFuture;
       return true;
     }
     if (trackType != previousTrackType) {
-      minTrackTimeUs = minValue(trackTypeToTimeUs);
+      minTrackTimeUs = CommonUtil.minValue(trackTypeToTimeUs);
     }
     return trackTimeUs - minTrackTimeUs <= MAX_TRACK_WRITE_AHEAD_US;
   }
@@ -313,7 +293,6 @@ import java.util.concurrent.ScheduledFuture;
       if (outputPath != null) {
         muxer = muxerFactory.create(outputPath);
       } else {
-        checkNotNull(outputParcelFileDescriptor);
         muxer = muxerFactory.create(outputParcelFileDescriptor);
       }
     }

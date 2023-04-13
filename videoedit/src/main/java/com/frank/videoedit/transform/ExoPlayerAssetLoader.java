@@ -8,7 +8,6 @@ import static com.frank.videoedit.transform.Transformer.PROGRESS_STATE_AVAILABLE
 import static com.frank.videoedit.transform.Transformer.PROGRESS_STATE_NO_TRANSFORMATION;
 import static com.frank.videoedit.transform.Transformer.PROGRESS_STATE_UNAVAILABLE;
 import static com.frank.videoedit.transform.Transformer.PROGRESS_STATE_WAITING_FOR_AVAILABILITY;
-import static com.google.android.exoplayer2.util.Assertions.checkNotNull;
 import static java.lang.Math.min;
 
 import android.content.Context;
@@ -143,7 +142,7 @@ import com.google.common.collect.ImmutableList;
 
   public @Transformer.ProgressState int getProgress(ProgressHolder progressHolder) {
     if (progressState == PROGRESS_STATE_AVAILABLE) {
-      Player player = checkNotNull(this.player);
+      Player player   = this.player;
       long durationMs = player.getDuration();
       long positionMs = player.getCurrentPosition();
       progressHolder.progress = min((int) (positionMs * 100 / durationMs), 99);
@@ -263,13 +262,13 @@ import com.google.common.collect.ImmutableList;
             durationUs <= 0 || durationUs == C.TIME_UNSET
                 ? PROGRESS_STATE_UNAVAILABLE
                 : PROGRESS_STATE_AVAILABLE;
-        checkNotNull(player).play();
+        player.play();
       }
     }
 
     @Override
     public void onTracksChanged(Tracks tracks) {
-      if (checkNotNull(muxerWrapper).getTrackCount() == 0) {
+      if (muxerWrapper.getTrackCount() == 0) {
         listener.onError(new IllegalStateException("The output does not contain any tracks."));
       }
     }

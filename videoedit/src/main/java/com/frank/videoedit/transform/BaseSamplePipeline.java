@@ -1,8 +1,5 @@
 package com.frank.videoedit.transform;
 
-import static com.google.android.exoplayer2.util.Assertions.checkNotNull;
-import static com.google.android.exoplayer2.util.Assertions.checkStateNotNull;
-
 import androidx.annotation.Nullable;
 
 import com.frank.videoedit.transform.listener.Muxer;
@@ -44,8 +41,6 @@ import com.google.android.exoplayer2.util.MimeTypes;
 
   @Override
   public void queueInputBuffer() throws TransformationException {
-    checkNotNull(inputBuffer);
-    checkNotNull(inputBuffer.data);
     queueInputBufferInternal();
   }
 
@@ -112,7 +107,7 @@ import com.google.android.exoplayer2.util.MimeTypes;
     try {
       if (!muxerWrapper.writeSample(
           trackType,
-          checkStateNotNull(muxerInputBuffer.data),
+          muxerInputBuffer.data,
           muxerInputBuffer.isKeyFrame(),
           samplePresentationTimeUs)) {
         return false;
