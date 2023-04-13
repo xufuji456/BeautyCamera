@@ -1,7 +1,5 @@
 package com.frank.videoedit.effect;
 
-import static com.google.android.exoplayer2.util.Assertions.checkArgument;
-
 import android.content.Context;
 import android.opengl.GLES20;
 import android.util.Pair;
@@ -32,8 +30,6 @@ import java.io.IOException;
   public HslProcessor(Context context, HslAdjustment hslAdjustment, boolean useHdr)
       throws FrameProcessingException {
     super(useHdr);
-    // TODO(b/241241680): Check if HDR <-> HSL works the same or not.
-    checkArgument(!useHdr, "HDR is not yet supported.");
 
     try {
       glProgram = new GlProgram(context, VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);

@@ -1,8 +1,5 @@
 package com.frank.videoedit.effect;
 
-import static com.google.android.exoplayer2.util.Assertions.checkArgument;
-import static com.google.android.exoplayer2.util.Assertions.checkState;
-import static com.google.android.exoplayer2.util.Assertions.checkStateNotNull;
 import static com.google.common.collect.Iterables.getLast;
 
 import android.content.Context;
@@ -83,7 +80,6 @@ public final class GlEffectsFrameProcessor implements FrameProcessor {
       boolean releaseFramesAutomatically,
       ExecutorService singleThreadExecutorService)
       throws GlUtil.GlException, FrameProcessingException {
-    checkState(Thread.currentThread().getName().equals(THREAD_NAME));
 
     // TODO(b/237674316): Delay initialization of things requiring the colorInfo, to
     //  configure based on the color info from the decoder output media format instead.
@@ -131,7 +127,6 @@ public final class GlEffectsFrameProcessor implements FrameProcessor {
     boolean sampleFromExternalTexture = true;
     for (int i = 0; i < effects.size(); i++) {
       Effect effect = effects.get(i);
-      checkArgument(effect instanceof GlEffect, "GlEffectsFrameProcessor only supports GlEffects");
       GlEffect glEffect = (GlEffect) effect;
       // The following logic may change the order of the RgbMatrix and GlMatrixTransformation
       // effects. This does not influence the output since RgbMatrix only changes the individual
@@ -224,11 +219,8 @@ public final class GlEffectsFrameProcessor implements FrameProcessor {
     this.eglDisplay = eglDisplay;
     this.eglContext = eglContext;
     this.frameProcessingTaskExecutor = frameProcessingTaskExecutor;
-    this.releaseFramesAutomatically = releaseFramesAutomatically;
+    this.releaseFramesAutomatically  = releaseFramesAutomatically;
 
-    checkState(!textureProcessors.isEmpty());
-    checkState(textureProcessors.get(0) instanceof ExternalTextureProcessor);
-    checkState(getLast(textureProcessors) instanceof MatrixTextureProcessorWrapper);
     ExternalTextureProcessor inputExternalTextureProcessor =
         (ExternalTextureProcessor) textureProcessors.get(0);
     inputExternalTextureManager =
@@ -258,10 +250,6 @@ public final class GlEffectsFrameProcessor implements FrameProcessor {
 
   @Override
   public void registerInputFrame() {
-    checkState(!inputStreamEnded);
-    checkStateNotNull(
-        nextInputFrameInfo, "setInputFrameInfo must be called before registering input frames");
-
     inputExternalTextureManager.registerInputFrame(nextInputFrameInfo);
   }
 
@@ -277,16 +265,12 @@ public final class GlEffectsFrameProcessor implements FrameProcessor {
 
   @Override
   public void releaseOutputFrame(long releaseTimeNs) {
-    checkState(
-        !releaseFramesAutomatically,
-        "Calling this method is not allowed when releaseFramesAutomatically is enabled");
     frameProcessingTaskExecutor.submitWithHighPriority(
         () -> finalTextureProcessorWrapper.releaseOutputFrame(releaseTimeNs));
   }
 
   @Override
   public void signalEndOfInput() {
-    checkState(!inputStreamEnded);
     inputStreamEnded = true;
     frameProcessingTaskExecutor.submit(inputExternalTextureManager::signalEndOfInput);
   }

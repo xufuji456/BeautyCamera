@@ -1,6 +1,5 @@
 package com.frank.videoedit.transform;
 
-import static com.google.android.exoplayer2.util.Assertions.checkNotNull;
 import static java.lang.Math.max;
 import static java.lang.Math.round;
 
@@ -9,6 +8,7 @@ import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
 import android.media.MediaFormat;
+import android.os.Build;
 import android.util.Pair;
 import android.util.Range;
 import android.util.Size;
@@ -25,7 +25,6 @@ import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.C.ColorTransfer;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.util.MimeTypes;
-import com.google.android.exoplayer2.util.Util;
 import com.google.common.base.Ascii;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -48,12 +47,12 @@ public final class EncoderUtil {
    * or an empty list if there is none.
    */
   public static ImmutableList<MediaCodecInfo> getSupportedEncoders(String mimeType) {
-    return checkNotNull(MIME_TYPE_TO_ENCODERS.get()).get(Ascii.toLowerCase(mimeType));
+    return MIME_TYPE_TO_ENCODERS.get().get(Ascii.toLowerCase(mimeType));
   }
 
   /** Returns a list of video {@linkplain MimeTypes MIME types} that can be encoded. */
   public static ImmutableSet<String> getSupportedVideoMimeTypes() {
-    return checkNotNull(MIME_TYPE_TO_ENCODERS.get()).keySet();
+    return MIME_TYPE_TO_ENCODERS.get().keySet();
   }
 
   /**
@@ -62,7 +61,7 @@ public final class EncoderUtil {
    */
   public static ImmutableList<String> getSupportedEncoderNamesForHdrEditing(
       String mimeType, @Nullable ColorInfo colorInfo) {
-    if (Util.SDK_INT < 31 || colorInfo == null) {
+    if (Build.VERSION.SDK_INT < 31 || colorInfo == null) {
       return ImmutableList.of();
     }
 
@@ -307,7 +306,7 @@ public final class EncoderUtil {
     // Format must not include KEY_FRAME_RATE on API21.
     // https://developer.android.com/reference/android/media/MediaCodecList#findDecoderForFormat(android.media.MediaFormat)
     float frameRate = Format.NO_VALUE;
-    if (Util.SDK_INT == 21 && format.containsKey(MediaFormat.KEY_FRAME_RATE)) {
+    if (Build.VERSION.SDK_INT == 21 && format.containsKey(MediaFormat.KEY_FRAME_RATE)) {
       try {
         frameRate = format.getFloat(MediaFormat.KEY_FRAME_RATE);
       } catch (ClassCastException e) {
@@ -322,7 +321,7 @@ public final class EncoderUtil {
             ? mediaCodecList.findDecoderForFormat(format)
             : mediaCodecList.findEncoderForFormat(format);
 
-    if (Util.SDK_INT == 21) {
+    if (Build.VERSION.SDK_INT == 21) {
       MediaUtil.maybeSetInteger(format, MediaFormat.KEY_FRAME_RATE, round(frameRate));
     }
     return mediaCodecName;
@@ -357,7 +356,7 @@ public final class EncoderUtil {
   /** Checks if a {@linkplain MediaCodecInfo codec} is hardware-accelerated. */
   public static boolean isHardwareAccelerated(MediaCodecInfo encoderInfo, String mimeType) {
     // TODO(b/214964116): Merge into MediaCodecUtil.
-    if (Util.SDK_INT >= 29) {
+    if (Build.VERSION.SDK_INT >= 29) {
       return Api29.isHardwareAccelerated(encoderInfo);
     }
     // codecInfo.isHardwareAccelerated() == !codecInfo.isSoftwareOnly() is not necessarily true.
@@ -378,7 +377,7 @@ public final class EncoderUtil {
   }
 
   private static boolean isSoftwareOnly(MediaCodecInfo encoderInfo, String mimeType) {
-    if (Util.SDK_INT >= 29) {
+    if (Build.VERSION.SDK_INT >= 29) {
       return Api29.isSoftwareOnly(encoderInfo);
     }
 

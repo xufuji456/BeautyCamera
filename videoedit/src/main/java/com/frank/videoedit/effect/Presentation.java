@@ -1,7 +1,5 @@
 package com.frank.videoedit.effect;
 
-import static com.google.android.exoplayer2.util.Assertions.checkArgument;
-import static com.google.android.exoplayer2.util.Assertions.checkStateNotNull;
 import static java.lang.annotation.ElementType.TYPE_USE;
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
@@ -83,6 +81,12 @@ public final class Presentation implements MatrixTransformation {
   public static final int LAYOUT_STRETCH_TO_FIT = 2;
 
   private static final float ASPECT_RATIO_UNSET = -1f;
+
+  public static void checkArgument(boolean expression, Object errorMessage) {
+    if (!expression) {
+      throw new IllegalArgumentException(String.valueOf(errorMessage));
+    }
+  }
 
   private static void checkLayout(@Layout int layout) {
     checkArgument(
@@ -196,7 +200,7 @@ public final class Presentation implements MatrixTransformation {
 
   @Override
   public Matrix getMatrix(long presentationTimeUs) {
-    return checkStateNotNull(transformationMatrix, "configure must be called first");
+    return transformationMatrix;
   }
 
   private void applyAspectRatio() {

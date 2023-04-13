@@ -1,7 +1,5 @@
 package com.frank.videoedit.effect;
 
-import static com.google.android.exoplayer2.util.Assertions.checkNotNull;
-
 import android.graphics.SurfaceTexture;
 
 import androidx.annotation.Nullable;
@@ -19,6 +17,7 @@ import com.google.android.exoplayer2.util.GlUtil;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
+
 /* package */ class ExternalTextureManager implements InputListener {
 
   private final FrameProcessingTaskExecutor frameProcessingTaskExecutor;
@@ -132,7 +131,7 @@ import java.util.concurrent.atomic.AtomicInteger;
     surfaceTexture.updateTexImage();
     this.currentFrame = pendingFrames.remove();
 
-    FrameInfo currentFrame = checkNotNull(this.currentFrame);
+    FrameInfo currentFrame = this.currentFrame;
     externalTextureProcessorInputCapacity.getAndDecrement();
     surfaceTexture.getTransformMatrix(textureTransformMatrix);
     externalTextureProcessor.setTextureTransformMatrix(textureTransformMatrix);

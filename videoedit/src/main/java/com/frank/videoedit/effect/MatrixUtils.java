@@ -1,7 +1,5 @@
 package com.frank.videoedit.effect;
 
-import static com.google.android.exoplayer2.util.Assertions.checkArgument;
-
 import android.opengl.Matrix;
 import android.util.Pair;
 
@@ -83,7 +81,6 @@ public final class MatrixUtils {
    */
   public static ImmutableList<float[]> clipConvexPolygonToNdcRange(
       ImmutableList<float[]> polygonVertices) {
-    checkArgument(polygonVertices.size() >= 3, "A polygon must have at least 3 vertices.");
 
     // This is a 3D generalization of the Sutherland-Hodgman algorithm
     // https://en.wikipedia.org/wiki/Sutherland%E2%80%93Hodgman_algorithm
@@ -136,7 +133,6 @@ public final class MatrixUtils {
    * @return Whether the point is on the inside of the plane.
    */
   private static boolean isInsideClippingHalfSpace(float[] point, float[] clippingPlane) {
-    checkArgument(clippingPlane.length == 4, "Expecting 4 plane parameters");
 
     return clippingPlane[0] * point[0] + clippingPlane[1] * point[1] + clippingPlane[2] * point[2]
         <= clippingPlane[3];
@@ -159,7 +155,6 @@ public final class MatrixUtils {
    */
   private static float[] computeIntersectionPoint(
       float[] planePoint, float[] planeParameters, float[] linePoint1, float[] linePoint2) {
-    checkArgument(planeParameters.length == 4, "Expecting 4 plane parameters");
 
     // See https://en.wikipedia.org/wiki/Line%E2%80%93plane_intersection#Algebraic_form for the
     // derivation of this solution formula.
@@ -210,8 +205,6 @@ public final class MatrixUtils {
       int inputWidth,
       int inputHeight,
       ImmutableList<GlMatrixTransformation> matrixTransformations) {
-    checkArgument(inputWidth > 0, "inputWidth must be positive");
-    checkArgument(inputHeight > 0, "inputHeight must be positive");
 
     Pair<Integer, Integer> outputSize = Pair.create(inputWidth, inputHeight);
     for (int i = 0; i < matrixTransformations.size(); i++) {

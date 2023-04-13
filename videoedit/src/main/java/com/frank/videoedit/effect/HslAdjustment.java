@@ -1,7 +1,5 @@
 package com.frank.videoedit.effect;
 
-import static com.google.android.exoplayer2.util.Assertions.checkArgument;
-
 import android.content.Context;
 
 import com.frank.videoedit.effect.listener.GlEffect;
@@ -25,19 +23,19 @@ public class HslAdjustment implements GlEffect {
     }
 
     public Builder adjustSaturation(float saturationAdjustment) {
-      checkArgument(
-          -100 <= saturationAdjustment && saturationAdjustment <= 100,
-          "Can adjust the saturation by only 100 in either direction, but provided "
+      if(saturationAdjustment < -100 || saturationAdjustment > 100) {
+        throw new IllegalArgumentException("Can adjust the saturation by [-100, 100], but provided "
               + saturationAdjustment);
+      }
       this.saturationAdjustment = saturationAdjustment;
       return this;
     }
 
     public Builder adjustLightness(float lightnessAdjustment) {
-      checkArgument(
-          -100 <= lightnessAdjustment && lightnessAdjustment <= 100,
-          "Can adjust the lightness by only 100 in either direction, but provided "
-              + lightnessAdjustment);
+      if(lightnessAdjustment < -100 || lightnessAdjustment > 100) {
+        throw new IllegalArgumentException("Can adjust the lightness by [-100, 100], but provided "
+                + lightnessAdjustment);
+      }
       this.lightnessAdjustment = lightnessAdjustment;
       return this;
     }

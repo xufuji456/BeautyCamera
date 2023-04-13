@@ -9,13 +9,13 @@ import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
 import com.frank.videoedit.transform.listener.AudioProcessor.AudioFormat;
+import com.frank.videoedit.transform.util.CommonUtil;
 import com.frank.videoedit.util.FrameProcessingException;
 
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.PlaybackException;
 import com.google.android.exoplayer2.util.Clock;
 import com.google.android.exoplayer2.util.FrameProcessor;
-import com.google.android.exoplayer2.util.Util;
 import com.google.common.collect.ImmutableBiMap;
 
 import java.lang.annotation.Documented;
@@ -307,17 +307,17 @@ public final class TransformationException extends Exception {
     @Nullable Throwable thisCause = getCause();
     @Nullable Throwable thatCause = other.getCause();
     if (thisCause != null && thatCause != null) {
-      if (!Util.areEqual(thisCause.getMessage(), thatCause.getMessage())) {
+      if (!CommonUtil.areEqual(thisCause.getMessage(), thatCause.getMessage())) {
         return false;
       }
-      if (!Util.areEqual(thisCause.getClass(), thatCause.getClass())) {
+      if (!CommonUtil.areEqual(thisCause.getClass(), thatCause.getClass())) {
         return false;
       }
     } else if (thisCause != null || thatCause != null) {
       return false;
     }
     return errorCode == other.errorCode
-        && Util.areEqual(getMessage(), other.getMessage())
+        && CommonUtil.areEqual(getMessage(), other.getMessage())
         && timestampMs == other.timestampMs;
   }
 }
