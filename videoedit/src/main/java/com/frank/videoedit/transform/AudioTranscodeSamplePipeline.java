@@ -8,10 +8,10 @@ import androidx.annotation.Nullable;
 
 import com.frank.videoedit.transform.listener.AudioProcessor.AudioFormat;
 import com.frank.videoedit.transform.listener.Codec;
+import com.frank.videoedit.transform.util.CommonUtil;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
-import com.google.android.exoplayer2.util.Util;
 
 import java.nio.ByteBuffer;
 
@@ -212,12 +212,11 @@ import java.nio.ByteBuffer;
     nextEncoderInputBufferTimeUs += bufferDurationUs;
   }
 
-//  @Pure
   private static TransformationRequest createFallbackTransformationRequest(
           TransformationRequest transformationRequest, Format requestedFormat, Format actualFormat) {
     // TODO(b/210591626): Also update bitrate and other params once encoder configuration and
     // fallback are implemented.
-    if (Util.areEqual(requestedFormat.sampleMimeType, actualFormat.sampleMimeType)) {
+    if (CommonUtil.areEqual(requestedFormat.sampleMimeType, actualFormat.sampleMimeType)) {
       return transformationRequest;
     }
     return transformationRequest.buildUpon().setAudioMimeType(actualFormat.sampleMimeType).build();

@@ -1,7 +1,6 @@
 package com.frank.videoedit.transform;
 
 import static com.google.android.exoplayer2.source.SampleStream.FLAG_REQUIRE_FORMAT;
-import static com.google.android.exoplayer2.util.Assertions.checkNotNull;
 
 import com.frank.videoedit.transform.listener.Codec;
 import com.frank.videoedit.transform.listener.SamplePipeline;
@@ -57,7 +56,7 @@ import com.google.android.exoplayer2.source.SampleStream.ReadDataResult;
     if (result != C.RESULT_FORMAT_READ) {
       return false;
     }
-    Format inputFormat = checkNotNull(formatHolder.format);
+    Format inputFormat = formatHolder.format;
     if (shouldPassthrough(inputFormat)) {
       samplePipeline =
           new PassthroughSamplePipeline(

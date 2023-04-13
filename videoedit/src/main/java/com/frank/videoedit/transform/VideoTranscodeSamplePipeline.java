@@ -1,9 +1,5 @@
 package com.frank.videoedit.transform;
 
-import static com.google.android.exoplayer2.util.Assertions.checkNotNull;
-import static com.google.android.exoplayer2.util.Assertions.checkState;
-import static com.google.android.exoplayer2.util.Util.SDK_INT;
-
 import android.content.Context;
 import android.media.MediaCodec;
 import android.os.Build;
@@ -17,14 +13,13 @@ import com.frank.videoedit.effect.Presentation;
 import com.frank.videoedit.entity.SurfaceInfo;
 import com.frank.videoedit.entity.FrameInfo;
 import com.frank.videoedit.entity.ColorInfo;
+import com.frank.videoedit.transform.util.CommonUtil;
 import com.frank.videoedit.util.FrameProcessingException;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
 import com.google.android.exoplayer2.util.Effect;
-import com.google.android.exoplayer2.util.Log;
-import com.google.android.exoplayer2.util.Util;
 import com.google.common.collect.ImmutableList;
 
 import java.nio.ByteBuffer;
@@ -81,7 +76,7 @@ import java.util.List;
     ColorInfo colorInfo = convertColorInfo(inputFormat);
     if (ColorInfo.isTransferHdr(/*inputFormat.colorInfo*/colorInfo)) {
       if (transformationRequest.forceInterpretHdrVideoAsSdr) {
-        if (SDK_INT < 29) {
+        if (Build.VERSION.SDK_INT < 29) {
           throw TransformationException.createForCodec(
               new IllegalArgumentException("Interpreting HDR video as SDR is not supported."),
               /* isVideo= */ true,
@@ -92,7 +87,7 @@ import java.util.List;
         }
         inputFormat = inputFormat.buildUpon().
                 setColorInfo(com.google.android.exoplayer2.video.ColorInfo.SDR_BT709_LIMITED).build();
-      } else if (SDK_INT < 31 || deviceNeedsNoToneMappingWorkaround()) {
+      } else if (Build.VERSION.SDK_INT < 31 || deviceNeedsNoToneMappingWorkaround()) {
         throw TransformationException.createForCodec(
             new IllegalArgumentException("HDR editing and tone mapping is not supported."),
             /* isVideo= */ true,
@@ -138,7 +133,7 @@ import java.util.List;
                 @Override
                 public void onOutputSizeChanged(int width, int height) {
                   try {
-                    checkNotNull(frameProcessor)
+                    frameProcessor
                         .setOutputSurfaceInfo(encoderWrapper.getSurfaceInfo(width, height));
                   } catch (TransformationException exception) {
                     asyncErrorListener.onTransformationException(exception);
@@ -241,7 +236,7 @@ import java.util.List;
     if (encoderOutputBuffer.data == null) {
       return null;
     }
-    MediaCodec.BufferInfo bufferInfo = checkNotNull(encoderWrapper.getOutputBufferInfo());
+    MediaCodec.BufferInfo bufferInfo = encoderWrapper.getOutputBufferInfo();
     encoderOutputBuffer.timeUs = bufferInfo.presentationTimeUs;
     encoderOutputBuffer.setFlags(bufferInfo.flags);
     return encoderOutputBuffer;
@@ -266,7 +261,7 @@ import java.util.List;
     // TODO(b/210591626): Also update bitrate etc. once encoder configuration and fallback are
     //  implemented.
     if (transformationRequest.enableRequestSdrToneMapping == isToneMappedToSdr
-        && Util.areEqual(requestedFormat.sampleMimeType, supportedFormat.sampleMimeType)
+        && CommonUtil.areEqual(requestedFormat.sampleMimeType, supportedFormat.sampleMimeType)
         && (hasOutputFormatRotation
             ? requestedFormat.width == supportedFormat.width
             : requestedFormat.height == supportedFormat.height)) {
@@ -274,7 +269,6 @@ import java.util.List;
     }
     TransformationRequest.Builder transformationRequestBuilder = transformationRequest.buildUpon();
     if (transformationRequest.enableRequestSdrToneMapping != isToneMappedToSdr) {
-      checkState(isToneMappedToSdr);
       transformationRequestBuilder
           .setEnableRequestSdrToneMapping(true)
           .experimental_setEnableHdrEditing(false);
@@ -287,7 +281,7 @@ import java.util.List;
 
   private static boolean deviceNeedsNoToneMappingWorkaround() {
     // Pixel build ID prefix does not support tone mapping. See http://b/249297370#comment8.
-    return Util.MANUFACTURER.equals("Google")
+    return Build.MANUFACTURER.equals("Google")
         && (
         /* Pixel 6 */ Build.ID.startsWith("TP1A")
             || Build.ID.startsWith(/* Pixel Watch */ "rwd9.220429.053"));
@@ -359,7 +353,7 @@ import java.util.List;
       requestedOutputMimeType =
           transformationRequest.videoMimeType != null
               ? transformationRequest.videoMimeType
-              : checkNotNull(inputFormat.sampleMimeType);
+              : inputFormat.sampleMimeType;
       supportedEncoderNamesForHdrEditing = EncoderUtil.getSupportedEncoderNamesForHdrEditing(
               requestedOutputMimeType, /*inputFormat.colorInfo*/colorInfo);
     }
@@ -380,7 +374,6 @@ import java.util.List;
         return ColorInfo.SDR_BT709_LIMITED;
       }
       if (inputFormat.colorInfo == null) {
-        Log.d(TAG, "colorInfo is null. Defaulting to SDR_BT709_LIMITED.");
         return ColorInfo.SDR_BT709_LIMITED;
       }
       return colorInfo;//inputFormat.colorInfo;
@@ -512,7 +505,7 @@ import java.util.List;
           /* isVideo= */ true,
           /* isDecoder= */ false,
           format,
-          checkNotNull(encoder).getName(),
+          encoder.getName(),
           TransformationException.ERROR_CODE_ENCODING_FAILED);
     }
   }

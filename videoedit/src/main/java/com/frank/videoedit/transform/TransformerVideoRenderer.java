@@ -1,7 +1,6 @@
 package com.frank.videoedit.transform;
 
 import static com.google.android.exoplayer2.source.SampleStream.FLAG_REQUIRE_FORMAT;
-import static com.google.android.exoplayer2.util.Assertions.checkNotNull;
 
 import android.content.Context;
 
@@ -73,7 +72,7 @@ import com.google.common.collect.ImmutableList;
     if (result != C.RESULT_FORMAT_READ) {
       return false;
     }
-    Format inputFormat = checkNotNull(formatHolder.format);
+    Format inputFormat = formatHolder.format;
     if (shouldTranscode(inputFormat)) {
       samplePipeline =
           new VideoTranscodeSamplePipeline(

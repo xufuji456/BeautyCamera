@@ -1,12 +1,10 @@
 package com.frank.videoedit.transform;
 
-import static com.google.android.exoplayer2.util.Assertions.checkState;
-
+import com.frank.videoedit.transform.util.CommonUtil;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.util.HandlerWrapper;
 import com.google.android.exoplayer2.util.ListenerSet;
-import com.google.android.exoplayer2.util.Util;
 
 /* package */ final class FallbackListener {
 
@@ -35,15 +33,14 @@ import com.google.android.exoplayer2.util.Util;
   }
 
   public void onTransformationRequestFinalized(TransformationRequest transformationRequest) {
-    checkState(trackCount-- > 0);
 
     TransformationRequest.Builder fallbackRequestBuilder =
         fallbackTransformationRequest.buildUpon();
-    if (!Util.areEqual(
+    if (!CommonUtil.areEqual(
         transformationRequest.audioMimeType, originalTransformationRequest.audioMimeType)) {
       fallbackRequestBuilder.setAudioMimeType(transformationRequest.audioMimeType);
     }
-    if (!Util.areEqual(
+    if (!CommonUtil.areEqual(
         transformationRequest.videoMimeType, originalTransformationRequest.videoMimeType)) {
       fallbackRequestBuilder.setVideoMimeType(transformationRequest.videoMimeType);
     }

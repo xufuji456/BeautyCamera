@@ -2,8 +2,6 @@ package com.frank.videoedit.transform;
 
 import static android.media.MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_CBR;
 import static android.media.MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_VBR;
-import static com.google.android.exoplayer2.util.Assertions.checkArgument;
-import static com.google.android.exoplayer2.util.Assertions.checkState;
 import static java.lang.annotation.ElementType.TYPE_USE;
 
 import android.annotation.SuppressLint;
@@ -106,7 +104,6 @@ public final class VideoEncoderSettings {
      * @return This builder.
      */
     public Builder setBitrateMode(@BitrateMode int bitrateMode) {
-      checkArgument(bitrateMode == BITRATE_MODE_VBR || bitrateMode == BITRATE_MODE_CBR);
       this.bitrateMode = bitrateMode;
       return this;
     }
@@ -174,12 +171,6 @@ public final class VideoEncoderSettings {
 
     /** Builds the instance. */
     public VideoEncoderSettings build() {
-      checkState(
-          !enableHighQualityTargeting || bitrate == NO_VALUE,
-          "Bitrate can not be set if enabling high quality targeting.");
-      checkState(
-          !enableHighQualityTargeting || bitrateMode == BITRATE_MODE_VBR,
-          "Bitrate mode must be VBR if enabling high quality targeting.");
       return new VideoEncoderSettings(
           bitrate,
           bitrateMode,
