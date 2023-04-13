@@ -1,13 +1,15 @@
 
-package com.frank.videoedit.effect.entity;
+package com.frank.videoedit.entity;
 
 import static java.lang.annotation.ElementType.TYPE_USE;
 
 import android.media.MediaFormat;
+import android.os.Bundle;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
+import com.frank.videoedit.listener.Bundleable;
 import com.google.android.exoplayer2.Format;
 
 import java.lang.annotation.Documented;
@@ -15,7 +17,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-public final class ColorInfo {
+public final class ColorInfo implements Bundleable {
 
   @Documented
   @Retention(RetentionPolicy.SOURCE)
@@ -130,5 +132,26 @@ public final class ColorInfo {
             || colorTransfer == Format.NO_VALUE;
   }
 
+  private static final String FIELD_COLOR_SPACE     = Integer.toString(0, Character.MAX_RADIX);
+  private static final String FIELD_COLOR_RANGE     = Integer.toString(1, Character.MAX_RADIX);
+  private static final String FIELD_COLOR_TRANSFER  = Integer.toString(2, Character.MAX_RADIX);
+  private static final String FIELD_HDR_STATIC_INFO = Integer.toString(3, Character.MAX_RADIX);
 
+  @Override
+  public Bundle toBundle() {
+    Bundle bundle = new Bundle();
+    bundle.putInt(FIELD_COLOR_SPACE, colorSpace);
+    bundle.putInt(FIELD_COLOR_RANGE, colorRange);
+    bundle.putInt(FIELD_COLOR_TRANSFER, colorTransfer);
+    bundle.putByteArray(FIELD_HDR_STATIC_INFO, hdrStaticInfo);
+    return bundle;
+  }
+
+  public static final Bundleable.Creator<ColorInfo> CREATOR =
+          bundle ->
+                  new ColorInfo(
+                          bundle.getInt(FIELD_COLOR_SPACE, com.frank.videoedit.transform.Format.NO_VALUE),
+                          bundle.getInt(FIELD_COLOR_RANGE, com.frank.videoedit.transform.Format.NO_VALUE),
+                          bundle.getInt(FIELD_COLOR_TRANSFER, com.frank.videoedit.transform.Format.NO_VALUE),
+                          bundle.getByteArray(FIELD_HDR_STATIC_INFO));
 }

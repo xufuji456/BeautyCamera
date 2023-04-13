@@ -15,11 +15,11 @@ import androidx.annotation.GuardedBy;
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 
-import com.frank.videoedit.effect.entity.SurfaceInfo;
+import com.frank.videoedit.entity.SurfaceInfo;
 import com.frank.videoedit.effect.listener.ExternalTextureProcessor;
 import com.frank.videoedit.effect.listener.GlMatrixTransformation;
 import com.frank.videoedit.listener.FrameProcessor;
-import com.frank.videoedit.effect.entity.ColorInfo;
+import com.frank.videoedit.entity.ColorInfo;
 import com.frank.videoedit.util.FrameProcessingException;
 
 import com.google.android.exoplayer2.util.GlUtil;

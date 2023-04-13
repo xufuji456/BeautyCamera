@@ -19,9 +19,9 @@ import com.frank.videoedit.effect.listener.GlEffect;
 import com.frank.videoedit.effect.listener.GlMatrixTransformation;
 import com.frank.videoedit.effect.listener.GlTextureProcessor;
 import com.frank.videoedit.listener.FrameProcessor;
-import com.frank.videoedit.effect.entity.SurfaceInfo;
-import com.frank.videoedit.effect.entity.FrameInfo;
-import com.frank.videoedit.effect.entity.ColorInfo;
+import com.frank.videoedit.entity.SurfaceInfo;
+import com.frank.videoedit.entity.FrameInfo;
+import com.frank.videoedit.entity.ColorInfo;
 import com.frank.videoedit.util.FrameProcessingException;
 
 import com.google.android.exoplayer2.C;

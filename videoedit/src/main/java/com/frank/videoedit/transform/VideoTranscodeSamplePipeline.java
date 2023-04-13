@@ -14,9 +14,9 @@ import androidx.annotation.VisibleForTesting;
 import com.frank.videoedit.listener.FrameProcessor;
 import com.frank.videoedit.transform.listener.Codec;
 import com.frank.videoedit.effect.Presentation;
-import com.frank.videoedit.effect.entity.SurfaceInfo;
-import com.frank.videoedit.effect.entity.FrameInfo;
-import com.frank.videoedit.effect.entity.ColorInfo;
+import com.frank.videoedit.entity.SurfaceInfo;
+import com.frank.videoedit.entity.FrameInfo;
+import com.frank.videoedit.entity.ColorInfo;
 import com.frank.videoedit.util.FrameProcessingException;
 
 import com.google.android.exoplayer2.C;

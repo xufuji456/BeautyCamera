@@ -1,4 +1,4 @@
-package com.frank.videoedit.effect.entity;
+package com.frank.videoedit.entity;
 
 import android.view.Surface;
 

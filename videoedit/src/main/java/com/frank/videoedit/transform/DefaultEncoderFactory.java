@@ -18,7 +18,7 @@ import androidx.annotation.Nullable;
 
 import com.frank.videoedit.transform.listener.Codec;
 import com.frank.videoedit.transform.listener.EncoderSelector;
-import com.frank.videoedit.effect.entity.ColorInfo;
+import com.frank.videoedit.entity.ColorInfo;
 
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.util.Log;
