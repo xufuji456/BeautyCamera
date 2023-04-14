@@ -87,4 +87,49 @@ public class CommonUtil {
         return Executors.newSingleThreadExecutor(runnable -> new Thread(runnable, threadName));
     }
 
+    private static final char CASE_MASK = 0x20;
+
+    public static boolean isLowerCase(char c) {
+        return (c >= 'a') && (c <= 'z');
+    }
+
+    public static String toUpperCase(String string) {
+        int length = string.length();
+        for (int i = 0; i < length; i++) {
+            if (isLowerCase(string.charAt(i))) {
+                char[] chars = string.toCharArray();
+                for (; i < length; i++) {
+                    char c = chars[i];
+                    if (isLowerCase(c)) {
+                        chars[i] = (char) (c ^ CASE_MASK);
+                    }
+                }
+                return String.valueOf(chars);
+            }
+        }
+        return string;
+    }
+
+    public static boolean isUpperCase(char c) {
+        return (c >= 'A') && (c <= 'Z');
+    }
+
+    public static String toLowerCase(String string) {
+        int length = string.length();
+        for (int i = 0; i < length; i++) {
+            if (isUpperCase(string.charAt(i))) {
+                char[] chars = string.toCharArray();
+                for (; i < length; i++) {
+                    char c = chars[i];
+                    if (isUpperCase(c)) {
+                        chars[i] = (char) (c ^ CASE_MASK);
+                    }
+                }
+                return String.valueOf(chars);
+            }
+        }
+        return string;
+    }
+
+
 }

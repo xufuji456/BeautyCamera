@@ -1,7 +1,6 @@
 package com.frank.videoedit.transform;
 
 import android.content.Context;
-import android.media.AudioFormat;
 import android.media.MediaCodec;
 import android.media.MediaCodec.BufferInfo;
 import android.media.MediaCrypto;
@@ -22,8 +21,6 @@ import com.frank.videoedit.util.CommonUtil;
 
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
-import com.google.android.exoplayer2.util.TraceUtil;
-import com.google.common.base.Ascii;
 import com.google.common.collect.ImmutableList;
 
 import java.io.IOException;
@@ -135,7 +132,7 @@ public final class DefaultCodec implements Codec {
       // TODO(b/226330223): Investigate increasing this limit.
       return 1;
     }
-    if (Ascii.toUpperCase(getName()).startsWith("OMX.")) {
+    if (CommonUtil.toUpperCase(getName()).startsWith("OMX.")) {
       // Some OMX decoders don't correctly track their number of output buffers available, and get
       // stuck if too many frames are rendered without being processed, so limit the number of
       // pending frames to avoid getting stuck. This value is experimentally determined. See also
@@ -451,20 +448,16 @@ public final class DefaultCodec implements Codec {
       MediaFormat mediaFormat,
       boolean isDecoder,
       @Nullable Surface outputSurface) {
-    TraceUtil.beginSection("configureCodec");
     codec.configure(
         mediaFormat,
         outputSurface,
         /* crypto= */ null,
         isDecoder ? 0 : MediaCodec.CONFIGURE_FLAG_ENCODE);
-    TraceUtil.endSection();
   }
 
   /** Calls and traces {@link MediaCodec#start()}. */
   private static void startCodec(MediaCodec codec) {
-    TraceUtil.beginSection("startCodec");
     codec.start();
-    TraceUtil.endSection();
   }
 
   private static boolean decoderNeedsFrameDroppingWorkaround(Context context) {

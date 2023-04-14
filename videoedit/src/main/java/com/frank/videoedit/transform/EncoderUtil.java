@@ -21,9 +21,9 @@ import com.frank.videoedit.transform.listener.EncoderSelector;
 import com.frank.videoedit.entity.ColorInfo;
 import com.frank.videoedit.transform.util.MediaUtil;
 
+import com.frank.videoedit.util.CommonUtil;
 import com.google.android.exoplayer2.C.ColorTransfer;
 import com.google.android.exoplayer2.Format;
-import com.google.common.base.Ascii;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
@@ -45,7 +45,7 @@ public final class EncoderUtil {
    * or an empty list if there is none.
    */
   public static ImmutableList<MediaCodecInfo> getSupportedEncoders(String mimeType) {
-    return MIME_TYPE_TO_ENCODERS.get().get(Ascii.toLowerCase(mimeType));
+    return MIME_TYPE_TO_ENCODERS.get().get(CommonUtil.toLowerCase(mimeType));
   }
 
   public static ImmutableSet<String> getSupportedVideoMimeTypes() {
@@ -351,7 +351,7 @@ public final class EncoderUtil {
       // Assume audio decoders are software only.
       return true;
     }
-    String codecName = Ascii.toLowerCase(encoderInfo.getName());
+    String codecName = CommonUtil.toLowerCase(encoderInfo.getName());
     if (codecName.startsWith("arc.")) {
       // App Runtime for Chrome (ARC) codecs
       return false;
@@ -399,7 +399,7 @@ public final class EncoderUtil {
       String[] supportedMimeTypes = mediaCodecInfo.getSupportedTypes();
       for (String mimeType : supportedMimeTypes) {
         if (MediaUtil.isVideo(mimeType)) {
-          encoderInfosBuilder.put(Ascii.toLowerCase(mimeType), mediaCodecInfo);
+          encoderInfosBuilder.put(CommonUtil.toLowerCase(mimeType), mediaCodecInfo);
         }
       }
     }
