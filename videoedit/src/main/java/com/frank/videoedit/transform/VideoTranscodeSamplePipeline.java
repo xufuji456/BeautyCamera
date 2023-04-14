@@ -17,7 +17,6 @@ import com.frank.videoedit.transform.util.MediaUtil;
 import com.frank.videoedit.util.CommonUtil;
 import com.frank.videoedit.util.FrameProcessingException;
 
-import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
 import com.google.android.exoplayer2.util.Effect;
 import com.google.common.collect.ImmutableList;
@@ -86,7 +85,7 @@ import java.util.List;
               TransformationException.ERROR_CODE_HDR_DECODING_UNSUPPORTED);
         }
         inputFormat = inputFormat.buildUpon().
-                setColorInfo(com.google.android.exoplayer2.video.ColorInfo.SDR_BT709_LIMITED).build();
+                setColorInfo(ColorInfo.SDR_BT709_LIMITED).build();
       } else if (Build.VERSION.SDK_INT < 31 || deviceNeedsNoToneMappingWorkaround()) {
         throw TransformationException.createForCodec(
             new IllegalArgumentException("HDR editing and tone mapping is not supported."),
@@ -401,9 +400,6 @@ import java.util.List;
         outputRotationDegrees = 90;
       }
 
-      ColorInfo curInfo = getSupportedInputColor();
-      com.google.android.exoplayer2.video.ColorInfo newInfo = new com.google.android.exoplayer2.video.ColorInfo(
-              curInfo.colorSpace, curInfo.colorRange, curInfo.colorTransfer, curInfo.hdrStaticInfo);
       Format requestedEncoderFormat =
           new Format.Builder()
               .setWidth(requestedWidth)
@@ -411,7 +407,7 @@ import java.util.List;
               .setRotationDegrees(0)
               .setFrameRate(inputFormat.frameRate)
               .setSampleMimeType(requestedOutputMimeType)
-              .setColorInfo(/*getSupportedInputColor()*/newInfo)
+              .setColorInfo(getSupportedInputColor())
               .build();
 
       encoder =

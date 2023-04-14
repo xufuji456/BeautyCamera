@@ -20,7 +20,7 @@ import androidx.annotation.RequiresApi;
 
 import com.frank.videoedit.entity.ColorInfo;
 import com.frank.videoedit.transform.Format;
-import com.google.common.base.Ascii;
+import com.frank.videoedit.util.CommonUtil;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
@@ -937,7 +937,7 @@ public class MediaUtil {
         if (codec == null) {
             return null;
         }
-        codec = Ascii.toLowerCase(codec.trim());
+        codec = CommonUtil.toLowerCase(codec.trim());
         if (codec.startsWith("avc1") || codec.startsWith("avc3")) {
             return VIDEO_H264;
         } else if (codec.startsWith("hev1") || codec.startsWith("hvc1")) {

@@ -6,7 +6,6 @@ import com.frank.videoedit.transform.listener.SamplePipeline;
 import com.frank.videoedit.transform.util.MediaUtil;
 import com.google.android.exoplayer2.BaseRenderer;
 
-import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.RendererCapabilities;
 import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
 import com.google.android.exoplayer2.source.SampleStream.ReadDataResult;
@@ -47,7 +46,7 @@ import com.google.android.exoplayer2.util.MediaClock;
    * @return The {@link Capabilities} for this format.
    */
   @Override
-  public final @Capabilities int supportsFormat(Format format) {
+  public final @Capabilities int supportsFormat(com.google.android.exoplayer2.Format format) { // TODO
     return RendererCapabilities.create(
         MediaUtil.getTrackType(format.sampleMimeType) == getTrackType()
             ? MediaUtil.FORMAT_HANDLED
@@ -84,7 +83,7 @@ import com.google.android.exoplayer2.util.MediaClock;
   }
 
   @Override
-  protected final void onStreamChanged(Format[] formats, long startPositionUs, long offsetUs) {
+  protected final void onStreamChanged(com.google.android.exoplayer2.Format[] formats, long startPositionUs, long offsetUs) { // TODO
     this.streamOffsetUs = offsetUs;
     this.streamStartPositionUs = startPositionUs;
   }

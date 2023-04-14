@@ -10,7 +10,6 @@ import com.frank.videoedit.transform.listener.Codec;
 import com.frank.videoedit.transform.util.MediaUtil;
 import com.frank.videoedit.util.CommonUtil;
 
-import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.FormatHolder;
 import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
 import com.google.android.exoplayer2.source.SampleStream.ReadDataResult;
@@ -63,6 +62,20 @@ import com.google.common.collect.ImmutableList;
     return TAG;
   }
 
+  private Format convertFormat(com.google.android.exoplayer2.Format format) {
+    Format inputFormat = null;
+    if (MediaUtil.isVideo(format.sampleMimeType)) {
+      inputFormat = Format.createVideoSampleFormat(format.id, format.sampleMimeType, format.codecs,
+              format.bitrate, format.maxInputSize, format.width, format.height, format.frameRate,
+              format.initializationData, null);
+    } else if (MediaUtil.isAudio(format.sampleMimeType)) {
+      inputFormat = Format.createAudioSampleFormat(format.id, format.sampleMimeType, format.codecs,
+              format.bitrate, format.maxInputSize, format.channelCount, format.sampleRate,
+              format.initializationData, null);
+    }
+    return inputFormat;
+  }
+
   @Override
   protected boolean ensureConfigured() throws TransformationException {
     if (samplePipeline != null) {
@@ -74,7 +87,8 @@ import com.google.common.collect.ImmutableList;
     if (result != MediaUtil.RESULT_FORMAT_READ) {
       return false;
     }
-    Format inputFormat = formatHolder.format;
+
+    Format inputFormat = convertFormat(formatHolder.format); // TODO
     if (shouldTranscode(inputFormat)) {
       samplePipeline =
           new VideoTranscodeSamplePipeline(

@@ -2,7 +2,7 @@ package com.frank.videoedit.transform.listener;
 
 
 import com.frank.videoedit.transform.util.MediaUtil;
-import com.google.android.exoplayer2.Format;
+import com.frank.videoedit.transform.Format;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

@@ -4,7 +4,7 @@ import android.media.MediaCodec.BufferInfo;
 import android.view.Surface;
 
 import com.frank.videoedit.transform.TransformationException;
-import com.google.android.exoplayer2.Format;
+import com.frank.videoedit.transform.Format;
 import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
 
 import java.nio.ByteBuffer;

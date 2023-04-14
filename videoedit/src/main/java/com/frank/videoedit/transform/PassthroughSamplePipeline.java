@@ -2,7 +2,6 @@ package com.frank.videoedit.transform;
 
 import androidx.annotation.Nullable;
 
-import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
 
 /** Pipeline that passes through the samples without any re-encoding or transformation. */

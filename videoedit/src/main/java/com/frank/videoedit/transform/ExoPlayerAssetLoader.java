@@ -17,6 +17,7 @@ import android.os.Looper;
 import androidx.annotation.Nullable;
 
 import com.frank.videoedit.listener.FrameProcessor;
+import com.frank.videoedit.transform.entity.ProgressHolder;
 import com.frank.videoedit.transform.listener.Codec;
 import com.frank.videoedit.util.CommonUtil;
 

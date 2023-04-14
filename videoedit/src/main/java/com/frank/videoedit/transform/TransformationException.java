@@ -12,7 +12,6 @@ import com.frank.videoedit.transform.listener.AudioProcessor.AudioFormat;
 import com.frank.videoedit.util.CommonUtil;
 import com.frank.videoedit.util.FrameProcessingException;
 
-import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.util.Clock;
 import com.google.android.exoplayer2.util.FrameProcessor;
 import com.google.common.collect.ImmutableBiMap;

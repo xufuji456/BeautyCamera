@@ -14,7 +14,6 @@ import com.frank.videoedit.effect.util.GlProgram;
 import com.frank.videoedit.entity.ColorInfo;
 import com.frank.videoedit.util.FrameProcessingException;
 
-import com.google.android.exoplayer2.Format;
 import com.google.common.collect.ImmutableList;
 
 import java.io.IOException;
@@ -181,7 +180,7 @@ public final class MatrixTextureProcessor extends SingleFrameGlTextureProcessor
               : BT2020_LIMITED_RANGE_YUV_TO_RGB_COLOR_TRANSFORM_MATRIX);
 
       // No transfer functions needed, because the EOTF and OETF cancel out.
-      glProgram.setIntUniform("uEotfColorTransfer", Format.NO_VALUE);
+      glProgram.setIntUniform("uEotfColorTransfer", -1);
     } else {
       glProgram.setIntUniform("uApplyOetf", 1);
     }

@@ -12,7 +12,6 @@ import com.frank.videoedit.entity.ColorInfo;
 import com.frank.videoedit.transform.listener.Codec;
 import com.frank.videoedit.transform.util.MediaUtil;
 
-import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.mediacodec.MediaCodecUtil;
 
 /** A default implementation of {@link Codec.DecoderFactory}. */
@@ -87,7 +86,7 @@ import com.google.android.exoplayer2.mediacodec.MediaCodecUtil;
     }
 
     @Nullable
-    Pair<Integer, Integer> codecProfileAndLevel = MediaCodecUtil.getCodecProfileAndLevel(format);
+    Pair<Integer, Integer> codecProfileAndLevel = MediaUtil.getCodecProfileAndLevel(format);
     if (codecProfileAndLevel != null) {
       MediaUtil.maybeSetInteger(
           mediaFormat, MediaFormat.KEY_PROFILE, codecProfileAndLevel.first);

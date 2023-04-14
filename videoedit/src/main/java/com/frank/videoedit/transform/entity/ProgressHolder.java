@@ -1,4 +1,4 @@
-package com.frank.videoedit.transform;
+package com.frank.videoedit.transform.entity;
 
 import androidx.annotation.IntRange;
 

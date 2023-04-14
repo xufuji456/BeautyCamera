@@ -10,7 +10,7 @@ import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
 import com.frank.videoedit.listener.Bundleable;
-import com.google.android.exoplayer2.Format;
+import com.frank.videoedit.transform.Format;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;

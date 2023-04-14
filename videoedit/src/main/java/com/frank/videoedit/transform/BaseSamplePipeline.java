@@ -6,7 +6,6 @@ import com.frank.videoedit.transform.listener.Muxer;
 import com.frank.videoedit.transform.listener.SamplePipeline;
 import com.frank.videoedit.transform.util.MediaUtil;
 
-import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
 
 

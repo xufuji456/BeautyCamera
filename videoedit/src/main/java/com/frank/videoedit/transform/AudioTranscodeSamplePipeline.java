@@ -13,7 +13,6 @@ import com.frank.videoedit.transform.listener.Codec;
 import com.frank.videoedit.transform.util.MediaUtil;
 import com.frank.videoedit.util.CommonUtil;
 
-import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
 
 import java.nio.ByteBuffer;

@@ -13,6 +13,7 @@ import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
 
 import com.frank.videoedit.listener.FrameProcessor;
+import com.frank.videoedit.transform.entity.ProgressHolder;
 import com.frank.videoedit.transform.listener.Codec;
 import com.frank.videoedit.transform.listener.Muxer;
 import com.frank.videoedit.transform.util.MediaUtil;

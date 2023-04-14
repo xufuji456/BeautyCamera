@@ -5,7 +5,6 @@ import android.os.ParcelFileDescriptor;
 import com.frank.videoedit.transform.listener.Muxer;
 import com.frank.videoedit.transform.util.MediaUtil;
 
-import com.google.android.exoplayer2.Format;
 import com.google.common.collect.ImmutableList;
 
 import java.nio.ByteBuffer;
