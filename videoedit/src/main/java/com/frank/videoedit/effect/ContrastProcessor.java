@@ -5,9 +5,8 @@ import android.opengl.GLES20;
 import android.util.Pair;
 
 import com.frank.videoedit.util.FrameProcessingException;
-
-import com.google.android.exoplayer2.util.GlProgram;
-import com.google.android.exoplayer2.util.GlUtil;
+import com.frank.videoedit.effect.util.GlUtil;
+import com.frank.videoedit.effect.util.GlProgram;
 
 import java.io.IOException;
 

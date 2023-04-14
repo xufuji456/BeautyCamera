@@ -5,8 +5,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import com.frank.videoedit.effect.listener.FrameProcessingTask;
 import com.frank.videoedit.listener.FrameProcessor;
 import com.frank.videoedit.util.FrameProcessingException;
-
-import com.google.android.exoplayer2.util.GlUtil;
+import com.frank.videoedit.effect.util.GlUtil;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;

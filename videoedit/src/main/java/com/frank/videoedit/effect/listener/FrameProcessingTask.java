@@ -1,7 +1,7 @@
 package com.frank.videoedit.effect.listener;
 
 import com.frank.videoedit.util.FrameProcessingException;
-import com.google.android.exoplayer2.util.GlUtil;
+import com.frank.videoedit.effect.util.GlUtil;
 
 public interface FrameProcessingTask {
   /** Runs the task. */

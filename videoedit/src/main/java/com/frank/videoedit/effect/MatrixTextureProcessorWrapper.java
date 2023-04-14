@@ -12,6 +12,9 @@ import androidx.annotation.GuardedBy;
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 
+import com.frank.videoedit.effect.util.MatrixUtil;
+import com.frank.videoedit.effect.util.GlUtil;
+
 import com.frank.videoedit.entity.SurfaceInfo;
 import com.frank.videoedit.effect.listener.ExternalTextureProcessor;
 import com.frank.videoedit.effect.listener.GlMatrixTransformation;
@@ -20,7 +23,6 @@ import com.frank.videoedit.entity.ColorInfo;
 import com.frank.videoedit.transform.util.CommonUtil;
 import com.frank.videoedit.util.FrameProcessingException;
 
-import com.google.android.exoplayer2.util.GlUtil;
 import com.google.common.collect.ImmutableList;
 
 import java.util.Queue;
@@ -250,7 +252,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
       this.inputWidth = inputWidth;
       this.inputHeight = inputHeight;
       Pair<Integer, Integer> outputSizeBeforeSurfaceTransform =
-          MatrixUtils.configureAndGetOutputSize(inputWidth, inputHeight, matrixTransformations);
+          MatrixUtil.configureAndGetOutputSize(inputWidth, inputHeight, matrixTransformations);
       if (!CommonUtil.areEqual(
           this.outputSizeBeforeSurfaceTransform, outputSizeBeforeSurfaceTransform)) {
         this.outputSizeBeforeSurfaceTransform = outputSizeBeforeSurfaceTransform;

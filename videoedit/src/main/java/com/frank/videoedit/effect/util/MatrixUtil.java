@@ -1,4 +1,4 @@
-package com.frank.videoedit.effect;
+package com.frank.videoedit.effect.util;
 
 import android.opengl.Matrix;
 import android.util.Pair;
@@ -9,7 +9,7 @@ import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
 
 /** Utility functions for working with matrices, vertices, and polygons. */
-public final class MatrixUtils {
+public final class MatrixUtil {
   /**
    * Contains the normal vectors of the clipping planes in homogeneous coordinates which
    * conveniently also double as origin vectors and parameters of the normal form of the planes ax +
@@ -215,5 +215,5 @@ public final class MatrixUtils {
   }
 
   /** Class only contains static methods. */
-  private MatrixUtils() {}
+  private MatrixUtil() {}
 }

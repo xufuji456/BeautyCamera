@@ -2,7 +2,7 @@ package com.frank.videoedit.effect.listener;
 
 import android.graphics.Matrix;
 
-import com.frank.videoedit.effect.MatrixUtils;
+import com.frank.videoedit.effect.util.MatrixUtil;
 
 /**
  * Specifies a 3x3 transformation {@link Matrix} to apply in the vertex shader for each frame.
@@ -22,6 +22,6 @@ public interface MatrixTransformation extends GlMatrixTransformation {
 
   @Override
   default float[] getGlMatrixArray(long presentationTimeUs) {
-    return MatrixUtils.getGlMatrixArray(getMatrix(presentationTimeUs));
+    return MatrixUtil.getGlMatrixArray(getMatrix(presentationTimeUs));
   }
 }

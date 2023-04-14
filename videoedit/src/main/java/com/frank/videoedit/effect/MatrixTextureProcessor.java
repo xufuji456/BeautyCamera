@@ -8,13 +8,14 @@ import android.util.Pair;
 
 import com.frank.videoedit.effect.listener.ExternalTextureProcessor;
 import com.frank.videoedit.effect.listener.GlMatrixTransformation;
+import com.frank.videoedit.effect.util.MatrixUtil;
+import com.frank.videoedit.effect.util.GlUtil;
+import com.frank.videoedit.effect.util.GlProgram;
 import com.frank.videoedit.entity.ColorInfo;
 import com.frank.videoedit.util.FrameProcessingException;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
-import com.google.android.exoplayer2.util.GlProgram;
-import com.google.android.exoplayer2.util.GlUtil;
 import com.google.common.collect.ImmutableList;
 
 import java.io.IOException;
@@ -231,7 +232,7 @@ public final class MatrixTextureProcessor extends SingleFrameGlTextureProcessor
 
   @Override
   public Pair<Integer, Integer> configure(int inputWidth, int inputHeight) {
-    return MatrixUtils.configureAndGetOutputSize(inputWidth, inputHeight, matrixTransformations);
+    return MatrixUtil.configureAndGetOutputSize(inputWidth, inputHeight, matrixTransformations);
   }
 
   @Override
@@ -303,8 +304,8 @@ public final class MatrixTextureProcessor extends SingleFrameGlTextureProcessor
           /* destPost= */ 0,
           /* length= */ tempResultMatrix.length);
       visiblePolygon =
-          MatrixUtils.clipConvexPolygonToNdcRange(
-              MatrixUtils.transformPoints(transformationMatrix, visiblePolygon));
+          MatrixUtil.clipConvexPolygonToNdcRange(
+              MatrixUtil.transformPoints(transformationMatrix, visiblePolygon));
       if (visiblePolygon.size() < 3) {
         // Can ignore remaining matrices as there are not enough vertices left to form a polygon.
         return;
@@ -316,7 +317,7 @@ public final class MatrixTextureProcessor extends SingleFrameGlTextureProcessor
         /* mInvOffset= */ 0,
         compositeTransformationMatrixArray,
         /* mOffset= */ 0);
-    visiblePolygon = MatrixUtils.transformPoints(tempResultMatrix, visiblePolygon);
+    visiblePolygon = MatrixUtil.transformPoints(tempResultMatrix, visiblePolygon);
   }
 
   /**

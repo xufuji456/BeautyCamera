@@ -8,7 +8,7 @@ import androidx.annotation.CallSuper;
 
 import com.frank.videoedit.effect.listener.GlTextureProcessor;
 import com.frank.videoedit.util.FrameProcessingException;
-import com.google.android.exoplayer2.util.GlUtil;
+import com.frank.videoedit.effect.util.GlUtil;
 
 /**
  * Manages a GLSL shader program for processing a frame. Implementations generally copy input pixels

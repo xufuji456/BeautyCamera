@@ -7,12 +7,12 @@ import androidx.annotation.WorkerThread;
 
 import com.frank.videoedit.effect.listener.ExternalTextureProcessor;
 import com.frank.videoedit.effect.listener.GlTextureProcessor.InputListener;
+import com.frank.videoedit.effect.util.GlUtil;
 import com.frank.videoedit.entity.FrameInfo;
 import com.frank.videoedit.util.FrameProcessingException;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.util.FrameProcessor;
-import com.google.android.exoplayer2.util.GlUtil;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
