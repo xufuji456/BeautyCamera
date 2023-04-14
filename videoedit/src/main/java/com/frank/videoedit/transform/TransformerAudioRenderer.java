@@ -3,7 +3,6 @@ package com.frank.videoedit.transform;
 import static com.google.android.exoplayer2.source.SampleStream.FLAG_REQUIRE_FORMAT;
 
 import com.frank.videoedit.transform.listener.Codec;
-import com.frank.videoedit.transform.listener.SamplePipeline;
 import com.frank.videoedit.transform.util.MediaUtil;
 
 import com.google.android.exoplayer2.FormatHolder;

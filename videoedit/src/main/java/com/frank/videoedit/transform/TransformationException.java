@@ -13,7 +13,6 @@ import com.frank.videoedit.util.CommonUtil;
 import com.frank.videoedit.util.FrameProcessingException;
 
 import com.google.android.exoplayer2.util.Clock;
-import com.google.android.exoplayer2.util.FrameProcessor;
 import com.google.common.collect.ImmutableBiMap;
 
 import java.lang.annotation.Documented;
@@ -212,13 +211,6 @@ public final class TransformationException extends Exception {
         componentName + " error, audio_format = " + audioFormat, cause, errorCode);
   }
 
-  /**
-   * Creates an instance for a {@link FrameProcessor} related exception.
-   *
-   * @param cause The cause of the failure.
-   * @param errorCode See {@link #errorCode}.
-   * @return The created instance.
-   */
   /* package */ static TransformationException createForFrameProcessingException(
       FrameProcessingException cause, int errorCode) {
     return new TransformationException("Frame processing error", cause, errorCode);
