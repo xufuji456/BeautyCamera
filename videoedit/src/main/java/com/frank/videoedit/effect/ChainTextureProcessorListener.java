@@ -6,9 +6,9 @@ import androidx.annotation.GuardedBy;
 import androidx.annotation.Nullable;
 
 import com.frank.videoedit.effect.listener.GlTextureProcessor;
-import com.google.android.exoplayer2.C;
 import com.frank.videoedit.effect.listener.GlTextureProcessor.InputListener;
 import com.frank.videoedit.effect.listener.GlTextureProcessor.OutputListener;
+import com.frank.videoedit.util.CommonUtil;
 
 import java.util.ArrayDeque;
 import java.util.Queue;
@@ -45,7 +45,7 @@ import java.util.Queue;
     }
 
     long presentationTimeUs = pendingFrame.second;
-    if (presentationTimeUs == C.TIME_END_OF_SOURCE) {
+    if (presentationTimeUs == CommonUtil.TIME_END_OF_SOURCE) {
       frameProcessingTaskExecutor.submit(
           consumingGlTextureProcessor::signalEndOfCurrentInputStream);
     } else {
@@ -79,7 +79,7 @@ import java.util.Queue;
   @Override
   public synchronized void onCurrentOutputStreamEnded() {
     if (!availableFrames.isEmpty()) {
-      availableFrames.add(new Pair<>(TextureInfo.UNSET, C.TIME_END_OF_SOURCE));
+      availableFrames.add(new Pair<>(TextureInfo.UNSET, CommonUtil.TIME_END_OF_SOURCE));
     } else {
       frameProcessingTaskExecutor.submit(
           consumingGlTextureProcessor::signalEndOfCurrentInputStream);

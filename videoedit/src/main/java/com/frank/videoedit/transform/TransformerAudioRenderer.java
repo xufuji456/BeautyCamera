@@ -7,7 +7,6 @@ import com.frank.videoedit.transform.util.MediaUtil;
 
 import com.google.android.exoplayer2.FormatHolder;
 import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
-import com.google.android.exoplayer2.source.SampleStream.ReadDataResult;
 
 /* package */ final class TransformerAudioRenderer extends TransformerBaseRenderer {
 
@@ -63,7 +62,6 @@ import com.google.android.exoplayer2.source.SampleStream.ReadDataResult;
       return true;
     }
     FormatHolder formatHolder = getFormatHolder();
-    @ReadDataResult
     int result = readSource(formatHolder, decoderInputBuffer, /* readFlags= */ FLAG_REQUIRE_FORMAT);
     if (result != MediaUtil.RESULT_FORMAT_READ) {
       return false;
