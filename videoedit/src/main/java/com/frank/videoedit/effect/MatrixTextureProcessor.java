@@ -1,7 +1,5 @@
 package com.frank.videoedit.effect;
 
-import static com.google.android.exoplayer2.util.Assertions.checkArgument;
-import static com.google.android.exoplayer2.util.Assertions.checkState;
 
 import android.content.Context;
 import android.opengl.GLES20;
@@ -116,8 +114,9 @@ public final class MatrixTextureProcessor extends SingleFrameGlTextureProcessor
               : BT2020_LIMITED_RANGE_YUV_TO_RGB_COLOR_TRANSFORM_MATRIX);
 
       @C.ColorTransfer int colorTransfer = electricalColorInfo.colorTransfer;
-      checkArgument(
-          colorTransfer == C.COLOR_TRANSFER_HLG || colorTransfer == C.COLOR_TRANSFER_ST2084);
+      if(colorTransfer != C.COLOR_TRANSFER_HLG && colorTransfer != C.COLOR_TRANSFER_ST2084) {
+        throw new IllegalArgumentException("don't support colorTransfer:" + colorTransfer);
+      }
       glProgram.setIntUniform("uEotfColorTransfer", colorTransfer);
     } else {
       glProgram.setIntUniform("uApplyOetf", 0);
@@ -143,8 +142,9 @@ public final class MatrixTextureProcessor extends SingleFrameGlTextureProcessor
 
     if (useHdr) {
       @C.ColorTransfer int colorTransfer = electricalColorInfo.colorTransfer;
-      checkArgument(
-          colorTransfer == C.COLOR_TRANSFER_HLG || colorTransfer == C.COLOR_TRANSFER_ST2084);
+      if(colorTransfer != C.COLOR_TRANSFER_HLG && colorTransfer != C.COLOR_TRANSFER_ST2084) {
+        throw new IllegalArgumentException("don't support colorTransfer:" + colorTransfer);
+      }
       glProgram.setIntUniform("uOetfColorTransfer", colorTransfer);
     }
 
@@ -332,7 +332,6 @@ public final class MatrixTextureProcessor extends SingleFrameGlTextureProcessor
       float[] cachedMatrix = cachedMatrices[i];
       float[] newMatrix = newMatrices[i];
       if (!Arrays.equals(cachedMatrix, newMatrix)) {
-        checkState(newMatrix.length == 16, "A 4x4 transformation matrix must have 16 elements");
         System.arraycopy(
             /* src= */ newMatrix,
             /* srcPos= */ 0,

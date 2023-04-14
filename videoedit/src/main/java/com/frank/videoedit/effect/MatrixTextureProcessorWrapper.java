@@ -1,8 +1,5 @@
 package com.frank.videoedit.effect;
 
-import static com.google.android.exoplayer2.util.Assertions.checkState;
-import static com.google.android.exoplayer2.util.Assertions.checkStateNotNull;
-
 import android.content.Context;
 import android.opengl.EGL14;
 import android.opengl.EGLContext;
@@ -20,10 +17,10 @@ import com.frank.videoedit.effect.listener.ExternalTextureProcessor;
 import com.frank.videoedit.effect.listener.GlMatrixTransformation;
 import com.frank.videoedit.listener.FrameProcessor;
 import com.frank.videoedit.entity.ColorInfo;
+import com.frank.videoedit.transform.util.CommonUtil;
 import com.frank.videoedit.util.FrameProcessingException;
 
 import com.google.android.exoplayer2.util.GlUtil;
-import com.google.android.exoplayer2.util.Util;
 import com.google.common.collect.ImmutableList;
 
 import java.util.Queue;
@@ -47,7 +44,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
   private int inputHeight;
   @Nullable private MatrixTextureProcessor matrixTextureProcessor;
   private InputListener inputListener;
-  private Pair<Integer, Integer> outputSizeBeforeSurfaceTransformation;
+  private Pair<Integer, Integer> outputSizeBeforeSurfaceTransform;
 
   private volatile boolean outputSizeOrRotationChanged;
 
@@ -101,10 +98,17 @@ import java.util.concurrent.ConcurrentLinkedQueue;
     throw new UnsupportedOperationException();
   }
 
+  public static <T> T checkNotNull(@Nullable T reference, Object errorMessage) {
+    if (reference == null) {
+      throw new IllegalStateException(String.valueOf(errorMessage));
+    }
+    return reference;
+  }
+
   @Override
   public void queueInputFrame(TextureInfo inputTexture, long presentationTimeUs) {
     long streamOffsetUs =
-        checkStateNotNull(streamOffsetUsQueue.peek(), "No input stream specified.");
+        checkNotNull(streamOffsetUsQueue.peek(), "No input stream specified.");
     long offsetPresentationTimeUs = presentationTimeUs + streamOffsetUs;
     frameProcessorListener.onOutputFrameAvailable(offsetPresentationTimeUs);
     if (releaseFramesAutomatically) {
@@ -124,7 +128,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
   @WorkerThread
   public void releaseOutputFrame(long releaseTimeNs) {
-    checkState(!releaseFramesAutomatically);
     Pair<TextureInfo, Long> oldestAvailableFrame = availableFrames.remove();
     renderFrameToSurfaces(
         /* inputTexture= */ oldestAvailableFrame.first,
@@ -134,8 +137,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
   @Override
   public void signalEndOfCurrentInputStream() {
-    checkState(!streamOffsetUsQueue.isEmpty(), "No input stream to end.");
-
     streamOffsetUsQueue.remove();
     if (streamOffsetUsQueue.isEmpty()) {
       frameProcessorListener.onFrameProcessingEnded();
@@ -183,7 +184,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
    * @see FrameProcessor#setOutputSurfaceInfo(SurfaceInfo)
    */
   public synchronized void setOutputSurfaceInfo(@Nullable SurfaceInfo outputSurfaceInfo) {
-    if (!Util.areEqual(this.outputSurfaceInfo, outputSurfaceInfo)) {
+    if (!CommonUtil.areEqual(this.outputSurfaceInfo, outputSurfaceInfo)) {
       if (outputSurfaceInfo != null
           && this.outputSurfaceInfo != null
           && !this.outputSurfaceInfo.surface.equals(outputSurfaceInfo.surface)) {
@@ -245,17 +246,17 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
     if (this.inputWidth != inputWidth
         || this.inputHeight != inputHeight
-        || this.outputSizeBeforeSurfaceTransformation == null) {
+        || this.outputSizeBeforeSurfaceTransform == null) {
       this.inputWidth = inputWidth;
       this.inputHeight = inputHeight;
-      Pair<Integer, Integer> outputSizeBeforeSurfaceTransformation =
+      Pair<Integer, Integer> outputSizeBeforeSurfaceTransform =
           MatrixUtils.configureAndGetOutputSize(inputWidth, inputHeight, matrixTransformations);
-      if (!Util.areEqual(
-          this.outputSizeBeforeSurfaceTransformation, outputSizeBeforeSurfaceTransformation)) {
-        this.outputSizeBeforeSurfaceTransformation = outputSizeBeforeSurfaceTransformation;
+      if (!CommonUtil.areEqual(
+          this.outputSizeBeforeSurfaceTransform, outputSizeBeforeSurfaceTransform)) {
+        this.outputSizeBeforeSurfaceTransform = outputSizeBeforeSurfaceTransform;
         frameProcessorListener.onOutputSizeChanged(
-            outputSizeBeforeSurfaceTransformation.first,
-            outputSizeBeforeSurfaceTransformation.second);
+            outputSizeBeforeSurfaceTransform.first,
+            outputSizeBeforeSurfaceTransform.second);
       }
     }
 
@@ -319,9 +320,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
     }
 
     matrixTextureProcessor.setTextureTransformMatrix(textureTransformMatrix);
-    Pair<Integer, Integer> outputSize = matrixTextureProcessor.configure(inputWidth, inputHeight);
-    checkState(outputSize.first == outputSurfaceInfo.width);
-    checkState(outputSize.second == outputSurfaceInfo.height);
+
     return matrixTextureProcessor;
   }
 
