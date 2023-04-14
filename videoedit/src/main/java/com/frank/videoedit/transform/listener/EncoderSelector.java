@@ -4,11 +4,11 @@ import android.media.MediaCodecInfo;
 
 import com.frank.videoedit.transform.EncoderUtil;
 
-import com.google.common.collect.ImmutableList;
+import java.util.List;
 
 public interface EncoderSelector {
 
   EncoderSelector DEFAULT = EncoderUtil::getSupportedEncoders;
 
-  ImmutableList<MediaCodecInfo> selectEncoderInfos(String mimeType);
+  List<MediaCodecInfo> selectEncoderInfos(String mimeType);
 }

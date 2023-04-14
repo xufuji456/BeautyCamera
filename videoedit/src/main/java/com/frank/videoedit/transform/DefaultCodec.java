@@ -20,10 +20,11 @@ import com.frank.videoedit.transform.util.MediaUtil;
 import com.frank.videoedit.util.CommonUtil;
 
 import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
-import com.google.common.collect.ImmutableList;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 /** A default {@link Codec} implementation that uses {@link MediaCodec}. */
 public final class DefaultCodec implements Codec {
@@ -399,7 +400,7 @@ public final class DefaultCodec implements Codec {
   }
 
   private static Format convertToFormat(MediaFormat mediaFormat) {
-    ImmutableList.Builder<byte[]> csdBuffers = new ImmutableList.Builder<>();
+    List<byte[]> csdBuffers = new ArrayList<>();
     int csdIndex = 0;
     while (true) {
       @Nullable ByteBuffer csdByteBuffer = mediaFormat.getByteBuffer("csd-" + csdIndex);
@@ -413,7 +414,7 @@ public final class DefaultCodec implements Codec {
     }
     String mimeType = mediaFormat.getString(MediaFormat.KEY_MIME);
     Format.Builder formatBuilder =
-        new Format.Builder().setSampleMimeType(mimeType).setInitializationData(csdBuffers.build());
+        new Format.Builder().setSampleMimeType(mimeType).setInitializationData(csdBuffers);
     if (MediaUtil.isVideo(mimeType)) {
       formatBuilder
           .setWidth(mediaFormat.getInteger(MediaFormat.KEY_WIDTH))

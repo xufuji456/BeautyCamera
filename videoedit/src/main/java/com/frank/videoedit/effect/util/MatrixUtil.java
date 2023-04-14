@@ -4,9 +4,10 @@ import android.opengl.Matrix;
 import android.util.Pair;
 
 import com.frank.videoedit.effect.listener.GlMatrixTransformation;
-import com.google.common.collect.ImmutableList;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /** Utility functions for working with matrices, vertices, and polygons. */
 public final class MatrixUtil {
@@ -79,8 +80,8 @@ public final class MatrixUtil {
    * @return The vertices of the clipped polygon, in counter-clockwise order, or an empty list if
    *     the polygon doesn't intersect with the NDC range.
    */
-  public static ImmutableList<float[]> clipConvexPolygonToNdcRange(
-      ImmutableList<float[]> polygonVertices) {
+  public static List<float[]> clipConvexPolygonToNdcRange(
+          List<float[]> polygonVertices) {
 
     // This is a 3D generalization of the Sutherland-Hodgman algorithm
     // https://en.wikipedia.org/wiki/Sutherland%E2%80%93Hodgman_algorithm
@@ -89,11 +90,11 @@ public final class MatrixUtil {
     // For this algorithm, the subject polygon doesn't necessarily need to be convex. But since we
     // require that it is convex, we can assume that the clipped result is a single connected
     // convex polygon.
-    ImmutableList.Builder<float[]> outputVertices =
-        new ImmutableList.Builder<float[]>().addAll(polygonVertices);
+    List<float[]> outputVertices = new ArrayList<>();
+    outputVertices.addAll(polygonVertices);
     for (float[] clippingPlane : NDC_CUBE) {
-      ImmutableList<float[]> inputVertices = outputVertices.build();
-      outputVertices = new ImmutableList.Builder<>();
+      List<float[]> inputVertices = outputVertices;
+      outputVertices = new ArrayList<>();
 
       for (int i = 0; i < inputVertices.size(); i++) {
         float[] currentVertex = inputVertices.get(i);
@@ -119,7 +120,7 @@ public final class MatrixUtil {
       }
     }
 
-    return outputVertices.build();
+    return outputVertices;
   }
 
   /**
@@ -178,9 +179,9 @@ public final class MatrixUtil {
    * @param points The points as 4 element vectors of homogeneous coordinates (x,y,z,1).
    * @return The transformed points as 4 element vectors of homogeneous coordinates (x,y,z,1).
    */
-  public static ImmutableList<float[]> transformPoints(
-      float[] transformationMatrix, ImmutableList<float[]> points) {
-    ImmutableList.Builder<float[]> transformedPoints = new ImmutableList.Builder<>();
+  public static List<float[]> transformPoints(
+      float[] transformationMatrix, List<float[]> points) {
+    List<float[]> transformedPoints = new ArrayList<>();
     for (int i = 0; i < points.size(); i++) {
       float[] transformedPoint = new float[4];
       Matrix.multiplyMV(
@@ -198,13 +199,13 @@ public final class MatrixUtil {
       transformedPoint[3] = 1;
       transformedPoints.add(transformedPoint);
     }
-    return transformedPoints.build();
+    return transformedPoints;
   }
 
   public static Pair<Integer, Integer> configureAndGetOutputSize(
       int inputWidth,
       int inputHeight,
-      ImmutableList<GlMatrixTransformation> matrixTransformations) {
+      List<GlMatrixTransformation> matrixTransformations) {
 
     Pair<Integer, Integer> outputSize = Pair.create(inputWidth, inputHeight);
     for (int i = 0; i < matrixTransformations.size(); i++) {

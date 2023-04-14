@@ -23,8 +23,7 @@ import com.frank.videoedit.entity.ColorInfo;
 import com.frank.videoedit.util.CommonUtil;
 import com.frank.videoedit.util.FrameProcessingException;
 
-import com.google.common.collect.ImmutableList;
-
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -88,7 +87,7 @@ public final class GlEffectsFrameProcessor implements FrameProcessor {
     EGLContext eglContext = GlUtil.createEglContext(eglDisplay, configAttributes);
     GlUtil.createFocusedPlaceholderEglSurface(eglContext, eglDisplay, configAttributes);
 
-    ImmutableList<GlTextureProcessor> textureProcessors =
+    List<GlTextureProcessor> textureProcessors =
         getGlTextureProcessorsForGlEffects(
             context,
             effects,
@@ -109,7 +108,7 @@ public final class GlEffectsFrameProcessor implements FrameProcessor {
         releaseFramesAutomatically);
   }
 
-  private static ImmutableList<GlTextureProcessor> getGlTextureProcessorsForGlEffects(
+  private static List<GlTextureProcessor> getGlTextureProcessorsForGlEffects(
       Context context,
       List<GlEffect> effects,
       EGLDisplay eglDisplay,
@@ -118,10 +117,10 @@ public final class GlEffectsFrameProcessor implements FrameProcessor {
       ColorInfo colorInfo,
       boolean releaseFramesAutomatically)
       throws FrameProcessingException {
-    ImmutableList.Builder<GlTextureProcessor> textureProcessorListBuilder =
-        new ImmutableList.Builder<>();
-    ImmutableList.Builder<GlMatrixTransformation> matrixTransformationListBuilder =
-        new ImmutableList.Builder<>();
+    List<GlTextureProcessor> textureProcessorListBuilder =
+        new ArrayList<>();
+    List<GlMatrixTransformation> matrixTransformationListBuilder =
+        new ArrayList<>();
     boolean sampleFromExternalTexture = true;
     for (int i = 0; i < effects.size(); i++) {
       GlEffect glEffect = (GlEffect) effects.get(i);
@@ -133,8 +132,8 @@ public final class GlEffectsFrameProcessor implements FrameProcessor {
         matrixTransformationListBuilder.add((GlMatrixTransformation) glEffect);
         continue;
       }
-      ImmutableList<GlMatrixTransformation> matrixTransformations =
-          matrixTransformationListBuilder.build();
+      List<GlMatrixTransformation> matrixTransformations =
+          matrixTransformationListBuilder;
       if (!matrixTransformations.isEmpty() || sampleFromExternalTexture) {
         MatrixTextureProcessor matrixTextureProcessor;
         if (sampleFromExternalTexture) {
@@ -147,7 +146,7 @@ public final class GlEffectsFrameProcessor implements FrameProcessor {
                   context, matrixTransformations, ColorInfo.isTransferHdr(colorInfo));
         }
         textureProcessorListBuilder.add(matrixTextureProcessor);
-        matrixTransformationListBuilder = new ImmutableList.Builder<>();
+        matrixTransformationListBuilder = new ArrayList<>();
         sampleFromExternalTexture = false;
       }
       textureProcessorListBuilder.add(
@@ -159,16 +158,16 @@ public final class GlEffectsFrameProcessor implements FrameProcessor {
             context,
             eglDisplay,
             eglContext,
-            matrixTransformationListBuilder.build(),
+            matrixTransformationListBuilder,
             listener,
             sampleFromExternalTexture,
             colorInfo,
             releaseFramesAutomatically));
-    return textureProcessorListBuilder.build();
+    return textureProcessorListBuilder;
   }
 
   private static void chainTextureProcessorsWithListeners(
-      ImmutableList<GlTextureProcessor> textureProcessors,
+      List<GlTextureProcessor> textureProcessors,
       FrameProcessingTaskExecutor frameProcessingTaskExecutor,
       Listener frameProcessorListener) {
     for (int i = 0; i < textureProcessors.size() - 1; i++) {
@@ -195,7 +194,7 @@ public final class GlEffectsFrameProcessor implements FrameProcessor {
   private final Surface inputSurface;
   private final boolean releaseFramesAutomatically;
   private final MatrixTextureProcessorWrapper finalTextureProcessorWrapper;
-  private final ImmutableList<GlTextureProcessor> allTextureProcessors;
+  private final List<GlTextureProcessor> allTextureProcessors;
 
   private FrameInfo nextInputFrameInfo;
   private boolean inputStreamEnded;
@@ -209,7 +208,7 @@ public final class GlEffectsFrameProcessor implements FrameProcessor {
       EGLDisplay eglDisplay,
       EGLContext eglContext,
       FrameProcessingTaskExecutor frameProcessingTaskExecutor,
-      ImmutableList<GlTextureProcessor> textureProcessors,
+      List<GlTextureProcessor> textureProcessors,
       boolean releaseFramesAutomatically)
       throws FrameProcessingException {
 

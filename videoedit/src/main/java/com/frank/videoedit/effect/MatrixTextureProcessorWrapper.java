@@ -23,15 +23,15 @@ import com.frank.videoedit.entity.ColorInfo;
 import com.frank.videoedit.util.CommonUtil;
 import com.frank.videoedit.util.FrameProcessingException;
 
-import com.google.common.collect.ImmutableList;
-
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /* package */ final class MatrixTextureProcessorWrapper implements ExternalTextureProcessor {
 
   private final Context context;
-  private final ImmutableList<GlMatrixTransformation> matrixTransformations;
+  private final List<GlMatrixTransformation> matrixTransformations;
   private final EGLDisplay eglDisplay;
   private final EGLContext eglContext;
   private final FrameProcessor.Listener frameProcessorListener;
@@ -62,7 +62,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
       Context context,
       EGLDisplay eglDisplay,
       EGLContext eglContext,
-      ImmutableList<GlMatrixTransformation> matrixTransformations,
+      List<GlMatrixTransformation> matrixTransformations,
       FrameProcessor.Listener frameProcessorListener,
       boolean sampleFromExternalTexture,
       ColorInfo colorInfo,
@@ -301,16 +301,17 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
   private MatrixTextureProcessor createMatrixTextureProcessorForOutputSurface(
       SurfaceInfo outputSurfaceInfo) throws FrameProcessingException {
-    ImmutableList.Builder<GlMatrixTransformation> matrixTransformationListBuilder =
-        new ImmutableList.Builder<GlMatrixTransformation>().addAll(matrixTransformations);
+    List<GlMatrixTransformation> matrixTransformationListBuilder =
+        new ArrayList<>();
+    matrixTransformationListBuilder.addAll(matrixTransformations);
 
     matrixTransformationListBuilder.add(
         Presentation.createForWidthAndHeight(
             outputSurfaceInfo.width, outputSurfaceInfo.height, Presentation.LAYOUT_SCALE_TO_FIT));
 
     MatrixTextureProcessor matrixTextureProcessor;
-    ImmutableList<GlMatrixTransformation> expandedMatrixTransformations =
-        matrixTransformationListBuilder.build();
+    List<GlMatrixTransformation> expandedMatrixTransformations =
+        matrixTransformationListBuilder;
     if (sampleFromExternalTexture) {
       matrixTextureProcessor =
           MatrixTextureProcessor.createWithExternalSamplerApplyingEotfThenOetf(

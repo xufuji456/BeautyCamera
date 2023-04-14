@@ -27,13 +27,13 @@ import com.google.android.exoplayer2.source.DefaultMediaSourceFactory;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.util.Clock;
 import com.google.android.exoplayer2.util.ListenerSet;
-import com.google.common.collect.ImmutableList;
 
 import java.io.File;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -60,7 +60,7 @@ public final class Transformer {
 
     // Optional fields.
     private TransformationRequest transformationRequest;
-    private ImmutableList<GlEffect> videoEffects;
+    private List<GlEffect> videoEffects;
     private ListenerSet<Listener> listeners;
     private MediaSource.Factory mediaSourceFactory;
     private Codec.DecoderFactory decoderFactory;
@@ -78,7 +78,7 @@ public final class Transformer {
     public Builder(Context context) {
       this.context = context.getApplicationContext();
       transformationRequest = new TransformationRequest.Builder().build();
-      videoEffects = ImmutableList.of();
+      videoEffects = new ArrayList<>();
       decoderFactory = new DefaultDecoderFactory(this.context);
       encoderFactory = new DefaultEncoderFactory.Builder(this.context).build();
       frameProcessorFactory = new GlEffectsFrameProcessor.Factory();
@@ -109,7 +109,7 @@ public final class Transformer {
     }
 
     public Builder setVideoEffects(List<GlEffect> effects) {
-      this.videoEffects = ImmutableList.copyOf(effects);
+      this.videoEffects = List.copyOf(effects);
       return this;
     }
 
@@ -269,7 +269,7 @@ public final class Transformer {
 
   private final Context context;
   private final TransformationRequest transformationRequest;
-  private final ImmutableList<GlEffect> videoEffects;
+  private final List<GlEffect> videoEffects;
   private final ListenerSet<Listener> listeners;
   private final MediaSource.Factory mediaSourceFactory;
   private final FrameProcessor.Factory frameProcessorFactory;
@@ -287,7 +287,7 @@ public final class Transformer {
   private Transformer(
       Context context,
       TransformationRequest transformationRequest,
-      ImmutableList<GlEffect> videoEffects,
+      List<GlEffect> videoEffects,
       ListenerSet<Listener> listeners,
       MediaSource.Factory mediaSourceFactory,
       Codec.DecoderFactory decoderFactory,

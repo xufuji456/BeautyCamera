@@ -19,7 +19,6 @@ import com.frank.videoedit.util.FrameProcessingException;
 import com.frank.videoedit.effect.listener.GlEffect;
 
 import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
-import com.google.common.collect.ImmutableList;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -58,7 +57,7 @@ import java.util.List;
       long streamOffsetUs,
       long streamStartPositionUs,
       TransformationRequest transformationRequest,
-      ImmutableList<GlEffect> effects,
+      List<GlEffect> effects,
       FrameProcessor.Factory frameProcessorFactory,
       Codec.DecoderFactory decoderFactory,
       Codec.EncoderFactory encoderFactory,
@@ -109,8 +108,8 @@ import java.util.List;
     int decodedHeight =
         (inputFormat.rotationDegrees % 180 == 0) ? inputFormat.height : inputFormat.width;
 
-    ImmutableList.Builder<GlEffect> effectsListBuilder =
-        new ImmutableList.Builder<GlEffect>().addAll(effects);
+    List<GlEffect> effectsListBuilder = new ArrayList<>();
+    effectsListBuilder.addAll(effects);
 
     if (transformationRequest.outputHeight != CommonUtil.LENGTH_UNSET) {
       effectsListBuilder.add(Presentation.createForHeight(transformationRequest.outputHeight));
@@ -160,7 +159,7 @@ import java.util.List;
                   }
                 }
               },
-              effectsListBuilder.build(),
+              effectsListBuilder,
               // HDR colors are only used if the MediaCodec encoder supports FEATURE_HdrEditing.
               // This implies that the OpenGL EXT_YUV_target extension is supported and hence the
               // default FrameProcessor, GlEffectsFrameProcessor, also supports HDR. Otherwise, tone
@@ -330,7 +329,7 @@ import java.util.List;
     private final TransformationRequest transformationRequest;
     private final FallbackListener fallbackListener;
     private final String requestedOutputMimeType;
-    private final ImmutableList<String> supportedEncoderNamesForHdrEditing;
+    private final List<String> supportedEncoderNamesForHdrEditing;
 
     private SurfaceInfo encoderSurfaceInfo;
 

@@ -11,9 +11,8 @@ import com.frank.videoedit.transform.listener.Muxer;
 import com.frank.videoedit.transform.util.MediaUtil;
 import com.frank.videoedit.util.CommonUtil;
 
-import com.google.common.collect.ImmutableList;
-
 import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -84,7 +83,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
     return getSupportedSampleMimeTypes(trackType).contains(mimeType);
   }
 
-  public ImmutableList<String> getSupportedSampleMimeTypes(@MediaUtil.TrackType int trackType) {
+  public List<String> getSupportedSampleMimeTypes(@MediaUtil.TrackType int trackType) {
     return muxerFactory.getSupportedSampleMimeTypes(trackType);
   }
 

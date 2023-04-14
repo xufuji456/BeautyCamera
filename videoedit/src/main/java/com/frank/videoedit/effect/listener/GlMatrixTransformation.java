@@ -7,7 +7,8 @@ import android.util.Pair;
 import com.frank.videoedit.effect.MatrixTextureProcessor;
 import com.frank.videoedit.effect.SingleFrameGlTextureProcessor;
 import com.frank.videoedit.util.FrameProcessingException;
-import com.google.common.collect.ImmutableList;
+
+import java.util.List;
 
 /**
  * Specifies a 4x4 transformation {@link Matrix} to apply in the vertex shader for each frame.
@@ -43,7 +44,7 @@ public interface GlMatrixTransformation extends GlEffect {
       throws FrameProcessingException {
     return MatrixTextureProcessor.create(
         context,
-        /* matrixTransformations= */ ImmutableList.of(this),
+        /* matrixTransformations= */ List.of(this),
         useHdr);
   }
 }

@@ -14,8 +14,6 @@ import com.frank.videoedit.effect.util.GlProgram;
 import com.frank.videoedit.entity.ColorInfo;
 import com.frank.videoedit.util.FrameProcessingException;
 
-import com.google.common.collect.ImmutableList;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -38,8 +36,8 @@ public final class MatrixTextureProcessor extends SingleFrameGlTextureProcessor
           "shaders/fragment_transform_external_yuv_es3.glsl";
   private static final String FRAGMENT_SHADER_TRANSFORMATION_SDR_EXTERNAL_PATH =
           "shaders/fragment_transform_sdr_external_es2.glsl";
-  private static final ImmutableList<float[]> NDC_SQUARE =
-      ImmutableList.of(
+  private static final List<float[]> NDC_SQUARE =
+          List.of(
           new float[] {-1, -1, 0, 1},
           new float[] {-1, 1, 0, 1},
           new float[] {1, 1, 0, 1},
@@ -59,13 +57,13 @@ public final class MatrixTextureProcessor extends SingleFrameGlTextureProcessor
     1.6853f, -0.6530f, 0.0000f,
   };
 
-  private final ImmutableList<GlMatrixTransformation> matrixTransformations;
+  private final List<GlMatrixTransformation> matrixTransformations;
   private final boolean useHdr;
   private final float[][] transformationMatrixCache;
   private final float[] compositeTransformationMatrixArray;
   private final float[] compositeRgbMatrixArray;
   private final float[] tempResultMatrix;
-  private ImmutableList<float[]> visiblePolygon;
+  private List<float[]> visiblePolygon;
 
   private final GlProgram glProgram;
 
@@ -82,7 +80,7 @@ public final class MatrixTextureProcessor extends SingleFrameGlTextureProcessor
     // TODO(b/241902517): Add transfer functions since existing color filters may change the colors.
     return new MatrixTextureProcessor(
         glProgram,
-        ImmutableList.copyOf(matrixTransformations),
+            List.copyOf(matrixTransformations),
         useHdr);
   }
 
@@ -123,7 +121,7 @@ public final class MatrixTextureProcessor extends SingleFrameGlTextureProcessor
 
     return new MatrixTextureProcessor(
         glProgram,
-        ImmutableList.copyOf(matrixTransformations),
+            List.copyOf(matrixTransformations),
         useHdr);
   }
 
@@ -149,7 +147,7 @@ public final class MatrixTextureProcessor extends SingleFrameGlTextureProcessor
 
     return new MatrixTextureProcessor(
         glProgram,
-        ImmutableList.copyOf(matrixTransformations),
+            List.copyOf(matrixTransformations),
         useHdr);
   }
 
@@ -187,13 +185,13 @@ public final class MatrixTextureProcessor extends SingleFrameGlTextureProcessor
 
     return new MatrixTextureProcessor(
         glProgram,
-        ImmutableList.copyOf(matrixTransformations),
+            List.copyOf(matrixTransformations),
         useHdr);
   }
 
   private MatrixTextureProcessor(
       GlProgram glProgram,
-      ImmutableList<GlMatrixTransformation> matrixTransformations,
+      List<GlMatrixTransformation> matrixTransformations,
       boolean useHdr) {
     super(useHdr);
     this.glProgram = glProgram;

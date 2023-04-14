@@ -23,8 +23,6 @@ import com.frank.videoedit.entity.ColorInfo;
 import com.frank.videoedit.transform.util.DeviceEncoderBitrateProvider;
 import com.frank.videoedit.transform.util.MediaUtil;
 
-import com.google.common.collect.ImmutableList;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -323,7 +321,7 @@ public final class DefaultEncoderFactory implements Codec.EncoderFactory {
       return null;
     }
 
-    ImmutableList<MediaCodecInfo> filteredEncoderInfos =
+    List<MediaCodecInfo> filteredEncoderInfos =
         encoderSelector.selectEncoderInfos(mimeType);
     if (filteredEncoderInfos.isEmpty()) {
       return null;
@@ -402,7 +400,7 @@ public final class DefaultEncoderFactory implements Codec.EncoderFactory {
   }
 
   /** Returns a list of encoders that support the requested resolution most closely. */
-  private static ImmutableList<MediaCodecInfo> filterEncodersByResolution(
+  private static List<MediaCodecInfo> filterEncodersByResolution(
       List<MediaCodecInfo> encoders, String mimeType, int requestedWidth, int requestedHeight) {
     return filterEncoders(
         encoders,
@@ -423,7 +421,7 @@ public final class DefaultEncoderFactory implements Codec.EncoderFactory {
   }
 
   /** Returns a list of encoders that support the requested bitrate most closely. */
-  private static ImmutableList<MediaCodecInfo> filterEncodersByBitrate(
+  private static List<MediaCodecInfo> filterEncodersByBitrate(
       List<MediaCodecInfo> encoders, String mimeType, int requestedBitrate) {
     return filterEncoders(
         encoders,
@@ -436,7 +434,7 @@ public final class DefaultEncoderFactory implements Codec.EncoderFactory {
   }
 
   /** Returns a list of encoders that support the requested bitrate mode. */
-  private static ImmutableList<MediaCodecInfo> filterEncodersByBitrateMode(
+  private static List<MediaCodecInfo> filterEncodersByBitrateMode(
       List<MediaCodecInfo> encoders, String mimeType, int requestedBitrateMode) {
     return filterEncoders(
         encoders,
@@ -498,7 +496,7 @@ public final class DefaultEncoderFactory implements Codec.EncoderFactory {
       int expectedEncodingProfile = MediaCodecInfo.CodecProfileLevel.AVCProfileHigh;
       if (colorInfo != null) {
         int colorTransfer = colorInfo.colorTransfer;
-        ImmutableList<Integer> codecProfiles =
+        List<Integer> codecProfiles =
             EncoderUtil.getCodecProfilesForHdrFormat(mimeType, colorTransfer);
         if (!codecProfiles.isEmpty()) {
           // Default to the most compatible profile, which is first in the list.
@@ -564,7 +562,7 @@ public final class DefaultEncoderFactory implements Codec.EncoderFactory {
    * @return A list of {@linkplain MediaCodecInfo encoders} with the lowest costs, empty if the
    *     costs of all encoders are {@link Integer#MAX_VALUE}.
    */
-  private static ImmutableList<MediaCodecInfo> filterEncoders(
+  private static List<MediaCodecInfo> filterEncoders(
       List<MediaCodecInfo> encoders, EncoderFallbackCost cost, String filterName) {
     List<MediaCodecInfo> filteredEncoders = new ArrayList<>(encoders.size());
 
@@ -594,7 +592,7 @@ public final class DefaultEncoderFactory implements Codec.EncoderFactory {
       stringBuilder.append(String.format(Locale.getDefault(), "  %s\n", encoderInfo.getName()));
     }
 
-    return ImmutableList.copyOf(filteredEncoders);
+    return List.copyOf(filteredEncoders);
   }
 
   @Nullable

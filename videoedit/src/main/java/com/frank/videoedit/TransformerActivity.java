@@ -38,15 +38,15 @@ import com.frank.videoedit.transform.Transformer;
 import com.frank.videoedit.util.CommonUtil;
 import com.frank.videoedit.view.MaterialCardView;
 import com.frank.videoedit.transform.entity.MediaItem;
-import com.frank.videoedit.effect.listener.GlEffect;
 
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Ticker;
-import com.google.common.collect.ImmutableList;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /** An {@link Activity} that transforms and plays media using {@link Transformer}. */
@@ -230,14 +230,14 @@ public final class TransformerActivity extends AppCompatActivity {
     return file;
   }
 
-  private ImmutableList<GlEffect> createVideoEffectsListFromBundle(Bundle bundle) {
+  private List<GlEffect> createVideoEffectsListFromBundle(Bundle bundle) {
     @Nullable
     boolean[] selectedEffects =
         bundle.getBooleanArray(EditActivity.DEMO_EFFECTS_SELECTIONS);
     if (selectedEffects == null) {
-      return ImmutableList.of();
+      return List.of();
     }
-    ImmutableList.Builder<GlEffect> effects = new ImmutableList.Builder<>();
+    List<GlEffect> effects = new ArrayList<>();
     if (selectedEffects[0]) {
       effects.add(
           new HslAdjustment.Builder()
@@ -270,7 +270,7 @@ public final class TransformerActivity extends AppCompatActivity {
     if (selectedEffects[4]) {
       effects.add((GlEffect) BitmapOverlayProcessor::new);
     }
-    return effects.build();
+    return effects;
   }
 
   private void onTransformationError(TransformationException exception) {

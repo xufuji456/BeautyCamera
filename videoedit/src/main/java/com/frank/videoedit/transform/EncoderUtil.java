@@ -24,10 +24,12 @@ import com.frank.videoedit.util.CommonUtil;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.Ints;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /** Utility methods for {@link MediaCodec} encoders. */
 public final class EncoderUtil {
@@ -42,7 +44,7 @@ public final class EncoderUtil {
    * Returns a list of {@linkplain MediaCodecInfo encoders} that support the given {@code mimeType},
    * or an empty list if there is none.
    */
-  public static ImmutableList<MediaCodecInfo> getSupportedEncoders(String mimeType) {
+  public static List<MediaCodecInfo> getSupportedEncoders(String mimeType) {
     return MIME_TYPE_TO_ENCODERS.get().get(CommonUtil.toLowerCase(mimeType));
   }
 
@@ -54,16 +56,16 @@ public final class EncoderUtil {
    * Returns the names of encoders that support HDR editing for the given format, or an empty list
    * if the format is unknown or not supported for HDR encoding.
    */
-  public static ImmutableList<String> getSupportedEncoderNamesForHdrEditing(
+  public static List<String> getSupportedEncoderNamesForHdrEditing(
       String mimeType, @Nullable ColorInfo colorInfo) {
     if (Build.VERSION.SDK_INT < 31 || colorInfo == null) {
-      return ImmutableList.of();
+      return List.of();
     }
 
     @ColorInfo.ColorTransfer int colorTransfer = colorInfo.colorTransfer;
-    ImmutableList<Integer> profiles = getCodecProfilesForHdrFormat(mimeType, colorTransfer);
-    ImmutableList.Builder<String> resultBuilder = ImmutableList.builder();
-    ImmutableList<MediaCodecInfo> mediaCodecInfos =
+    List<Integer> profiles = getCodecProfilesForHdrFormat(mimeType, colorTransfer);
+    List<String> resultBuilder = new ArrayList<>();
+    List<MediaCodecInfo> mediaCodecInfos =
         EncoderSelector.DEFAULT.selectEncoderInfos(mimeType);
     for (int i = 0; i < mediaCodecInfos.size(); i++) {
       MediaCodecInfo mediaCodecInfo = mediaCodecInfos.get(i);
@@ -79,7 +81,7 @@ public final class EncoderUtil {
         }
       }
     }
-    return resultBuilder.build();
+    return resultBuilder;
   }
 
   /**
@@ -89,43 +91,43 @@ public final class EncoderUtil {
    * compatibility, with the most widely compatible profile first.
    */
   @SuppressWarnings("InlinedApi") // Safe use of inlined constants from newer API versions.
-  public static ImmutableList<Integer> getCodecProfilesForHdrFormat(
+  public static List<Integer> getCodecProfilesForHdrFormat(
       String mimeType, @ColorInfo.ColorTransfer int colorTransfer) {
     // TODO(b/239174610): Add a way to determine profiles for DV and HDR10+.
     switch (mimeType) {
       case MediaUtil.VIDEO_VP9:
         if (colorTransfer == ColorInfo.COLOR_TRANSFER_HLG || colorTransfer == ColorInfo.COLOR_TRANSFER_ST2084) {
           // Profiles support both HLG and PQ.
-          return ImmutableList.of(
+          return List.of(
               MediaCodecInfo.CodecProfileLevel.VP9Profile2HDR,
               MediaCodecInfo.CodecProfileLevel.VP9Profile3HDR);
         }
         break;
       case MediaUtil.VIDEO_H264:
         if (colorTransfer == ColorInfo.COLOR_TRANSFER_HLG) {
-          return ImmutableList.of(MediaCodecInfo.CodecProfileLevel.AVCProfileHigh10);
+          return List.of(MediaCodecInfo.CodecProfileLevel.AVCProfileHigh10);
         }
         // CodecProfileLevel does not support PQ/HDR10 for H264.
         break;
       case MediaUtil.VIDEO_H265:
         if (colorTransfer == ColorInfo.COLOR_TRANSFER_HLG) {
-          return ImmutableList.of(MediaCodecInfo.CodecProfileLevel.HEVCProfileMain10);
+          return List.of(MediaCodecInfo.CodecProfileLevel.HEVCProfileMain10);
         } else if (colorTransfer == ColorInfo.COLOR_TRANSFER_ST2084) {
-          return ImmutableList.of(MediaCodecInfo.CodecProfileLevel.HEVCProfileMain10HDR10);
+          return List.of(MediaCodecInfo.CodecProfileLevel.HEVCProfileMain10HDR10);
         }
         break;
       case MediaUtil.VIDEO_AV1:
         if (colorTransfer == ColorInfo.COLOR_TRANSFER_HLG) {
-          return ImmutableList.of(MediaCodecInfo.CodecProfileLevel.AV1ProfileMain10);
+          return List.of(MediaCodecInfo.CodecProfileLevel.AV1ProfileMain10);
         } else if (colorTransfer == ColorInfo.COLOR_TRANSFER_ST2084) {
-          return ImmutableList.of(MediaCodecInfo.CodecProfileLevel.AV1ProfileMain10HDR10);
+          return List.of(MediaCodecInfo.CodecProfileLevel.AV1ProfileMain10HDR10);
         }
         break;
       default:
         break;
     }
     // There are no profiles defined for the HDR format, or it's invalid.
-    return ImmutableList.of();
+    return List.of();
   }
 
   /** Returns whether the {@linkplain MediaCodecInfo encoder} supports the given resolution. */
@@ -311,9 +313,9 @@ public final class EncoderUtil {
         .isBitrateModeSupported(bitrateMode);
   }
 
-  public static ImmutableList<Integer> getSupportedColorFormats(
+  public static List<Integer> getSupportedColorFormats(
       MediaCodecInfo encoderInfo, String mimeType) {
-    return ImmutableList.copyOf(
+    return List.copyOf(
         Ints.asList(encoderInfo.getCapabilitiesForType(mimeType).colorFormats));
   }
 

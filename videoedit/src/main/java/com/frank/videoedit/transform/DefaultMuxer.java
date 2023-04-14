@@ -5,9 +5,8 @@ import android.os.ParcelFileDescriptor;
 import com.frank.videoedit.transform.listener.Muxer;
 import com.frank.videoedit.transform.util.MediaUtil;
 
-import com.google.common.collect.ImmutableList;
-
 import java.nio.ByteBuffer;
+import java.util.List;
 
 public final class DefaultMuxer implements Muxer {
 
@@ -37,7 +36,7 @@ public final class DefaultMuxer implements Muxer {
     }
 
     @Override
-    public ImmutableList<String> getSupportedSampleMimeTypes(@MediaUtil.TrackType int trackType) {
+    public List<String> getSupportedSampleMimeTypes(@MediaUtil.TrackType int trackType) {
       return muxerFactory.getSupportedSampleMimeTypes(trackType);
     }
   }
