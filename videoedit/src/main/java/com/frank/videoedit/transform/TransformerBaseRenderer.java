@@ -4,9 +4,9 @@ import androidx.annotation.Nullable;
 
 import com.frank.videoedit.transform.listener.SamplePipeline;
 import com.frank.videoedit.transform.util.MediaUtil;
+import com.frank.videoedit.transform.util.RenderCapability;
 import com.google.android.exoplayer2.BaseRenderer;
 
-import com.google.android.exoplayer2.RendererCapabilities;
 import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
 import com.google.android.exoplayer2.source.SampleStream.ReadDataResult;
 import com.google.android.exoplayer2.util.MediaClock;
@@ -47,10 +47,10 @@ import com.google.android.exoplayer2.util.MediaClock;
    */
   @Override
   public final @Capabilities int supportsFormat(com.google.android.exoplayer2.Format format) { // TODO
-    return RendererCapabilities.create(
+    return RenderCapability.create(
         MediaUtil.getTrackType(format.sampleMimeType) == getTrackType()
-            ? MediaUtil.FORMAT_HANDLED
-            : MediaUtil.FORMAT_UNSUPPORTED_TYPE);
+            ? RenderCapability.FORMAT_HANDLED
+            : RenderCapability.FORMAT_UNSUPPORTED_TYPE);
   }
 
   @Override

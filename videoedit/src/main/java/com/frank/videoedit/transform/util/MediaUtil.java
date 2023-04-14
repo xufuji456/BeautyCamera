@@ -1,9 +1,5 @@
 package com.frank.videoedit.transform.util;
 
-import static java.lang.annotation.ElementType.FIELD;
-import static java.lang.annotation.ElementType.LOCAL_VARIABLE;
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.ElementType.TYPE_USE;
 
 import android.media.AudioFormat;
@@ -31,11 +27,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * @author xufulong
- * @date 2023/4/6 12:19 下午
- * @desc
- */
 public class MediaUtil {
 
     @Documented
@@ -130,24 +121,6 @@ public class MediaUtil {
                 throw new IllegalArgumentException();
         }
     }
-
-    public static final int FORMAT_HANDLED              = 0b100;
-    public static final int FORMAT_EXCEEDS_CAPABILITIES = 0b011;
-    public static final int FORMAT_UNSUPPORTED_DRM      = 0b010;
-    public static final int FORMAT_UNSUPPORTED_SUBTYPE  = 0b001;
-    public static final int FORMAT_UNSUPPORTED_TYPE     = 0b000;
-
-    @Documented
-    @Retention(RetentionPolicy.SOURCE)
-    @Target({FIELD, METHOD, PARAMETER, LOCAL_VARIABLE, TYPE_USE})
-    @IntDef({
-            FORMAT_HANDLED,
-            FORMAT_EXCEEDS_CAPABILITIES,
-            FORMAT_UNSUPPORTED_DRM,
-            FORMAT_UNSUPPORTED_SUBTYPE,
-            FORMAT_UNSUPPORTED_TYPE
-    })
-    public @interface FormatSupport {}
 
     public static final int RESULT_NOTHING_READ = -3;
     public static final int RESULT_BUFFER_READ  = -4;
