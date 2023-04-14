@@ -7,8 +7,7 @@ import com.frank.videoedit.entity.FrameInfo;
 import com.frank.videoedit.entity.SurfaceInfo;
 import com.frank.videoedit.entity.ColorInfo;
 import com.frank.videoedit.util.FrameProcessingException;
-
-import com.google.android.exoplayer2.util.Effect;
+import com.frank.videoedit.effect.listener.GlEffect;
 
 import java.util.List;
 
@@ -19,7 +18,7 @@ public interface FrameProcessor {
     FrameProcessor create(
         Context context,
         Listener listener,
-        List<Effect> effects,
+        List<GlEffect> effects,
         ColorInfo colorInfo,
         boolean releaseFramesAutomatically)
         throws FrameProcessingException;

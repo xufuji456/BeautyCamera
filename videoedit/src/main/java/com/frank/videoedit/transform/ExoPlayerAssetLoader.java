@@ -21,6 +21,7 @@ import com.frank.videoedit.transform.entity.ProgressHolder;
 import com.frank.videoedit.transform.listener.Codec;
 import com.frank.videoedit.util.CommonUtil;
 import com.frank.videoedit.transform.entity.MediaItem;
+import com.frank.videoedit.effect.listener.GlEffect;
 
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlayer;
@@ -36,7 +37,6 @@ import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.text.TextOutput;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.util.Clock;
-import com.google.android.exoplayer2.util.Effect;
 import com.google.android.exoplayer2.video.VideoRendererEventListener;
 import com.google.common.collect.ImmutableList;
 
@@ -51,7 +51,7 @@ import com.google.common.collect.ImmutableList;
 
   private final Context context;
   private final TransformationRequest transformationRequest;
-  private final ImmutableList<Effect> videoEffects;
+  private final ImmutableList<GlEffect> videoEffects;
   private final MediaSource.Factory mediaSourceFactory;
   private final Codec.DecoderFactory decoderFactory;
   private final Codec.EncoderFactory encoderFactory;
@@ -66,7 +66,7 @@ import com.google.common.collect.ImmutableList;
   public ExoPlayerAssetLoader(
       Context context,
       TransformationRequest transformationRequest,
-      ImmutableList<Effect> videoEffects,
+      ImmutableList<GlEffect> videoEffects,
       MediaSource.Factory mediaSourceFactory,
       Codec.DecoderFactory decoderFactory,
       Codec.EncoderFactory encoderFactory,
@@ -167,7 +167,7 @@ import com.google.common.collect.ImmutableList;
     private final TransformerMediaClock mediaClock;
     private final TransformationRequest transformationRequest;
     private final boolean clippingStartsAtKeyFrame;
-    private final ImmutableList<Effect> videoEffects;
+    private final ImmutableList<GlEffect> videoEffects;
     private final FrameProcessor.Factory frameProcessorFactory;
     private final Codec.EncoderFactory encoderFactory;
     private final Codec.DecoderFactory decoderFactory;
@@ -179,7 +179,7 @@ import com.google.common.collect.ImmutableList;
         MuxerWrapper muxerWrapper,
         TransformationRequest transformationRequest,
         boolean clippingStartsAtKeyFrame,
-        ImmutableList<Effect> videoEffects,
+        ImmutableList<GlEffect> videoEffects,
         FrameProcessor.Factory frameProcessorFactory,
         Codec.EncoderFactory encoderFactory,
         Codec.DecoderFactory decoderFactory,

@@ -20,12 +20,12 @@ import com.frank.videoedit.transform.util.MediaUtil;
 import com.frank.videoedit.util.CommonUtil;
 import com.frank.videoedit.effect.GlEffectsFrameProcessor;
 import com.frank.videoedit.transform.entity.MediaItem;
+import com.frank.videoedit.effect.listener.GlEffect;
 
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.util.Clock;
-import com.google.android.exoplayer2.util.Effect;
 import com.google.android.exoplayer2.util.ListenerSet;
 import com.google.common.collect.ImmutableList;
 
@@ -60,7 +60,7 @@ public final class Transformer {
 
     // Optional fields.
     private TransformationRequest transformationRequest;
-    private ImmutableList<Effect> videoEffects;
+    private ImmutableList<GlEffect> videoEffects;
     private ListenerSet<Listener> listeners;
     private MediaSource.Factory mediaSourceFactory;
     private Codec.DecoderFactory decoderFactory;
@@ -108,7 +108,7 @@ public final class Transformer {
       return this;
     }
 
-    public Builder setVideoEffects(List<Effect> effects) {
+    public Builder setVideoEffects(List<GlEffect> effects) {
       this.videoEffects = ImmutableList.copyOf(effects);
       return this;
     }
@@ -269,7 +269,7 @@ public final class Transformer {
 
   private final Context context;
   private final TransformationRequest transformationRequest;
-  private final ImmutableList<Effect> videoEffects;
+  private final ImmutableList<GlEffect> videoEffects;
   private final ListenerSet<Listener> listeners;
   private final MediaSource.Factory mediaSourceFactory;
   private final FrameProcessor.Factory frameProcessorFactory;
@@ -287,7 +287,7 @@ public final class Transformer {
   private Transformer(
       Context context,
       TransformationRequest transformationRequest,
-      ImmutableList<Effect> videoEffects,
+      ImmutableList<GlEffect> videoEffects,
       ListenerSet<Listener> listeners,
       MediaSource.Factory mediaSourceFactory,
       Codec.DecoderFactory decoderFactory,

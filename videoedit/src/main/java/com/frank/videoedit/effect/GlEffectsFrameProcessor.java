@@ -23,7 +23,6 @@ import com.frank.videoedit.entity.ColorInfo;
 import com.frank.videoedit.util.CommonUtil;
 import com.frank.videoedit.util.FrameProcessingException;
 
-import com.google.android.exoplayer2.util.Effect;
 import com.google.common.collect.ImmutableList;
 
 import java.util.List;
@@ -41,7 +40,7 @@ public final class GlEffectsFrameProcessor implements FrameProcessor {
     public GlEffectsFrameProcessor create(
             @NonNull Context context,
             @NonNull Listener listener,
-            @NonNull List<Effect> effects,
+            @NonNull List<GlEffect> effects,
             @NonNull ColorInfo colorInfo,
             boolean releaseFramesAutomatically)
         throws FrameProcessingException {
@@ -74,7 +73,7 @@ public final class GlEffectsFrameProcessor implements FrameProcessor {
   private static GlEffectsFrameProcessor createOpenGlObjectsAndFrameProcessor(
       Context context,
       Listener listener,
-      List<Effect> effects,
+      List<GlEffect> effects,
       ColorInfo colorInfo,
       boolean releaseFramesAutomatically,
       ExecutorService singleThreadExecutorService)
@@ -112,7 +111,7 @@ public final class GlEffectsFrameProcessor implements FrameProcessor {
 
   private static ImmutableList<GlTextureProcessor> getGlTextureProcessorsForGlEffects(
       Context context,
-      List<Effect> effects,
+      List<GlEffect> effects,
       EGLDisplay eglDisplay,
       EGLContext eglContext,
       Listener listener,
@@ -125,8 +124,7 @@ public final class GlEffectsFrameProcessor implements FrameProcessor {
         new ImmutableList.Builder<>();
     boolean sampleFromExternalTexture = true;
     for (int i = 0; i < effects.size(); i++) {
-      Effect effect = effects.get(i);
-      GlEffect glEffect = (GlEffect) effect;
+      GlEffect glEffect = (GlEffect) effects.get(i);
       // The following logic may change the order of the RgbMatrix and GlMatrixTransformation
       // effects. This does not influence the output since RgbMatrix only changes the individual
       // pixels and does not take any location in account, which the GlMatrixTransformation

@@ -9,11 +9,11 @@ import com.frank.videoedit.transform.listener.Codec;
 
 import com.frank.videoedit.transform.util.MediaUtil;
 import com.frank.videoedit.util.CommonUtil;
+import com.frank.videoedit.effect.listener.GlEffect;
 
 import com.google.android.exoplayer2.FormatHolder;
 import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
 import com.google.android.exoplayer2.source.SampleStream.ReadDataResult;
-import com.google.android.exoplayer2.util.Effect;
 import com.google.common.collect.ImmutableList;
 
 /* package */ final class TransformerVideoRenderer extends TransformerBaseRenderer {
@@ -22,7 +22,7 @@ import com.google.common.collect.ImmutableList;
 
   private final Context context;
   private final boolean clippingStartsAtKeyFrame;
-  private final ImmutableList<Effect> effects;
+  private final ImmutableList<GlEffect> effects;
   private final FrameProcessor.Factory frameProcessorFactory;
   private final Codec.EncoderFactory encoderFactory;
   private final Codec.DecoderFactory decoderFactory;
@@ -34,7 +34,7 @@ import com.google.common.collect.ImmutableList;
       TransformerMediaClock mediaClock,
       TransformationRequest transformationRequest,
       boolean clippingStartsAtKeyFrame,
-      ImmutableList<Effect> effects,
+      ImmutableList<GlEffect> effects,
       FrameProcessor.Factory frameProcessorFactory,
       Codec.EncoderFactory encoderFactory,
       Codec.DecoderFactory decoderFactory,

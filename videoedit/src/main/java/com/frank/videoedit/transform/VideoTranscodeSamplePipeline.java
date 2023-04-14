@@ -16,9 +16,9 @@ import com.frank.videoedit.entity.ColorInfo;
 import com.frank.videoedit.transform.util.MediaUtil;
 import com.frank.videoedit.util.CommonUtil;
 import com.frank.videoedit.util.FrameProcessingException;
+import com.frank.videoedit.effect.listener.GlEffect;
 
 import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
-import com.google.android.exoplayer2.util.Effect;
 import com.google.common.collect.ImmutableList;
 
 import java.nio.ByteBuffer;
@@ -58,7 +58,7 @@ import java.util.List;
       long streamOffsetUs,
       long streamStartPositionUs,
       TransformationRequest transformationRequest,
-      ImmutableList<Effect> effects,
+      ImmutableList<GlEffect> effects,
       FrameProcessor.Factory frameProcessorFactory,
       Codec.DecoderFactory decoderFactory,
       Codec.EncoderFactory encoderFactory,
@@ -109,8 +109,8 @@ import java.util.List;
     int decodedHeight =
         (inputFormat.rotationDegrees % 180 == 0) ? inputFormat.height : inputFormat.width;
 
-    ImmutableList.Builder<Effect> effectsListBuilder =
-        new ImmutableList.Builder<Effect>().addAll(effects);
+    ImmutableList.Builder<GlEffect> effectsListBuilder =
+        new ImmutableList.Builder<GlEffect>().addAll(effects);
 
     if (transformationRequest.outputHeight != CommonUtil.LENGTH_UNSET) {
       effectsListBuilder.add(Presentation.createForHeight(transformationRequest.outputHeight));

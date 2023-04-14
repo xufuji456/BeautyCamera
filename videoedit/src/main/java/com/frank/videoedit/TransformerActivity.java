@@ -38,8 +38,8 @@ import com.frank.videoedit.transform.Transformer;
 import com.frank.videoedit.util.CommonUtil;
 import com.frank.videoedit.view.MaterialCardView;
 import com.frank.videoedit.transform.entity.MediaItem;
+import com.frank.videoedit.effect.listener.GlEffect;
 
-import com.google.android.exoplayer2.util.Effect;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Ticker;
@@ -230,14 +230,14 @@ public final class TransformerActivity extends AppCompatActivity {
     return file;
   }
 
-  private ImmutableList<Effect> createVideoEffectsListFromBundle(Bundle bundle) {
+  private ImmutableList<GlEffect> createVideoEffectsListFromBundle(Bundle bundle) {
     @Nullable
     boolean[] selectedEffects =
         bundle.getBooleanArray(EditActivity.DEMO_EFFECTS_SELECTIONS);
     if (selectedEffects == null) {
       return ImmutableList.of();
     }
-    ImmutableList.Builder<Effect> effects = new ImmutableList.Builder<>();
+    ImmutableList.Builder<GlEffect> effects = new ImmutableList.Builder<>();
     if (selectedEffects[0]) {
       effects.add(
           new HslAdjustment.Builder()
