@@ -20,10 +20,10 @@ import com.frank.videoedit.listener.FrameProcessor;
 import com.frank.videoedit.transform.entity.ProgressHolder;
 import com.frank.videoedit.transform.listener.Codec;
 import com.frank.videoedit.util.CommonUtil;
+import com.frank.videoedit.transform.entity.MediaItem;
 
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlayer;
-import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.PlaybackException;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.Renderer;
@@ -115,7 +115,7 @@ import com.google.common.collect.ImmutableList;
                     context,
                     muxerWrapper,
                     transformationRequest,
-                    mediaItem.clippingConfiguration.startsAtKeyFrame,
+                    true,
                     videoEffects,
                     frameProcessorFactory,
                     encoderFactory,
@@ -133,8 +133,9 @@ import com.google.common.collect.ImmutableList;
       ExoPlayer.Builder unusedForAnnotation = playerBuilder.setClock(clock);
     }
 
+    com.google.android.exoplayer2.MediaItem newMediaItem = com.google.android.exoplayer2.MediaItem.fromUri(mediaItem.uri);
     player = playerBuilder.build();
-    player.setMediaItem(mediaItem);
+    player.setMediaItem(/*mediaItem*/newMediaItem); // TODO
     player.addListener(new PlayerListener(listener));
     player.prepare();
 

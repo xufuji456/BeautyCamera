@@ -37,8 +37,8 @@ import com.frank.videoedit.transform.TransformationResult;
 import com.frank.videoedit.transform.Transformer;
 import com.frank.videoedit.util.CommonUtil;
 import com.frank.videoedit.view.MaterialCardView;
+import com.frank.videoedit.transform.entity.MediaItem;
 
-import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.util.Effect;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.common.base.Stopwatch;
@@ -128,9 +128,8 @@ public final class TransformerActivity extends AppCompatActivity {
       MediaItem mediaItem = createMediaItem(bundle, uri);
       Transformer transformer = createTransformer(bundle, filePath);
       transformationStopwatch.start();
-      assert mediaItem.localConfiguration != null;
       MediaItem newMediaItem =
-              MediaItem.fromUri(mediaItem.localConfiguration.uri);
+              MediaItem.fromUri(mediaItem.uri);
       transformer.startTransformation(/*mediaItem*/newMediaItem, filePath);
       this.transformer = transformer;
     } catch (IOException e) {
@@ -292,10 +291,7 @@ public final class TransformerActivity extends AppCompatActivity {
     inputCardView.setVisibility(View.VISIBLE);
     outputPlayerView.setVisibility(View.VISIBLE);
     displayInputButton.setVisibility(View.VISIBLE);
-    Uri inputPath = null;
-    if (inputMediaItem.localConfiguration != null) {
-      inputPath = inputMediaItem.localConfiguration.uri;
-    }
+    Uri inputPath = inputMediaItem.uri;
     playMediaItems(inputPath, Uri.parse("file://" + filePath));
     Log.d(TAG, "Output file path: file://" + filePath);
   }
