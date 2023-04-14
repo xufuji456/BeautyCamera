@@ -15,7 +15,7 @@ import androidx.annotation.VisibleForTesting;
 import com.frank.videoedit.listener.FrameProcessor;
 import com.frank.videoedit.transform.listener.Codec;
 import com.frank.videoedit.transform.listener.Muxer;
-import com.frank.videoedit.transform.util.CommonUtil;
+import com.frank.videoedit.util.CommonUtil;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlayerLibraryInfo;

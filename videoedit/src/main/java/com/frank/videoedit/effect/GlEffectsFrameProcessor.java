@@ -20,11 +20,10 @@ import com.frank.videoedit.listener.FrameProcessor;
 import com.frank.videoedit.entity.SurfaceInfo;
 import com.frank.videoedit.entity.FrameInfo;
 import com.frank.videoedit.entity.ColorInfo;
+import com.frank.videoedit.util.CommonUtil;
 import com.frank.videoedit.util.FrameProcessingException;
 
-import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.util.Effect;
-import com.google.android.exoplayer2.util.Util;
 import com.google.common.collect.ImmutableList;
 
 import java.util.List;
@@ -47,7 +46,7 @@ public final class GlEffectsFrameProcessor implements FrameProcessor {
             boolean releaseFramesAutomatically)
         throws FrameProcessingException {
 
-      ExecutorService singleThreadExecutorService = Util.newSingleThreadExecutor(THREAD_NAME);
+      ExecutorService singleThreadExecutorService = CommonUtil.newSingleThreadExecutor(THREAD_NAME);
 
       Future<GlEffectsFrameProcessor> glFrameProcessorFuture =
           singleThreadExecutorService.submit(
@@ -229,7 +228,7 @@ public final class GlEffectsFrameProcessor implements FrameProcessor {
     inputSurface = new Surface(inputExternalTextureManager.getSurfaceTexture());
     finalTextureProcessorWrapper = (MatrixTextureProcessorWrapper) getLast(textureProcessors);
     allTextureProcessors = textureProcessors;
-    previousStreamOffsetUs = C.TIME_UNSET;
+    previousStreamOffsetUs = CommonUtil.TIME_UNSET;
   }
 
   @NonNull

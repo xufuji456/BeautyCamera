@@ -13,7 +13,7 @@ import com.frank.videoedit.effect.Presentation;
 import com.frank.videoedit.entity.SurfaceInfo;
 import com.frank.videoedit.entity.FrameInfo;
 import com.frank.videoedit.entity.ColorInfo;
-import com.frank.videoedit.transform.util.CommonUtil;
+import com.frank.videoedit.util.CommonUtil;
 import com.frank.videoedit.util.FrameProcessingException;
 
 import com.google.android.exoplayer2.C;

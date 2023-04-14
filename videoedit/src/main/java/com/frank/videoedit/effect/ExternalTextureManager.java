@@ -9,9 +9,9 @@ import com.frank.videoedit.effect.listener.ExternalTextureProcessor;
 import com.frank.videoedit.effect.listener.GlTextureProcessor.InputListener;
 import com.frank.videoedit.effect.util.GlUtil;
 import com.frank.videoedit.entity.FrameInfo;
+import com.frank.videoedit.util.CommonUtil;
 import com.frank.videoedit.util.FrameProcessingException;
 
-import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.util.FrameProcessor;
 
 import java.util.Queue;
@@ -57,7 +57,7 @@ import java.util.concurrent.atomic.AtomicInteger;
     pendingFrames = new ConcurrentLinkedQueue<>();
     availableFrameCount = new AtomicInteger();
     externalTextureProcessorInputCapacity = new AtomicInteger();
-    previousStreamOffsetUs = C.TIME_UNSET;
+    previousStreamOffsetUs = CommonUtil.TIME_UNSET;
   }
 
   public SurfaceTexture getSurfaceTexture() {
@@ -138,7 +138,7 @@ import java.util.concurrent.atomic.AtomicInteger;
     long frameTimeNs = surfaceTexture.getTimestamp();
     long streamOffsetUs = currentFrame.streamOffsetUs;
     if (streamOffsetUs != previousStreamOffsetUs) {
-      if (previousStreamOffsetUs != C.TIME_UNSET) {
+      if (previousStreamOffsetUs != CommonUtil.TIME_UNSET) {
         externalTextureProcessor.signalEndOfCurrentInputStream();
       }
       previousStreamOffsetUs = streamOffsetUs;
@@ -147,7 +147,7 @@ import java.util.concurrent.atomic.AtomicInteger;
     long presentationTimeUs = (frameTimeNs / 1000) - streamOffsetUs;
     externalTextureProcessor.queueInputFrame(
         new TextureInfo(
-            externalTexId, /* fboId= */ C.INDEX_UNSET, currentFrame.width, currentFrame.height),
+            externalTexId, /* fboId= */ CommonUtil.INDEX_UNSET, currentFrame.width, currentFrame.height),
         presentationTimeUs);
 
     if (inputStreamEnded && pendingFrames.isEmpty()) {

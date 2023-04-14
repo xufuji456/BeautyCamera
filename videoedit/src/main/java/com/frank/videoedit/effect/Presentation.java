@@ -9,7 +9,7 @@ import android.util.Pair;
 import androidx.annotation.IntDef;
 
 import com.frank.videoedit.effect.listener.MatrixTransformation;
-import com.google.android.exoplayer2.C;
+import com.frank.videoedit.util.CommonUtil;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
@@ -107,11 +107,11 @@ public final class Presentation implements MatrixTransformation {
    */
   public static Presentation createForAspectRatio(float aspectRatio, @Layout int layout) {
     checkArgument(
-        aspectRatio == C.LENGTH_UNSET || aspectRatio > 0,
+        aspectRatio == CommonUtil.LENGTH_UNSET || aspectRatio > 0,
         "aspect ratio " + aspectRatio + " must be positive or unset");
     checkLayout(layout);
     return new Presentation(
-        /* width= */ C.LENGTH_UNSET, /* height= */ C.LENGTH_UNSET, aspectRatio, layout);
+        /* width= */ CommonUtil.LENGTH_UNSET, /* height= */ CommonUtil.LENGTH_UNSET, aspectRatio, layout);
   }
 
   /**
@@ -124,7 +124,7 @@ public final class Presentation implements MatrixTransformation {
    */
   public static Presentation createForHeight(int height) {
     return new Presentation(
-        /* width= */ C.LENGTH_UNSET, height, ASPECT_RATIO_UNSET, LAYOUT_SCALE_TO_FIT);
+        /* width= */ CommonUtil.LENGTH_UNSET, height, ASPECT_RATIO_UNSET, LAYOUT_SCALE_TO_FIT);
   }
 
   /**
@@ -156,7 +156,7 @@ public final class Presentation implements MatrixTransformation {
 
   private Presentation(int width, int height, float aspectRatio, @Layout int layout) {
     checkArgument(
-        (aspectRatio == C.LENGTH_UNSET) || (width == C.LENGTH_UNSET),
+        (aspectRatio == CommonUtil.LENGTH_UNSET) || (width == CommonUtil.LENGTH_UNSET),
         "width and aspect ratio should not both be set");
 
     this.requestedWidthPixels = width;
@@ -164,8 +164,8 @@ public final class Presentation implements MatrixTransformation {
     this.requestedAspectRatio = aspectRatio;
     this.layout = layout;
 
-    outputWidth = C.LENGTH_UNSET;
-    outputHeight = C.LENGTH_UNSET;
+    outputWidth  = CommonUtil.LENGTH_UNSET;
+    outputHeight = CommonUtil.LENGTH_UNSET;
     transformationMatrix = new Matrix();
   }
 
@@ -178,17 +178,17 @@ public final class Presentation implements MatrixTransformation {
     outputWidth = inputWidth;
     outputHeight = inputHeight;
 
-    if ((requestedWidthPixels != C.LENGTH_UNSET) && (requestedHeightPixels != C.LENGTH_UNSET)) {
+    if ((requestedWidthPixels != CommonUtil.LENGTH_UNSET) && (requestedHeightPixels != CommonUtil.LENGTH_UNSET)) {
       requestedAspectRatio = (float) requestedWidthPixels / requestedHeightPixels;
     }
 
-    if (requestedAspectRatio != C.LENGTH_UNSET) {
+    if (requestedAspectRatio != CommonUtil.LENGTH_UNSET) {
       applyAspectRatio();
     }
 
     // Scale output width and height to requested values.
-    if (requestedHeightPixels != C.LENGTH_UNSET) {
-      if (requestedWidthPixels != C.LENGTH_UNSET) {
+    if (requestedHeightPixels != CommonUtil.LENGTH_UNSET) {
+      if (requestedWidthPixels != CommonUtil.LENGTH_UNSET) {
         outputWidth = requestedWidthPixels;
       } else {
         outputWidth = requestedHeightPixels * outputWidth / outputHeight;

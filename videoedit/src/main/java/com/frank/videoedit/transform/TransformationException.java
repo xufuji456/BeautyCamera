@@ -9,7 +9,7 @@ import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
 import com.frank.videoedit.transform.listener.AudioProcessor.AudioFormat;
-import com.frank.videoedit.transform.util.CommonUtil;
+import com.frank.videoedit.util.CommonUtil;
 import com.frank.videoedit.util.FrameProcessingException;
 
 import com.google.android.exoplayer2.Format;

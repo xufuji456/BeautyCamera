@@ -20,7 +20,7 @@ import com.frank.videoedit.effect.listener.ExternalTextureProcessor;
 import com.frank.videoedit.effect.listener.GlMatrixTransformation;
 import com.frank.videoedit.listener.FrameProcessor;
 import com.frank.videoedit.entity.ColorInfo;
-import com.frank.videoedit.transform.util.CommonUtil;
+import com.frank.videoedit.util.CommonUtil;
 import com.frank.videoedit.util.FrameProcessingException;
 
 import com.google.common.collect.ImmutableList;

@@ -1,6 +1,6 @@
 package com.frank.videoedit.transform;
 
-import com.frank.videoedit.transform.util.CommonUtil;
+import com.frank.videoedit.util.CommonUtil;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.util.HandlerWrapper;

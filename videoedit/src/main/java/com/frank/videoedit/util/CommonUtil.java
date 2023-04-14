@@ -1,4 +1,4 @@
-package com.frank.videoedit.transform.util;
+package com.frank.videoedit.util;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
@@ -9,6 +9,8 @@ import android.util.SparseLongArray;
 import androidx.annotation.Nullable;
 
 import java.util.NoSuchElementException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class CommonUtil {
 
@@ -79,6 +81,10 @@ public class CommonUtil {
             double multiplicationFactor = (double) multiplier / divisor;
             return (long) (timestamp * multiplicationFactor);
         }
+    }
+
+    public static ExecutorService newSingleThreadExecutor(String threadName) {
+        return Executors.newSingleThreadExecutor(runnable -> new Thread(runnable, threadName));
     }
 
 }

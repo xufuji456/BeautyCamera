@@ -7,12 +7,11 @@ import android.opengl.GLES20;
 
 import androidx.annotation.Nullable;
 
-import com.google.common.base.Charsets;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.Buffer;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -48,7 +47,7 @@ public final class GlProgram {
     @Nullable InputStream inputStream = null;
     try {
       inputStream = context.getAssets().open(assetPath);
-      return new String(toByteArray(inputStream), Charsets.UTF_8);
+      return new String(toByteArray(inputStream), Charset.forName("UTF-8"));
     } finally {
       if (inputStream != null) {
         inputStream.close();
