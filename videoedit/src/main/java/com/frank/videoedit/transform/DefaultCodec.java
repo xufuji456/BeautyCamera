@@ -1,6 +1,7 @@
 package com.frank.videoedit.transform;
 
 import android.content.Context;
+import android.media.AudioFormat;
 import android.media.MediaCodec;
 import android.media.MediaCodec.BufferInfo;
 import android.media.MediaCrypto;
@@ -17,11 +18,10 @@ import androidx.annotation.VisibleForTesting;
 import com.frank.videoedit.transform.listener.Codec;
 import com.frank.videoedit.entity.ColorInfo;
 import com.frank.videoedit.transform.util.MediaUtil;
+import com.frank.videoedit.util.CommonUtil;
 
-import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
-import com.google.android.exoplayer2.util.MimeTypes;
 import com.google.android.exoplayer2.util.TraceUtil;
 import com.google.common.base.Ascii;
 import com.google.common.collect.ImmutableList;
@@ -36,7 +36,7 @@ public final class DefaultCodec implements Codec {
 
   // MediaCodec decoders always output 16 bit PCM, unless configured to output PCM float.
   // https://developer.android.com/reference/android/media/MediaCodec#raw-audio-buffers.
-  private static final int MEDIA_CODEC_PCM_ENCODING = C.ENCODING_PCM_16BIT;
+  private static final int MEDIA_CODEC_PCM_ENCODING = MediaUtil.ENCODING_PCM_16BIT;
 
   private final BufferInfo outputBufferInfo;
   /** The {@link MediaFormat} used to configure the underlying {@link MediaCodec}. */
@@ -79,10 +79,10 @@ public final class DefaultCodec implements Codec {
     this.configFormat = configurationFormat;
     this.configurationMediaFormat = configurationMediaFormat;
     outputBufferInfo = new BufferInfo();
-    inputBufferIndex = C.INDEX_UNSET;
-    outputBufferIndex = C.INDEX_UNSET;
+    inputBufferIndex = CommonUtil.INDEX_UNSET;
+    outputBufferIndex = CommonUtil.INDEX_UNSET;
 
-    boolean isVideo = MimeTypes.isVideo(configurationFormat.sampleMimeType);
+    boolean isVideo = MediaUtil.isVideo(configurationFormat.sampleMimeType);
     @Nullable MediaCodec mediaCodec = null;
     @Nullable Surface inputSurface = null;
     try {
@@ -191,7 +191,7 @@ public final class DefaultCodec implements Codec {
     } catch (RuntimeException e) {
       throw createTransformationException(e);
     }
-    inputBufferIndex = C.INDEX_UNSET;
+    inputBufferIndex = CommonUtil.INDEX_UNSET;
     inputBuffer.data = null;
   }
 
@@ -238,12 +238,12 @@ public final class DefaultCodec implements Codec {
     } catch (RuntimeException e) {
       throw createTransformationException(e);
     }
-    outputBufferIndex = C.INDEX_UNSET;
+    outputBufferIndex = CommonUtil.INDEX_UNSET;
   }
 
   @Override
   public boolean isEnded() {
-    return outputStreamEnded && outputBufferIndex == C.INDEX_UNSET;
+    return outputStreamEnded && outputBufferIndex == CommonUtil.INDEX_UNSET;
   }
 
   @Override
@@ -346,7 +346,7 @@ public final class DefaultCodec implements Codec {
 
   private TransformationException createTransformationException(Exception cause) {
     boolean isDecoder = !mediaCodec.getCodecInfo().isEncoder();
-    boolean isVideo = MimeTypes.isVideo(configFormat.sampleMimeType);
+    boolean isVideo = MediaUtil.isVideo(configFormat.sampleMimeType);
     return TransformationException.createForCodec(
         cause,
         isVideo,
@@ -360,11 +360,11 @@ public final class DefaultCodec implements Codec {
 
   private static boolean areColorTransfersEqual(
       @Nullable ColorInfo colorInfo1, @Nullable ColorInfo colorInfo2) {
-    @C.ColorTransfer int transfer1 = C.COLOR_TRANSFER_SDR;
+    @ColorInfo.ColorTransfer int transfer1 = ColorInfo.COLOR_TRANSFER_SDR;
     if (colorInfo1 != null && colorInfo1.colorTransfer != Format.NO_VALUE) {
       transfer1 = colorInfo1.colorTransfer;
     }
-    @C.ColorTransfer int transfer2 = C.COLOR_TRANSFER_SDR;
+    @ColorInfo.ColorTransfer int transfer2 = ColorInfo.COLOR_TRANSFER_SDR;
     if (colorInfo2 != null && colorInfo2.colorTransfer != Format.NO_VALUE) {
       transfer2 = colorInfo2.colorTransfer;
     }
@@ -418,12 +418,12 @@ public final class DefaultCodec implements Codec {
     String mimeType = mediaFormat.getString(MediaFormat.KEY_MIME);
     Format.Builder formatBuilder =
         new Format.Builder().setSampleMimeType(mimeType).setInitializationData(csdBuffers.build());
-    if (MimeTypes.isVideo(mimeType)) {
+    if (MediaUtil.isVideo(mimeType)) {
       formatBuilder
           .setWidth(mediaFormat.getInteger(MediaFormat.KEY_WIDTH))
           .setHeight(mediaFormat.getInteger(MediaFormat.KEY_HEIGHT))
           .setColorInfo(reconvertColorInfo(MediaUtil.getColorInfo(mediaFormat)));
-    } else if (MimeTypes.isAudio(mimeType)) {
+    } else if (MediaUtil.isAudio(mimeType)) {
       // TODO(b/178685617): Only set the PCM encoding for audio/raw, once we have a way to
       // simulate more realistic codec input/output formats in tests.
       formatBuilder

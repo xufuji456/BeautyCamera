@@ -4,7 +4,7 @@ package com.frank.videoedit;
 import android.graphics.Matrix;
 
 import com.frank.videoedit.effect.listener.MatrixTransformation;
-import com.google.android.exoplayer2.C;
+import com.frank.videoedit.util.CommonUtil;
 
 /* package */ final class MatrixTransformationFactory {
 
@@ -16,7 +16,7 @@ import com.google.android.exoplayer2.C;
 
   private static Matrix calculateZoomInTransitionMatrix(long presentationTimeUs) {
     Matrix transformationMatrix = new Matrix();
-    float scale = Math.min(1, presentationTimeUs / (C.MICROS_PER_SECOND * ZOOM_DURATION_SECONDS));
+    float scale = Math.min(1, presentationTimeUs / (CommonUtil.MICROS_PER_SECOND * ZOOM_DURATION_SECONDS));
     transformationMatrix.postScale(/* sx= */ scale, /* sy= */ scale);
     return transformationMatrix;
   }

@@ -1,7 +1,7 @@
 package com.frank.videoedit.transform;
 
 import com.frank.videoedit.util.CommonUtil;
-import com.google.android.exoplayer2.C;
+
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.util.HandlerWrapper;
 import com.google.android.exoplayer2.util.ListenerSet;
@@ -63,7 +63,7 @@ import com.google.android.exoplayer2.util.ListenerSet;
       transformerListenerHandler.post(
           () ->
               transformerListeners.sendEvent(
-                  /* eventFlag= */ C.INDEX_UNSET,
+                  /* eventFlag= */ CommonUtil.INDEX_UNSET,
                   listener ->
                       listener.onFallbackApplied(
                           mediaItem,

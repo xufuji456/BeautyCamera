@@ -15,9 +15,9 @@ import androidx.annotation.VisibleForTesting;
 import com.frank.videoedit.listener.FrameProcessor;
 import com.frank.videoedit.transform.listener.Codec;
 import com.frank.videoedit.transform.listener.Muxer;
+import com.frank.videoedit.transform.util.MediaUtil;
 import com.frank.videoedit.util.CommonUtil;
 
-import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlayerLibraryInfo;
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.PlaybackException;
@@ -513,12 +513,8 @@ public final class Transformer {
     }
   }
 
-  /**
-   * Returns the current size in bytes of the current/latest output file, or {@link C#LENGTH_UNSET}
-   * if unavailable.
-   */
   private long getCurrentOutputFileCurrentSizeBytes() {
-    long fileSize = C.LENGTH_UNSET;
+    long fileSize = CommonUtil.LENGTH_UNSET;
 
     if (outputPath != null) {
       fileSize = new File(outputPath).length();
@@ -527,7 +523,7 @@ public final class Transformer {
     }
 
     if (fileSize <= 0) {
-      fileSize = C.LENGTH_UNSET;
+      fileSize = CommonUtil.LENGTH_UNSET;
     }
 
     return fileSize;
@@ -581,7 +577,7 @@ public final class Transformer {
       if (isCancelling) {
         // Resources are already being released.
         listeners.queueEvent(
-            /* eventFlag= */ C.INDEX_UNSET,
+            /* eventFlag= */ CommonUtil.INDEX_UNSET,
             listener -> listener.onTransformationError(mediaItem, transformationException));
         listeners.flushEvents();
       } else {
@@ -611,20 +607,20 @@ public final class Transformer {
         TransformationException finalException = exception;
         // TODO(b/213341814): Add event flags for Transformer events.
         listeners.queueEvent(
-            /* eventFlag= */ C.INDEX_UNSET,
+            /* eventFlag= */ CommonUtil.INDEX_UNSET,
             listener -> listener.onTransformationError(mediaItem, finalException));
       } else {
         TransformationResult result =
             new TransformationResult.Builder()
                 .setDurationMs(muxerWrapper.getDurationMs())
-                .setAverageAudioBitrate(muxerWrapper.getTrackAverageBitrate(C.TRACK_TYPE_AUDIO))
-                .setAverageVideoBitrate(muxerWrapper.getTrackAverageBitrate(C.TRACK_TYPE_VIDEO))
-                .setVideoFrameCount(muxerWrapper.getTrackSampleCount(C.TRACK_TYPE_VIDEO))
+                .setAverageAudioBitrate(muxerWrapper.getTrackAverageBitrate(MediaUtil.TRACK_TYPE_AUDIO))
+                .setAverageVideoBitrate(muxerWrapper.getTrackAverageBitrate(MediaUtil.TRACK_TYPE_VIDEO))
+                .setVideoFrameCount(muxerWrapper.getTrackSampleCount(MediaUtil.TRACK_TYPE_VIDEO))
                 .setFileSizeBytes(getCurrentOutputFileCurrentSizeBytes())
                 .build();
 
         listeners.queueEvent(
-            /* eventFlag= */ C.INDEX_UNSET,
+            /* eventFlag= */ CommonUtil.INDEX_UNSET,
             listener -> listener.onTransformationCompleted(mediaItem, result));
       }
       listeners.flushEvents();

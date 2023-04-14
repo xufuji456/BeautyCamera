@@ -14,9 +14,7 @@ import com.frank.videoedit.entity.ColorInfo;
 import com.frank.videoedit.transform.listener.Muxer;
 import com.frank.videoedit.transform.util.MediaUtil;
 
-import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
-import com.google.android.exoplayer2.util.MimeTypes;
 import com.google.common.collect.ImmutableList;
 
 import java.io.IOException;
@@ -30,14 +28,14 @@ import java.nio.ByteBuffer;
   private static final ImmutableList<String> SUPPORTED_VIDEO_SAMPLE_MIME_TYPES =
       Build.VERSION.SDK_INT >= 24
           ? ImmutableList.of(
-              MimeTypes.VIDEO_H263,
-              MimeTypes.VIDEO_H264,
-              MimeTypes.VIDEO_MP4V,
-              MimeTypes.VIDEO_H265)
-          : ImmutableList.of(MimeTypes.VIDEO_H263, MimeTypes.VIDEO_H264, MimeTypes.VIDEO_MP4V);
+              MediaUtil.VIDEO_H263,
+              MediaUtil.VIDEO_H264,
+              MediaUtil.VIDEO_MP4V,
+              MediaUtil.VIDEO_H265)
+          : ImmutableList.of(MediaUtil.VIDEO_H263, MediaUtil.VIDEO_H264, MediaUtil.VIDEO_MP4V);
 
   private static final ImmutableList<String> SUPPORTED_AUDIO_SAMPLE_MIME_TYPES =
-      ImmutableList.of(MimeTypes.AUDIO_AAC, MimeTypes.AUDIO_AMR_NB, MimeTypes.AUDIO_AMR_WB);
+      ImmutableList.of(MediaUtil.AUDIO_AAC, MediaUtil.AUDIO_AMR_NB, MediaUtil.AUDIO_AMR_WB);
 
   /** {@link Muxer.Factory} for {@link FrameworkMuxer}. */
   public static final class Factory implements Muxer.Factory {
@@ -75,10 +73,10 @@ import java.nio.ByteBuffer;
     }
 
     @Override
-    public ImmutableList<String> getSupportedSampleMimeTypes(@C.TrackType int trackType) {
-      if (trackType == C.TRACK_TYPE_VIDEO) {
+    public ImmutableList<String> getSupportedSampleMimeTypes(@MediaUtil.TrackType int trackType) {
+      if (trackType == MediaUtil.TRACK_TYPE_VIDEO) {
         return SUPPORTED_VIDEO_SAMPLE_MIME_TYPES;
-      } else if (trackType == C.TRACK_TYPE_AUDIO) {
+      } else if (trackType == MediaUtil.TRACK_TYPE_AUDIO) {
         return SUPPORTED_AUDIO_SAMPLE_MIME_TYPES;
       }
       return ImmutableList.of();
@@ -114,7 +112,7 @@ import java.nio.ByteBuffer;
   public int addTrack(Format format) throws MuxerException {
     String sampleMimeType = format.sampleMimeType;
     MediaFormat mediaFormat;
-    if (MimeTypes.isAudio(sampleMimeType)) {
+    if (MediaUtil.isAudio(sampleMimeType)) {
       mediaFormat =
           MediaFormat.createAudioFormat(
               sampleMimeType, format.sampleRate, format.channelCount);
@@ -154,7 +152,7 @@ import java.nio.ByteBuffer;
     }
     int offset = data.position();
     int size = data.limit() - offset;
-    int flags = isKeyFrame ? C.BUFFER_FLAG_KEY_FRAME : 0;
+    int flags = isKeyFrame ? MediaCodec.BUFFER_FLAG_KEY_FRAME : 0;
     bufferInfo.set(offset, size, presentationTimeUs, flags);
     try {
       // writeSampleData blocks on old API versions, so check here to avoid calling the method.

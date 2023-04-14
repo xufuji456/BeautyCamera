@@ -18,8 +18,8 @@ import androidx.annotation.Nullable;
 
 import com.frank.videoedit.listener.FrameProcessor;
 import com.frank.videoedit.transform.listener.Codec;
+import com.frank.videoedit.util.CommonUtil;
 
-import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
@@ -259,7 +259,7 @@ import com.google.common.collect.ImmutableList;
         // to a high value at the end of the transformation if the duration is set once the media is
         // entirely loaded.
         progressState =
-            durationUs <= 0 || durationUs == C.TIME_UNSET
+            durationUs <= 0 || durationUs == CommonUtil.TIME_UNSET
                 ? PROGRESS_STATE_UNAVAILABLE
                 : PROGRESS_STATE_AVAILABLE;
         player.play();

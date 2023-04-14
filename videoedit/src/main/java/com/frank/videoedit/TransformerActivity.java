@@ -2,7 +2,6 @@
 package com.frank.videoedit;
 
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
-import static com.google.android.exoplayer2.util.Assertions.checkNotNull;
 
 import android.app.Activity;
 import android.content.Context;
@@ -14,6 +13,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -35,12 +35,11 @@ import com.frank.videoedit.transform.TransformationException;
 import com.frank.videoedit.transform.TransformationRequest;
 import com.frank.videoedit.transform.TransformationResult;
 import com.frank.videoedit.transform.Transformer;
+import com.frank.videoedit.util.CommonUtil;
 import com.frank.videoedit.view.MaterialCardView;
 
-import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.util.Effect;
-import com.google.android.exoplayer2.util.Log;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Ticker;
@@ -103,17 +102,17 @@ public final class TransformerActivity extends AppCompatActivity {
   protected void onStop() {
     super.onStop();
 
-    checkNotNull(transformer).cancel();
+    transformer.cancel();
     transformer = null;
 
     // The stop watch is reset after cancelling the transformation, in case cancelling causes the
     // stop watch to be stopped in a transformer callback.
-    checkNotNull(transformationStopwatch).reset();
+    transformationStopwatch.reset();
 
     // TODO: pause
     releasePlayer();
 
-    checkNotNull(externalCacheFile).delete();
+    externalCacheFile.delete();
     externalCacheFile = null;
   }
 
@@ -121,7 +120,7 @@ public final class TransformerActivity extends AppCompatActivity {
     requestTransformerPermission();
 
     Intent intent = getIntent();
-    Uri uri = checkNotNull(intent.getData());
+    Uri uri = intent.getData();
     try {
       externalCacheFile = createExternalCacheFile("transform_output.mp4");
       String filePath = externalCacheFile.getAbsolutePath();
@@ -178,8 +177,8 @@ public final class TransformerActivity extends AppCompatActivity {
         requestBuilder.setVideoMimeType(videoMimeType);
       }
       int resolutionHeight =
-          bundle.getInt(EditActivity.RESOLUTION_HEIGHT, C.LENGTH_UNSET);
-      if (resolutionHeight != C.LENGTH_UNSET) {
+          bundle.getInt(EditActivity.RESOLUTION_HEIGHT, CommonUtil.LENGTH_UNSET);
+      if (resolutionHeight != CommonUtil.LENGTH_UNSET) {
         requestBuilder.setResolution(resolutionHeight);
       }
 
@@ -364,7 +363,7 @@ public final class TransformerActivity extends AppCompatActivity {
       inputCardView.setVisibility(View.VISIBLE);
       displayInputButton.setText(getString(R.string.hide_input_video));
     } else if (inputCardView.getVisibility() == View.VISIBLE) {
-      checkNotNull(inputPlayer).pause();
+      inputPlayer.pause();
       inputCardView.setVisibility(View.GONE);
       displayInputButton.setText(getString(R.string.show_input_video));
     }

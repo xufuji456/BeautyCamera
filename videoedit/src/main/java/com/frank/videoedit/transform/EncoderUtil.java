@@ -21,10 +21,8 @@ import com.frank.videoedit.transform.listener.EncoderSelector;
 import com.frank.videoedit.entity.ColorInfo;
 import com.frank.videoedit.transform.util.MediaUtil;
 
-import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.C.ColorTransfer;
 import com.google.android.exoplayer2.Format;
-import com.google.android.exoplayer2.util.MimeTypes;
 import com.google.common.base.Ascii;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -50,7 +48,6 @@ public final class EncoderUtil {
     return MIME_TYPE_TO_ENCODERS.get().get(Ascii.toLowerCase(mimeType));
   }
 
-  /** Returns a list of video {@linkplain MimeTypes MIME types} that can be encoded. */
   public static ImmutableSet<String> getSupportedVideoMimeTypes() {
     return MIME_TYPE_TO_ENCODERS.get().keySet();
   }
@@ -98,31 +95,31 @@ public final class EncoderUtil {
       String mimeType, @ColorTransfer int colorTransfer) {
     // TODO(b/239174610): Add a way to determine profiles for DV and HDR10+.
     switch (mimeType) {
-      case MimeTypes.VIDEO_VP9:
-        if (colorTransfer == C.COLOR_TRANSFER_HLG || colorTransfer == C.COLOR_TRANSFER_ST2084) {
+      case MediaUtil.VIDEO_VP9:
+        if (colorTransfer == ColorInfo.COLOR_TRANSFER_HLG || colorTransfer == ColorInfo.COLOR_TRANSFER_ST2084) {
           // Profiles support both HLG and PQ.
           return ImmutableList.of(
               MediaCodecInfo.CodecProfileLevel.VP9Profile2HDR,
               MediaCodecInfo.CodecProfileLevel.VP9Profile3HDR);
         }
         break;
-      case MimeTypes.VIDEO_H264:
-        if (colorTransfer == C.COLOR_TRANSFER_HLG) {
+      case MediaUtil.VIDEO_H264:
+        if (colorTransfer == ColorInfo.COLOR_TRANSFER_HLG) {
           return ImmutableList.of(MediaCodecInfo.CodecProfileLevel.AVCProfileHigh10);
         }
         // CodecProfileLevel does not support PQ/HDR10 for H264.
         break;
-      case MimeTypes.VIDEO_H265:
-        if (colorTransfer == C.COLOR_TRANSFER_HLG) {
+      case MediaUtil.VIDEO_H265:
+        if (colorTransfer == ColorInfo.COLOR_TRANSFER_HLG) {
           return ImmutableList.of(MediaCodecInfo.CodecProfileLevel.HEVCProfileMain10);
-        } else if (colorTransfer == C.COLOR_TRANSFER_ST2084) {
+        } else if (colorTransfer == ColorInfo.COLOR_TRANSFER_ST2084) {
           return ImmutableList.of(MediaCodecInfo.CodecProfileLevel.HEVCProfileMain10HDR10);
         }
         break;
-      case MimeTypes.VIDEO_AV1:
-        if (colorTransfer == C.COLOR_TRANSFER_HLG) {
+      case MediaUtil.VIDEO_AV1:
+        if (colorTransfer == ColorInfo.COLOR_TRANSFER_HLG) {
           return ImmutableList.of(MediaCodecInfo.CodecProfileLevel.AV1ProfileMain10);
-        } else if (colorTransfer == C.COLOR_TRANSFER_ST2084) {
+        } else if (colorTransfer == ColorInfo.COLOR_TRANSFER_ST2084) {
           return ImmutableList.of(MediaCodecInfo.CodecProfileLevel.AV1ProfileMain10HDR10);
         }
         break;
@@ -156,13 +153,6 @@ public final class EncoderUtil {
     return false;
   }
 
-  /**
-   * Returns a {@link Range} of supported heights for the given {@link MediaCodecInfo encoder},
-   * {@linkplain MimeTypes MIME type} and {@code width}.
-   *
-   * @throws IllegalArgumentException When the width is not in the range of {@linkplain
-   *     #getSupportedResolutionRanges supported widths}.
-   */
   public static Range<Integer> getSupportedHeights(
       MediaCodecInfo encoderInfo, String mimeType, int width) {
     return encoderInfo
@@ -171,10 +161,6 @@ public final class EncoderUtil {
         .getSupportedHeightsFor(width);
   }
 
-  /**
-   * Returns a {@link Pair} of supported width and height {@link Range ranges} for the given {@link
-   * MediaCodecInfo encoder} and {@linkplain MimeTypes MIME type}.
-   */
   public static Pair<Range<Integer>, Range<Integer>> getSupportedResolutionRanges(
       MediaCodecInfo encoderInfo, String mimeType) {
     MediaCodecInfo.VideoCapabilities videoCapabilities =
@@ -256,11 +242,6 @@ public final class EncoderUtil {
     return isSizeSupported(encoderInfo, mimeType, width, height) ? new Size(width, height) : null;
   }
 
-  /**
-   * Returns a {@link ImmutableSet set} of supported {@linkplain MediaCodecInfo.CodecProfileLevel
-   * encoding profiles} for the given {@linkplain MediaCodecInfo encoder} and {@linkplain MimeTypes
-   * MIME type}.
-   */
   public static ImmutableSet<Integer> findSupportedEncodingProfiles(
       MediaCodecInfo encoderInfo, String mimeType) {
     MediaCodecInfo.CodecProfileLevel[] profileLevels =
@@ -272,15 +253,6 @@ public final class EncoderUtil {
     return supportedProfilesBuilder.build();
   }
 
-  /**
-   * Finds the highest supported encoding level given a profile.
-   *
-   * @param encoderInfo The {@link MediaCodecInfo encoderInfo}.
-   * @param mimeType The {@linkplain MimeTypes MIME type}.
-   * @param profile The encoding profile.
-   * @return The highest supported encoding level, as documented in {@link
-   *     MediaCodecInfo.CodecProfileLevel}, or {@link #LEVEL_UNSET} if the profile is not supported.
-   */
   public static int findHighestSupportedEncodingLevel(
       MediaCodecInfo encoderInfo, String mimeType, int profile) {
     // TODO(b/214964116): Merge into MediaCodecUtil.
@@ -327,7 +299,6 @@ public final class EncoderUtil {
     return mediaCodecName;
   }
 
-  /** Returns the range of supported bitrates for the given {@linkplain MimeTypes MIME type}. */
   public static Range<Integer> getSupportedBitrateRange(
       MediaCodecInfo encoderInfo, String mimeType) {
     return encoderInfo.getCapabilitiesForType(mimeType).getVideoCapabilities().getBitrateRange();
@@ -342,11 +313,6 @@ public final class EncoderUtil {
         .isBitrateModeSupported(bitrateMode);
   }
 
-  /**
-   * Returns a {@link ImmutableList list} of supported {@linkplain
-   * MediaCodecInfo.CodecCapabilities#colorFormats color formats} for the given {@linkplain
-   * MediaCodecInfo encoder} and {@linkplain MimeTypes MIME type}.
-   */
   public static ImmutableList<Integer> getSupportedColorFormats(
       MediaCodecInfo encoderInfo, String mimeType) {
     return ImmutableList.copyOf(
@@ -381,7 +347,7 @@ public final class EncoderUtil {
       return Api29.isSoftwareOnly(encoderInfo);
     }
 
-    if (MimeTypes.isAudio(mimeType)) {
+    if (MediaUtil.isAudio(mimeType)) {
       // Assume audio decoders are software only.
       return true;
     }
@@ -432,7 +398,7 @@ public final class EncoderUtil {
       }
       String[] supportedMimeTypes = mediaCodecInfo.getSupportedTypes();
       for (String mimeType : supportedMimeTypes) {
-        if (MimeTypes.isVideo(mimeType)) {
+        if (MediaUtil.isVideo(mimeType)) {
           encoderInfosBuilder.put(Ascii.toLowerCase(mimeType), mediaCodecInfo);
         }
       }

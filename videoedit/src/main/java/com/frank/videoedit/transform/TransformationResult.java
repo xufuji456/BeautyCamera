@@ -2,7 +2,7 @@ package com.frank.videoedit.transform;
 
 import androidx.annotation.Nullable;
 
-import com.google.android.exoplayer2.C;
+import com.frank.videoedit.util.CommonUtil;
 
 public final class TransformationResult {
 
@@ -14,10 +14,10 @@ public final class TransformationResult {
     private int videoFrameCount;
 
     public Builder() {
-      durationMs = C.TIME_UNSET;
-      fileSizeBytes = C.LENGTH_UNSET;
-      averageAudioBitrate = C.RATE_UNSET_INT;
-      averageVideoBitrate = C.RATE_UNSET_INT;
+      durationMs          = CommonUtil.TIME_UNSET;
+      fileSizeBytes       = CommonUtil.LENGTH_UNSET;
+      averageAudioBitrate = CommonUtil.RATE_UNSET_INT;
+      averageVideoBitrate = CommonUtil.RATE_UNSET_INT;
     }
 
     public Builder setDurationMs(long durationMs) {

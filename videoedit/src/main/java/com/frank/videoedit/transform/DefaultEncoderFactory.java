@@ -23,8 +23,6 @@ import com.frank.videoedit.entity.ColorInfo;
 import com.frank.videoedit.transform.util.MediaUtil;
 
 import com.google.android.exoplayer2.Format;
-import com.google.android.exoplayer2.util.Log;
-import com.google.android.exoplayer2.util.MimeTypes;
 import com.google.common.collect.ImmutableList;
 
 import java.util.ArrayList;
@@ -241,7 +239,7 @@ public final class DefaultEncoderFactory implements Codec.EncoderFactory {
     }
 
     ColorInfo colorInfo = convertColorInfo(format);
-    if (mimeType.equals(MimeTypes.VIDEO_H264)) {
+    if (mimeType.equals(MediaUtil.VIDEO_H264)) {
       adjustMediaFormatForH264EncoderSettings(/*format.colorInfo*/colorInfo, encoderInfo, mediaFormat);
     }
 
@@ -495,7 +493,7 @@ public final class DefaultEncoderFactory implements Codec.EncoderFactory {
       @Nullable ColorInfo colorInfo, MediaCodecInfo encoderInfo, MediaFormat mediaFormat) {
     // TODO(b/210593256): Remove overriding profile/level (before API 29) after switching to in-app
     // muxing.
-    String mimeType = MimeTypes.VIDEO_H264;
+    String mimeType = MediaUtil.VIDEO_H264;
     if (Build.VERSION.SDK_INT >= 29) {
       int expectedEncodingProfile = MediaCodecInfo.CodecProfileLevel.AVCProfileHigh;
       if (colorInfo != null) {
@@ -595,24 +593,19 @@ public final class DefaultEncoderFactory implements Codec.EncoderFactory {
       MediaCodecInfo encoderInfo = removedEncoders.get(i);
       stringBuilder.append(String.format(Locale.getDefault(), "  %s\n", encoderInfo.getName()));
     }
-    Log.d(TAG, stringBuilder.toString());
 
     return ImmutableList.copyOf(filteredEncoders);
   }
 
-  /**
-   * Finds a {@linkplain MimeTypes MIME type} that is supported by the encoder and in the {@code
-   * allowedMimeTypes}.
-   */
   @Nullable
   private static String findFallbackMimeType(
       EncoderSelector encoderSelector, String requestedMimeType, List<String> allowedMimeTypes) {
     if (mimeTypeIsSupported(encoderSelector, requestedMimeType, allowedMimeTypes)) {
       return requestedMimeType;
-    } else if (mimeTypeIsSupported(encoderSelector, MimeTypes.VIDEO_H265, allowedMimeTypes)) {
-      return MimeTypes.VIDEO_H265;
-    } else if (mimeTypeIsSupported(encoderSelector, MimeTypes.VIDEO_H264, allowedMimeTypes)) {
-      return MimeTypes.VIDEO_H264;
+    } else if (mimeTypeIsSupported(encoderSelector, MediaUtil.VIDEO_H265, allowedMimeTypes)) {
+      return MediaUtil.VIDEO_H265;
+    } else if (mimeTypeIsSupported(encoderSelector, MediaUtil.VIDEO_H264, allowedMimeTypes)) {
+      return MediaUtil.VIDEO_H264;
     } else {
       for (int i = 0; i < allowedMimeTypes.size(); i++) {
         String allowedMimeType = allowedMimeTypes.get(i);
@@ -653,7 +646,7 @@ public final class DefaultEncoderFactory implements Codec.EncoderFactory {
   private static TransformationException createTransformationException(Format format) {
     return TransformationException.createForCodec(
         new IllegalArgumentException("The requested encoding format is not supported."),
-        MimeTypes.isVideo(format.sampleMimeType),
+        MediaUtil.isVideo(format.sampleMimeType),
         /* isDecoder= */ false,
         format,
         /* mediaCodecName= */ null,

@@ -14,7 +14,6 @@ import com.frank.videoedit.transform.util.MediaUtil;
 
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.mediacodec.MediaCodecUtil;
-import com.google.android.exoplayer2.util.MimeTypes;
 
 /** A default implementation of {@link Codec.DecoderFactory}. */
 /* package */ final class DefaultDecoderFactory implements Codec.DecoderFactory {
@@ -106,7 +105,7 @@ import com.google.android.exoplayer2.util.MimeTypes;
   private static TransformationException createTransformationException(Format format) {
     return TransformationException.createForCodec(
         new IllegalArgumentException("The requested decoding format is not supported."),
-        MimeTypes.isVideo(format.sampleMimeType),
+        MediaUtil.isVideo(format.sampleMimeType),
         /* isDecoder= */ true,
         format,
         /* mediaCodecName= */ null,

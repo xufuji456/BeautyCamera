@@ -3,7 +3,8 @@ package com.frank.videoedit.transform;
 import android.os.ParcelFileDescriptor;
 
 import com.frank.videoedit.transform.listener.Muxer;
-import com.google.android.exoplayer2.C;
+import com.frank.videoedit.transform.util.MediaUtil;
+
 import com.google.android.exoplayer2.Format;
 import com.google.common.collect.ImmutableList;
 
@@ -37,7 +38,7 @@ public final class DefaultMuxer implements Muxer {
     }
 
     @Override
-    public ImmutableList<String> getSupportedSampleMimeTypes(@C.TrackType int trackType) {
+    public ImmutableList<String> getSupportedSampleMimeTypes(@MediaUtil.TrackType int trackType) {
       return muxerFactory.getSupportedSampleMimeTypes(trackType);
     }
   }

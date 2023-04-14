@@ -17,11 +17,10 @@ import android.util.Log;
 import android.util.Pair;
 
 import com.frank.videoedit.effect.SingleFrameGlTextureProcessor;
+import com.frank.videoedit.effect.util.GlProgram;
+import com.frank.videoedit.effect.util.GlUtil;
+import com.frank.videoedit.util.CommonUtil;
 import com.frank.videoedit.util.FrameProcessingException;
-
-import com.google.android.exoplayer2.C;
-import com.google.android.exoplayer2.util.GlProgram;
-import com.google.android.exoplayer2.util.GlUtil;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -107,7 +106,7 @@ import java.util.Locale;
 
       // Draw to the canvas and store it in a texture.
       String text =
-          String.format(Locale.US, "%.02f", presentationTimeUs / (float) C.MICROS_PER_SECOND);
+          String.format(Locale.US, "%.02f", presentationTimeUs / (float) CommonUtil.MICROS_PER_SECOND);
       overlayBitmap.eraseColor(Color.TRANSPARENT);
       overlayCanvas.drawBitmap(checkStateNotNull(logoBitmap), /* left= */ 3, /* top= */ 378, paint);
       overlayCanvas.drawText(text, /* x= */ 160, /* y= */ 466, paint);

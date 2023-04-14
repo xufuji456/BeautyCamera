@@ -7,7 +7,9 @@ import android.content.Context;
 import com.frank.videoedit.listener.FrameProcessor;
 import com.frank.videoedit.transform.listener.Codec;
 
-import com.google.android.exoplayer2.C;
+import com.frank.videoedit.transform.util.MediaUtil;
+import com.frank.videoedit.util.CommonUtil;
+
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.FormatHolder;
 import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
@@ -40,7 +42,7 @@ import com.google.common.collect.ImmutableList;
       Transformer.AsyncErrorListener asyncErrorListener,
       FallbackListener fallbackListener) {
     super(
-        C.TRACK_TYPE_VIDEO,
+        MediaUtil.TRACK_TYPE_VIDEO,
         muxerWrapper,
         mediaClock,
         transformationRequest,
@@ -69,7 +71,7 @@ import com.google.common.collect.ImmutableList;
     FormatHolder formatHolder = getFormatHolder();
     @ReadDataResult
     int result = readSource(formatHolder, decoderInputBuffer, /* readFlags= */ FLAG_REQUIRE_FORMAT);
-    if (result != C.RESULT_FORMAT_READ) {
+    if (result != MediaUtil.RESULT_FORMAT_READ) {
       return false;
     }
     Format inputFormat = formatHolder.format;
@@ -128,7 +130,7 @@ import com.google.common.collect.ImmutableList;
     // The decoder rotates encoded frames for display by inputFormat.rotationDegrees.
     int decodedHeight =
         (inputFormat.rotationDegrees % 180 == 0) ? inputFormat.height : inputFormat.width;
-    if (transformationRequest.outputHeight != C.LENGTH_UNSET
+    if (transformationRequest.outputHeight != CommonUtil.LENGTH_UNSET
         && transformationRequest.outputHeight != decodedHeight) {
       return true;
     }

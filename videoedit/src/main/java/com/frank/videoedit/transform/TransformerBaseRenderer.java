@@ -3,14 +3,14 @@ package com.frank.videoedit.transform;
 import androidx.annotation.Nullable;
 
 import com.frank.videoedit.transform.listener.SamplePipeline;
+import com.frank.videoedit.transform.util.MediaUtil;
 import com.google.android.exoplayer2.BaseRenderer;
-import com.google.android.exoplayer2.C;
+
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.RendererCapabilities;
 import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
 import com.google.android.exoplayer2.source.SampleStream.ReadDataResult;
 import com.google.android.exoplayer2.util.MediaClock;
-import com.google.android.exoplayer2.util.MimeTypes;
 
 /* package */ abstract class TransformerBaseRenderer extends BaseRenderer {
 
@@ -49,9 +49,9 @@ import com.google.android.exoplayer2.util.MimeTypes;
   @Override
   public final @Capabilities int supportsFormat(Format format) {
     return RendererCapabilities.create(
-        MimeTypes.getTrackType(format.sampleMimeType) == getTrackType()
-            ? C.FORMAT_HANDLED
-            : C.FORMAT_UNSUPPORTED_TYPE);
+        MediaUtil.getTrackType(format.sampleMimeType) == getTrackType()
+            ? MediaUtil.FORMAT_HANDLED
+            : MediaUtil.FORMAT_UNSUPPORTED_TYPE);
   }
 
   @Override
@@ -124,7 +124,7 @@ import com.google.android.exoplayer2.util.MimeTypes;
     @ReadDataResult
     int result = readSource(getFormatHolder(), samplePipelineInputBuffer, /* readFlags= */ 0);
     switch (result) {
-      case C.RESULT_BUFFER_READ:
+      case MediaUtil.RESULT_BUFFER_READ:
         samplePipelineInputBuffer.flip();
         if (samplePipelineInputBuffer.isEndOfStream()) {
           samplePipeline.queueInputBuffer();
@@ -133,9 +133,9 @@ import com.google.android.exoplayer2.util.MimeTypes;
         mediaClock.updateTimeForTrackType(getTrackType(), samplePipelineInputBuffer.timeUs);
         samplePipeline.queueInputBuffer();
         return true;
-      case C.RESULT_FORMAT_READ:
+      case MediaUtil.RESULT_FORMAT_READ:
         throw new IllegalStateException("Format changes are not supported.");
-      case C.RESULT_NOTHING_READ:
+      case MediaUtil.RESULT_NOTHING_READ:
       default:
         return false;
     }

@@ -1,8 +1,8 @@
 package com.frank.videoedit.transform.listener;
 
-import com.google.android.exoplayer2.C;
+
+import com.frank.videoedit.transform.util.MediaUtil;
 import com.google.android.exoplayer2.Format;
-import com.google.android.exoplayer2.util.Util;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -18,16 +18,16 @@ public interface AudioProcessor {
 
         public final int sampleRate;
         public final int channelCount;
-        public final @C.PcmEncoding int encoding;
+        public final @MediaUtil.PcmEncoding int encoding;
         public final int bytesPerFrame;
 
-        public AudioFormat(int sampleRate, int channelCount, @C.PcmEncoding int encoding) {
+        public AudioFormat(int sampleRate, int channelCount, @MediaUtil.PcmEncoding int encoding) {
             this.sampleRate = sampleRate;
             this.channelCount = channelCount;
             this.encoding = encoding;
             bytesPerFrame =
-                    Util.isEncodingLinearPcm(encoding)
-                            ? Util.getPcmFrameSize(encoding, channelCount)
+                    MediaUtil.isEncodingLinearPcm(encoding)
+                            ? MediaUtil.getPcmFrameSize(encoding, channelCount)
                             : Format.NO_VALUE;
         }
 

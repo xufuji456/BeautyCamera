@@ -9,10 +9,9 @@ import android.util.Log;
 import android.util.Pair;
 
 import com.frank.videoedit.effect.SingleFrameGlTextureProcessor;
+import com.frank.videoedit.effect.util.GlProgram;
+import com.frank.videoedit.effect.util.GlUtil;
 import com.frank.videoedit.util.FrameProcessingException;
-
-import com.google.android.exoplayer2.util.GlProgram;
-import com.google.android.exoplayer2.util.GlUtil;
 
 import java.io.IOException;
 

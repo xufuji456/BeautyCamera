@@ -4,12 +4,15 @@ import static com.google.android.exoplayer2.util.Assertions.checkNotNull;
 import static com.google.android.exoplayer2.util.Assertions.checkState;
 import static java.lang.Math.min;
 
+import android.media.MediaCodec;
+
 import androidx.annotation.Nullable;
 
 import com.frank.videoedit.transform.listener.AudioProcessor.AudioFormat;
 import com.frank.videoedit.transform.listener.Codec;
+import com.frank.videoedit.transform.util.MediaUtil;
 import com.frank.videoedit.util.CommonUtil;
-import com.google.android.exoplayer2.C;
+
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
 
@@ -64,7 +67,7 @@ import java.nio.ByteBuffer;
             inputFormat.channelCount,
             // The decoder uses ENCODING_PCM_16BIT by default.
             // https://developer.android.com/reference/android/media/MediaCodec#raw-audio-buffers
-            C.ENCODING_PCM_16BIT);
+            MediaUtil.ENCODING_PCM_16BIT);
 
     this.encoderInputAudioFormat = encoderInputAudioFormat;
     Format requestedOutputFormat =
@@ -79,7 +82,7 @@ import java.nio.ByteBuffer;
             .build();
     encoder =
         encoderFactory.createForAudioEncoding(
-            requestedOutputFormat, muxerWrapper.getSupportedSampleMimeTypes(C.TRACK_TYPE_AUDIO));
+            requestedOutputFormat, muxerWrapper.getSupportedSampleMimeTypes(MediaUtil.TRACK_TYPE_AUDIO));
 
     fallbackListener.onTransformationRequestFinalized(
         createFallbackTransformationRequest(
@@ -125,7 +128,7 @@ import java.nio.ByteBuffer;
       return null;
     }
     encoderOutputBuffer.timeUs = checkNotNull(encoder.getOutputBufferInfo()).presentationTimeUs;
-    encoderOutputBuffer.setFlags(C.BUFFER_FLAG_KEY_FRAME);
+    encoderOutputBuffer.setFlags(MediaCodec.BUFFER_FLAG_KEY_FRAME);
     return encoderOutputBuffer;
   }
 
@@ -188,7 +191,7 @@ import java.nio.ByteBuffer;
   private void queueEndOfStreamToEncoder() throws TransformationException {
     checkState(checkNotNull(encoderInputBuffer.data).position() == 0);
     encoderInputBuffer.timeUs = nextEncoderInputBufferTimeUs;
-    encoderInputBuffer.addFlag(C.BUFFER_FLAG_END_OF_STREAM);
+    encoderInputBuffer.addFlag(MediaCodec.BUFFER_FLAG_END_OF_STREAM);
     encoderInputBuffer.flip();
     // Queuing EOS should only occur with an empty buffer.
     encoder.queueInputBuffer(encoderInputBuffer);
@@ -201,7 +204,7 @@ import java.nio.ByteBuffer;
     // bufferDurationUs = numberOfFramesInBuffer * sampleDurationUs
     //     where numberOfFramesInBuffer = bytesWritten / bytesPerFrame
     //     and   sampleDurationUs       = C.MICROS_PER_SECOND / sampleRate
-    long numerator = bytesWritten * C.MICROS_PER_SECOND + encoderBufferDurationRemainder;
+    long numerator = bytesWritten * CommonUtil.MICROS_PER_SECOND + encoderBufferDurationRemainder;
     long denominator = (long) bytesPerFrame * sampleRate;
     long bufferDurationUs = numerator / denominator;
     encoderBufferDurationRemainder = numerator - bufferDurationUs * denominator;

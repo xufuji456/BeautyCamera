@@ -4,10 +4,10 @@ import androidx.annotation.Nullable;
 
 import com.frank.videoedit.transform.listener.Muxer;
 import com.frank.videoedit.transform.listener.SamplePipeline;
-import com.google.android.exoplayer2.C;
+import com.frank.videoedit.transform.util.MediaUtil;
+
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
-import com.google.android.exoplayer2.util.MimeTypes;
 
 
 /* package */ abstract class BaseSamplePipeline implements SamplePipeline {
@@ -15,7 +15,7 @@ import com.google.android.exoplayer2.util.MimeTypes;
   private final long streamOffsetUs;
   private final long streamStartPositionUs;
   private final MuxerWrapper muxerWrapper;
-  private final @C.TrackType int trackType;
+  private final @MediaUtil.TrackType int trackType;
 
   @Nullable private DecoderInputBuffer inputBuffer;
   private boolean muxerWrapperTrackAdded;
@@ -29,7 +29,7 @@ import com.google.android.exoplayer2.util.MimeTypes;
     this.streamOffsetUs = streamOffsetUs;
     this.streamStartPositionUs = streamStartPositionUs;
     this.muxerWrapper = muxerWrapper;
-    trackType = MimeTypes.getTrackType(inputFormat.sampleMimeType);
+    trackType = MediaUtil.getTrackType(inputFormat.sampleMimeType);
   }
 
   @Nullable

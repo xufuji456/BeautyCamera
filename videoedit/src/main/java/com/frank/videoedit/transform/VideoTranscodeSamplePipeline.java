@@ -13,10 +13,10 @@ import com.frank.videoedit.effect.Presentation;
 import com.frank.videoedit.entity.SurfaceInfo;
 import com.frank.videoedit.entity.FrameInfo;
 import com.frank.videoedit.entity.ColorInfo;
+import com.frank.videoedit.transform.util.MediaUtil;
 import com.frank.videoedit.util.CommonUtil;
 import com.frank.videoedit.util.FrameProcessingException;
 
-import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
 import com.google.android.exoplayer2.util.Effect;
@@ -113,7 +113,7 @@ import java.util.List;
     ImmutableList.Builder<Effect> effectsListBuilder =
         new ImmutableList.Builder<Effect>().addAll(effects);
 
-    if (transformationRequest.outputHeight != C.LENGTH_UNSET) {
+    if (transformationRequest.outputHeight != CommonUtil.LENGTH_UNSET) {
       effectsListBuilder.add(Presentation.createForHeight(transformationRequest.outputHeight));
     }
 
@@ -121,7 +121,7 @@ import java.util.List;
         new EncoderWrapper(
             encoderFactory,
             inputFormat,
-            muxerWrapper.getSupportedSampleMimeTypes(C.TRACK_TYPE_VIDEO),
+            muxerWrapper.getSupportedSampleMimeTypes(MediaUtil.TRACK_TYPE_VIDEO),
             transformationRequest,
             fallbackListener);
 

@@ -4,7 +4,8 @@ import static com.google.android.exoplayer2.source.SampleStream.FLAG_REQUIRE_FOR
 
 import com.frank.videoedit.transform.listener.Codec;
 import com.frank.videoedit.transform.listener.SamplePipeline;
-import com.google.android.exoplayer2.C;
+import com.frank.videoedit.transform.util.MediaUtil;
+
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.FormatHolder;
 import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
@@ -27,7 +28,7 @@ import com.google.android.exoplayer2.source.SampleStream.ReadDataResult;
       Transformer.AsyncErrorListener asyncErrorListener,
       FallbackListener fallbackListener) {
     super(
-        C.TRACK_TYPE_AUDIO,
+        MediaUtil.TRACK_TYPE_AUDIO,
         muxerWrapper,
         mediaClock,
         transformationRequest,
@@ -53,7 +54,7 @@ import com.google.android.exoplayer2.source.SampleStream.ReadDataResult;
     FormatHolder formatHolder = getFormatHolder();
     @ReadDataResult
     int result = readSource(formatHolder, decoderInputBuffer, /* readFlags= */ FLAG_REQUIRE_FORMAT);
-    if (result != C.RESULT_FORMAT_READ) {
+    if (result != MediaUtil.RESULT_FORMAT_READ) {
       return false;
     }
     Format inputFormat = formatHolder.format;

@@ -8,10 +8,10 @@ import android.util.SparseLongArray;
 import androidx.annotation.Nullable;
 
 import com.frank.videoedit.transform.listener.Muxer;
+import com.frank.videoedit.transform.util.MediaUtil;
 import com.frank.videoedit.util.CommonUtil;
-import com.google.android.exoplayer2.C;
+
 import com.google.android.exoplayer2.Format;
-import com.google.android.exoplayer2.util.MimeTypes;
 import com.google.common.collect.ImmutableList;
 
 import java.nio.ByteBuffer;
@@ -48,7 +48,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
   private int trackCount;
   private int trackFormatCount;
   private boolean isReady;
-  private @C.TrackType int previousTrackType;
+  private @MediaUtil.TrackType int previousTrackType;
   private long minTrackTimeUs;
   private ScheduledFuture<?> abortScheduledFuture;
   private boolean isAborted;
@@ -72,53 +72,26 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
     trackTypeToSampleCount = new SparseIntArray();
     trackTypeToTimeUs = new SparseLongArray();
     trackTypeToBytesWritten = new SparseLongArray();
-    previousTrackType = C.TRACK_TYPE_NONE;
+    previousTrackType = MediaUtil.TRACK_TYPE_NONE;
     abortScheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
   }
 
-  /**
-   * Registers an output track.
-   *
-   * <p>All tracks must be registered before any track format is {@linkplain #addTrackFormat(Format)
-   * added}.
-   *
-   * @throws IllegalStateException If a track format was {@linkplain #addTrackFormat(Format) added}
-   *     before calling this method.
-   */
   public void registerTrack() {
     trackCount++;
   }
 
-  /** Returns whether the sample {@linkplain MimeTypes MIME type} is supported. */
   public boolean supportsSampleMimeType(@Nullable String mimeType) {
-    @C.TrackType int trackType = MimeTypes.getTrackType(mimeType);
+    @MediaUtil.TrackType int trackType = MediaUtil.getTrackType(mimeType);
     return getSupportedSampleMimeTypes(trackType).contains(mimeType);
   }
 
-  /**
-   * Returns the supported {@linkplain MimeTypes MIME types} for the given {@linkplain C.TrackType
-   * track type}.
-   */
-  public ImmutableList<String> getSupportedSampleMimeTypes(@C.TrackType int trackType) {
+  public ImmutableList<String> getSupportedSampleMimeTypes(@MediaUtil.TrackType int trackType) {
     return muxerFactory.getSupportedSampleMimeTypes(trackType);
   }
 
-  /**
-   * Adds a track format to the muxer.
-   *
-   * <p>The tracks must all be {@linkplain #registerTrack() registered} before any format is added
-   * and all the formats must be added before samples are {@linkplain #writeSample(int, ByteBuffer,
-   * boolean, long) written}.
-   *
-   * @param format The {@link Format} to be added.
-   * @throws IllegalStateException If the format is unsupported or if there is already a track
-   *     format of the same type (audio or video).
-   * @throws Muxer.MuxerException If the underlying muxer encounters a problem while adding the
-   *     track.
-   */
   public void addTrackFormat(Format format) throws Muxer.MuxerException {
     @Nullable String sampleMimeType = format.sampleMimeType;
-    @C.TrackType int trackType = MimeTypes.getTrackType(sampleMimeType);
+    @MediaUtil.TrackType int trackType = MediaUtil.getTrackType(sampleMimeType);
 
     ensureMuxerInitialized();
 
@@ -134,25 +107,10 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
     }
   }
 
-  /**
-   * Attempts to write a sample to the muxer.
-   *
-   * @param trackType The {@linkplain C.TrackType track type} of the sample.
-   * @param data The sample to write.
-   * @param isKeyFrame Whether the sample is a key frame.
-   * @param presentationTimeUs The presentation time of the sample in microseconds.
-   * @return Whether the sample was successfully written. This is {@code false} if the muxer hasn't
-   *     {@linkplain #addTrackFormat(Format) received a format} for every {@linkplain
-   *     #registerTrack() registered track}, or if it should write samples of other track types
-   *     first to ensure a good interleaving.
-   * @throws IllegalStateException If the muxer doesn't have any {@linkplain #endTrack(int)
-   *     non-ended} track of the given track type.
-   * @throws Muxer.MuxerException If the underlying muxer fails to write the sample.
-   */
   public boolean writeSample(
-      @C.TrackType int trackType, ByteBuffer data, boolean isKeyFrame, long presentationTimeUs)
+      @MediaUtil.TrackType int trackType, ByteBuffer data, boolean isKeyFrame, long presentationTimeUs)
       throws Muxer.MuxerException {
-    int trackIndex = trackTypeToIndex.get(trackType, /* valueIfKeyNotFound= */ C.INDEX_UNSET);
+    int trackIndex = trackTypeToIndex.get(trackType, /* valueIfKeyNotFound= */ CommonUtil.INDEX_UNSET);
 
     if (!canWriteSampleOfType(trackType)) {
       return false;
@@ -171,29 +129,13 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
     return true;
   }
 
-  /**
-   * Notifies the muxer that all the samples have been {@link #writeSample(int, ByteBuffer, boolean,
-   * long) written} for a given track.
-   *
-   * @param trackType The {@link C.TrackType track type}.
-   */
-  public void endTrack(@C.TrackType int trackType) {
+  public void endTrack(@MediaUtil.TrackType int trackType) {
     trackTypeToIndex.delete(trackType);
     if (trackTypeToIndex.size() == 0) {
       abortScheduledExecutorService.shutdownNow();
     }
   }
 
-  /**
-   * Finishes writing the output and releases any resources associated with muxing.
-   *
-   * <p>The muxer cannot be used anymore once this method has been called.
-   *
-   * @param forCancellation Whether the reason for releasing the resources is the transformation
-   *     cancellation.
-   * @throws Muxer.MuxerException If the underlying muxer fails to finish writing the output and
-   *     {@code forCancellation} is false.
-   */
   public void release(boolean forCancellation) throws Muxer.MuxerException {
     isReady = false;
     abortScheduledExecutorService.shutdownNow();
@@ -202,32 +144,27 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
     }
   }
 
-  /** Returns the number of {@link #registerTrack() registered} tracks. */
   public int getTrackCount() {
     return trackCount;
   }
 
-  /**
-   * Returns the average bitrate of data written to the track of the provided {@code trackType}, or
-   * {@link C#RATE_UNSET_INT} if there is no track data.
-   */
-  public int getTrackAverageBitrate(@C.TrackType int trackType) {
+  public int getTrackAverageBitrate(@MediaUtil.TrackType int trackType) {
     long trackDurationUs = trackTypeToTimeUs.get(trackType, /* valueIfKeyNotFound= */ -1);
     long trackBytes = trackTypeToBytesWritten.get(trackType, /* valueIfKeyNotFound= */ -1);
     if (trackDurationUs <= 0 || trackBytes <= 0) {
-      return C.RATE_UNSET_INT;
+      return CommonUtil.RATE_UNSET_INT;
     }
     // The number of bytes written is not a timestamp, however this utility method provides
     // overflow-safe multiplication & division.
     return (int)
         CommonUtil.scaleLargeTimestamp(
             /* timestamp= */ trackBytes,
-            /* multiplier= */ C.BITS_PER_BYTE * C.MICROS_PER_SECOND,
+            /* multiplier= */ 8 * CommonUtil.MICROS_PER_SECOND,
             /* divisor= */ trackDurationUs);
   }
 
   /** Returns the number of samples written to the track of the provided {@code trackType}. */
-  public int getTrackSampleCount(@C.TrackType int trackType) {
+  public int getTrackSampleCount(@MediaUtil.TrackType int trackType) {
     return trackTypeToSampleCount.get(trackType, /* valueIfKeyNotFound= */ 0);
   }
 
@@ -236,19 +173,8 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
     return CommonUtil.usToMs(CommonUtil.maxValue(trackTypeToTimeUs));
   }
 
-  /**
-   * Returns whether the muxer can write a sample of the given track type.
-   *
-   * @param trackType The track type, defined by the {@code TRACK_TYPE_*} constants in {@link C}.
-   * @return Whether the muxer can write a sample of the given track type. This is {@code false} if
-   *     the muxer hasn't {@link #addTrackFormat(Format) received a format} for every {@link
-   *     #registerTrack() registered track}, or if it should write samples of other track types
-   *     first to ensure a good interleaving.
-   * @throws IllegalStateException If the muxer doesn't have any {@link #endTrack(int) non-ended}
-   *     track of the given track type.
-   */
   private boolean canWriteSampleOfType(int trackType) {
-    long trackTimeUs = trackTypeToTimeUs.get(trackType, /* valueIfKeyNotFound= */ C.TIME_UNSET);
+    long trackTimeUs = trackTypeToTimeUs.get(trackType, /* valueIfKeyNotFound= */ CommonUtil.TIME_UNSET);
     if (!isReady) {
       return false;
     }
@@ -263,7 +189,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
   private void resetAbortTimer() {
     long maxDelayBetweenSamplesMs = muxer.getMaxDelayBetweenSamplesMs();
-    if (maxDelayBetweenSamplesMs == C.TIME_UNSET) {
+    if (maxDelayBetweenSamplesMs == CommonUtil.TIME_UNSET) {
       return;
     }
     if (abortScheduledFuture != null) {

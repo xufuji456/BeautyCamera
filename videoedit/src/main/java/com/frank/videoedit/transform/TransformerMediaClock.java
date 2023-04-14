@@ -1,10 +1,9 @@
 package com.frank.videoedit.transform;
 
-import static com.google.android.exoplayer2.util.Util.minValue;
-
 import android.util.SparseLongArray;
 
-import com.google.android.exoplayer2.C;
+import com.frank.videoedit.transform.util.MediaUtil;
+import com.frank.videoedit.util.CommonUtil;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.util.MediaClock;
 
@@ -21,16 +20,16 @@ import com.google.android.exoplayer2.util.MediaClock;
    * Updates the time for a given track type. The clock time is computed based on the different
    * track times.
    */
-  public void updateTimeForTrackType(@C.TrackType int trackType, long timeUs) {
-    long previousTimeUs = trackTypeToTimeUs.get(trackType, /* valueIfKeyNotFound= */ C.TIME_UNSET);
-    if (previousTimeUs != C.TIME_UNSET && timeUs <= previousTimeUs) {
+  public void updateTimeForTrackType(@MediaUtil.TrackType int trackType, long timeUs) {
+    long previousTimeUs = trackTypeToTimeUs.get(trackType, /* valueIfKeyNotFound= */ CommonUtil.TIME_UNSET);
+    if (previousTimeUs != CommonUtil.TIME_UNSET && timeUs <= previousTimeUs) {
       // Make sure that the track times are increasing and therefore that the clock time is
       // increasing. This is necessary for progress updates.
       return;
     }
     trackTypeToTimeUs.put(trackType, timeUs);
-    if (previousTimeUs == C.TIME_UNSET || previousTimeUs == minTrackTimeUs) {
-      minTrackTimeUs = minValue(trackTypeToTimeUs);
+    if (previousTimeUs == CommonUtil.TIME_UNSET || previousTimeUs == minTrackTimeUs) {
+      minTrackTimeUs = CommonUtil.minValue(trackTypeToTimeUs);
     }
   }
 

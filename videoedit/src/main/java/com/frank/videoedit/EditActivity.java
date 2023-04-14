@@ -2,7 +2,6 @@ package com.frank.videoedit;
 
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
-import static com.google.android.exoplayer2.util.Assertions.checkNotNull;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -27,7 +26,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
-import com.google.android.exoplayer2.util.MimeTypes;
+import com.frank.videoedit.transform.util.MediaUtil;
 import com.google.android.material.slider.RangeSlider;
 import com.google.android.material.slider.Slider;
 
@@ -138,7 +137,7 @@ public class EditActivity extends AppCompatActivity {
         audioMimeSpinner = findViewById(R.id.audio_mime_spinner);
         audioMimeSpinner.setAdapter(audioMimeAdapter);
         audioMimeAdapter.addAll(
-                SAME_AS_INPUT_OPTION, MimeTypes.AUDIO_AAC, MimeTypes.AUDIO_AMR_NB, MimeTypes.AUDIO_AMR_WB);
+                SAME_AS_INPUT_OPTION, MediaUtil.AUDIO_AAC, MediaUtil.AUDIO_AMR_NB, MediaUtil.AUDIO_AMR_WB);
 
         ArrayAdapter<String> videoMimeAdapter =
                 new ArrayAdapter<>(/* context= */ this, R.layout.spinner_item);
@@ -146,9 +145,9 @@ public class EditActivity extends AppCompatActivity {
         videoMimeSpinner = findViewById(R.id.video_mime_spinner);
         videoMimeSpinner.setAdapter(videoMimeAdapter);
         videoMimeAdapter.addAll(
-                SAME_AS_INPUT_OPTION, MimeTypes.VIDEO_H263, MimeTypes.VIDEO_H264, MimeTypes.VIDEO_MP4V);
+                SAME_AS_INPUT_OPTION, MediaUtil.VIDEO_H263, MediaUtil.VIDEO_H264, MediaUtil.VIDEO_MP4V);
         if (Build.VERSION.SDK_INT >= 24) {
-            videoMimeAdapter.add(MimeTypes.VIDEO_H265);
+            videoMimeAdapter.add(MediaUtil.VIDEO_H265);
         }
 
         ArrayAdapter<String> resolutionHeightAdapter =
@@ -198,9 +197,9 @@ public class EditActivity extends AppCompatActivity {
         super.onResume();
         @Nullable Uri intentUri = getIntent().getData();
         if (intentUri != null) {
-            checkNotNull(selectPresetFileButton).setEnabled(false);
-            checkNotNull(selectLocalFileButton).setEnabled(false);
-            checkNotNull(selectedFileTextView).setText(intentUri.toString());
+            selectPresetFileButton.setEnabled(false);
+            selectLocalFileButton.setEnabled(false);
+            selectedFileTextView.setText(intentUri.toString());
         }
     }
 
@@ -292,13 +291,13 @@ public class EditActivity extends AppCompatActivity {
     private void launchLocalFilePicker() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("video/*");
-        checkNotNull(localFilePickerLauncher).launch(intent);
+        localFilePickerLauncher.launch(intent);
     }
 
     private void localFilePickerLauncherResult(ActivityResult result) {
         Intent data = result.getData();
         if (data != null) {
-            localFileUri = checkNotNull(data.getData());
+            localFileUri = data.getData();
             selectedFileTextView.setText(localFileUri.toString());
         }
     }
@@ -307,7 +306,7 @@ public class EditActivity extends AppCompatActivity {
         new AlertDialog.Builder(/* context= */ this)
                 .setTitle(R.string.select_demo_effects)
                 .setMultiChoiceItems(
-                        DEMO_EFFECTS, checkNotNull(demoEffectsSelections), this::selectDemoEffect)
+                        DEMO_EFFECTS, demoEffectsSelections, this::selectDemoEffect)
                 .setPositiveButton(android.R.string.ok, /* listener= */ null)
                 .create()
                 .show();
@@ -336,7 +335,7 @@ public class EditActivity extends AppCompatActivity {
 
     private void controlContrastSettings() {
         View dialogView = getLayoutInflater().inflate(R.layout.contrast_options, /* root= */ null);
-        Slider contrastSlider = checkNotNull(dialogView.findViewById(R.id.contrast_slider));
+        Slider contrastSlider = dialogView.findViewById(R.id.contrast_slider);
         new AlertDialog.Builder(/* context= */ this)
                 .setView(dialogView)
                 .setPositiveButton(
@@ -349,11 +348,11 @@ public class EditActivity extends AppCompatActivity {
     private void controlHslAdjustmentSettings() {
         View dialogView =
                 getLayoutInflater().inflate(R.layout.hsl_adjust_options, /* root= */ null);
-        Slider hueAdjustmentSlider = checkNotNull(dialogView.findViewById(R.id.hsl_adjustments_hue));
+        Slider hueAdjustmentSlider = dialogView.findViewById(R.id.hsl_adjustments_hue);
         Slider saturationAdjustmentSlider =
-                checkNotNull(dialogView.findViewById(R.id.hsl_adjustments_saturation));
+                dialogView.findViewById(R.id.hsl_adjustments_saturation);
         Slider lightnessAdjustmentSlider =
-                checkNotNull(dialogView.findViewById(R.id.hsl_adjustment_lightness));
+                dialogView.findViewById(R.id.hsl_adjustment_lightness);
         new AlertDialog.Builder(/* context= */ this)
                 .setTitle(R.string.hsl_adjustment_options)
                 .setView(dialogView)
@@ -372,11 +371,11 @@ public class EditActivity extends AppCompatActivity {
         View dialogView =
                 getLayoutInflater().inflate(R.layout.periodic_vignette_options, /* root= */ null);
         Slider centerXSlider =
-                checkNotNull(dialogView.findViewById(R.id.periodic_vignette_center_x_slider));
+                dialogView.findViewById(R.id.periodic_vignette_center_x_slider);
         Slider centerYSlider =
-                checkNotNull(dialogView.findViewById(R.id.periodic_vignette_center_y_slider));
+                dialogView.findViewById(R.id.periodic_vignette_center_y_slider);
         RangeSlider radiusRangeSlider =
-                checkNotNull(dialogView.findViewById(R.id.periodic_vignette_radius_range_slider));
+                dialogView.findViewById(R.id.periodic_vignette_radius_range_slider);
         radiusRangeSlider.setValues(0f, HALF_DIAGONAL);
         new AlertDialog.Builder(/* context= */ this)
                 .setTitle(R.string.periodic_vignette_options)
