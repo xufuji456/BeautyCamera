@@ -20,9 +20,8 @@ import androidx.annotation.RequiresApi;
 import com.frank.videoedit.transform.listener.EncoderSelector;
 import com.frank.videoedit.entity.ColorInfo;
 import com.frank.videoedit.transform.util.MediaUtil;
-
 import com.frank.videoedit.util.CommonUtil;
-import com.google.android.exoplayer2.C.ColorTransfer;
+
 import com.google.android.exoplayer2.Format;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -62,7 +61,7 @@ public final class EncoderUtil {
       return ImmutableList.of();
     }
 
-    @ColorTransfer int colorTransfer = colorInfo.colorTransfer;
+    @ColorInfo.ColorTransfer int colorTransfer = colorInfo.colorTransfer;
     ImmutableList<Integer> profiles = getCodecProfilesForHdrFormat(mimeType, colorTransfer);
     ImmutableList.Builder<String> resultBuilder = ImmutableList.builder();
     ImmutableList<MediaCodecInfo> mediaCodecInfos =
@@ -92,7 +91,7 @@ public final class EncoderUtil {
    */
   @SuppressWarnings("InlinedApi") // Safe use of inlined constants from newer API versions.
   public static ImmutableList<Integer> getCodecProfilesForHdrFormat(
-      String mimeType, @ColorTransfer int colorTransfer) {
+      String mimeType, @ColorInfo.ColorTransfer int colorTransfer) {
     // TODO(b/239174610): Add a way to determine profiles for DV and HDR10+.
     switch (mimeType) {
       case MediaUtil.VIDEO_VP9:

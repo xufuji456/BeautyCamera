@@ -13,7 +13,6 @@ import com.frank.videoedit.util.CommonUtil;
 import com.frank.videoedit.util.FrameProcessingException;
 
 import com.google.android.exoplayer2.Format;
-import com.google.android.exoplayer2.PlaybackException;
 import com.google.android.exoplayer2.util.Clock;
 import com.google.android.exoplayer2.util.FrameProcessor;
 import com.google.common.collect.ImmutableBiMap;
@@ -252,21 +251,6 @@ public final class TransformationException extends Exception {
           "Unexpected runtime error", cause, ERROR_CODE_FAILED_RUNTIME_CHECK);
     }
     return new TransformationException("Unexpected error", cause, ERROR_CODE_UNSPECIFIED);
-  }
-
-  /**
-   * Creates an instance for a {@link PlaybackException}.
-   *
-   * <p>If there is a corresponding {@link ErrorCode} for the {@link
-   * PlaybackException.ErrorCode}, this error code and the same message are used for the created
-   * instance. Otherwise, this is equivalent to {@link #createForUnexpected(Exception)}.
-   */
-  /* package */ static TransformationException createForPlaybackException(
-      PlaybackException exception) {
-    @ErrorCode int errorCode = getErrorCodeForName(exception.getErrorCodeName());
-    return errorCode == ERROR_CODE_UNSPECIFIED
-        ? createForUnexpected(exception)
-        : new TransformationException(exception.getMessage(), exception, errorCode);
   }
 
   /** An error code which identifies the cause of the transformation failure. */

@@ -14,7 +14,6 @@ import com.frank.videoedit.effect.util.GlProgram;
 import com.frank.videoedit.entity.ColorInfo;
 import com.frank.videoedit.util.FrameProcessingException;
 
-import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
 import com.google.common.collect.ImmutableList;
 
@@ -110,12 +109,12 @@ public final class MatrixTextureProcessor extends SingleFrameGlTextureProcessor
       }
       glProgram.setFloatsUniform(
           "uYuvToRgbColorTransform",
-          electricalColorInfo.colorRange == C.COLOR_RANGE_FULL
+          electricalColorInfo.colorRange == ColorInfo.COLOR_RANGE_FULL
               ? BT2020_FULL_RANGE_YUV_TO_RGB_COLOR_TRANSFORM_MATRIX
               : BT2020_LIMITED_RANGE_YUV_TO_RGB_COLOR_TRANSFORM_MATRIX);
 
-      @C.ColorTransfer int colorTransfer = electricalColorInfo.colorTransfer;
-      if(colorTransfer != C.COLOR_TRANSFER_HLG && colorTransfer != C.COLOR_TRANSFER_ST2084) {
+      @ColorInfo.ColorTransfer int colorTransfer = electricalColorInfo.colorTransfer;
+      if(colorTransfer != ColorInfo.COLOR_TRANSFER_HLG && colorTransfer != ColorInfo.COLOR_TRANSFER_ST2084) {
         throw new IllegalArgumentException("don't support colorTransfer:" + colorTransfer);
       }
       glProgram.setIntUniform("uEotfColorTransfer", colorTransfer);
@@ -142,8 +141,8 @@ public final class MatrixTextureProcessor extends SingleFrameGlTextureProcessor
     GlProgram glProgram = createGlProgram(context, vertexShaderFilePath, fragmentShaderFilePath);
 
     if (useHdr) {
-      @C.ColorTransfer int colorTransfer = electricalColorInfo.colorTransfer;
-      if(colorTransfer != C.COLOR_TRANSFER_HLG && colorTransfer != C.COLOR_TRANSFER_ST2084) {
+      @ColorInfo.ColorTransfer int colorTransfer = electricalColorInfo.colorTransfer;
+      if(colorTransfer != ColorInfo.COLOR_TRANSFER_HLG && colorTransfer != ColorInfo.COLOR_TRANSFER_ST2084) {
         throw new IllegalArgumentException("don't support colorTransfer:" + colorTransfer);
       }
       glProgram.setIntUniform("uOetfColorTransfer", colorTransfer);
@@ -177,7 +176,7 @@ public final class MatrixTextureProcessor extends SingleFrameGlTextureProcessor
       }
       glProgram.setFloatsUniform(
           "uYuvToRgbColorTransform",
-          electricalColorInfo.colorRange == C.COLOR_RANGE_FULL
+          electricalColorInfo.colorRange == ColorInfo.COLOR_RANGE_FULL
               ? BT2020_FULL_RANGE_YUV_TO_RGB_COLOR_TRANSFORM_MATRIX
               : BT2020_LIMITED_RANGE_YUV_TO_RGB_COLOR_TRANSFORM_MATRIX);
 

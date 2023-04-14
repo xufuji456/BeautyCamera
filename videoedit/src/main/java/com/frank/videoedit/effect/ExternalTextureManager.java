@@ -11,8 +11,7 @@ import com.frank.videoedit.effect.util.GlUtil;
 import com.frank.videoedit.entity.FrameInfo;
 import com.frank.videoedit.util.CommonUtil;
 import com.frank.videoedit.util.FrameProcessingException;
-
-import com.google.android.exoplayer2.util.FrameProcessor;
+import com.frank.videoedit.listener.FrameProcessor;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
