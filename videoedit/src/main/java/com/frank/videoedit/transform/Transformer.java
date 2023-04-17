@@ -42,13 +42,7 @@ import java.util.List;
  * <p>The same Transformer instance can be used to transform multiple inputs (sequentially, not
  * concurrently).
  *
- * <p>Transformer instances must be accessed from a single application thread. For the vast majority
- * of cases this should be the application's main thread. The thread on which a Transformer instance
- * must be accessed can be explicitly specified by passing a {@link Looper} when creating the
- * transformer. If no Looper is specified, then the Looper of the thread that the {@link
- * Builder} is created on is used, or if that thread does not have a Looper, the Looper
- * of the application's main thread is used. In all cases the Looper of the thread from which the
- * transformer must be accessed can be queried using {@link #getApplicationLooper()}.
+ * <p>Transformer instances must be accessed from a single application thread.
  */
 public final class Transformer {
 
@@ -61,14 +55,14 @@ public final class Transformer {
     // Optional fields.
     private TransformationRequest transformationRequest;
     private List<GlEffect> videoEffects;
-    private ListenerSet<Listener> listeners;
+    private final ListenerSet<Listener> listeners;
     private MediaSource.Factory mediaSourceFactory;
-    private Codec.DecoderFactory decoderFactory;
+    private final Codec.DecoderFactory decoderFactory;
     private Codec.EncoderFactory encoderFactory;
-    private FrameProcessor.Factory frameProcessorFactory;
-    private Muxer.Factory muxerFactory;
-    private Looper looper;
-    private Clock clock;
+    private final FrameProcessor.Factory frameProcessorFactory;
+    private final Muxer.Factory muxerFactory;
+    private final Looper looper;
+    private final Clock clock;
 
     /**
      * Creates a builder with default values.
@@ -125,63 +119,11 @@ public final class Transformer {
       return this;
     }
 
-    public Builder removeListener(Listener listener) {
-      this.listeners.remove(listener);
-      return this;
-    }
-
-    public Builder removeAllListeners() {
-      this.listeners.clear();
-      return this;
-    }
-
-    public Builder setMediaSourceFactory(MediaSource.Factory mediaSourceFactory) {
-      this.mediaSourceFactory = mediaSourceFactory;
-      return this;
-    }
-
-    public Builder setDecoderFactory(Codec.DecoderFactory decoderFactory) {
-      this.decoderFactory = decoderFactory;
-      return this;
-    }
-
     public Builder setEncoderFactory(Codec.EncoderFactory encoderFactory) {
       this.encoderFactory = encoderFactory;
       return this;
     }
 
-    public Builder setFrameProcessorFactory(FrameProcessor.Factory frameProcessorFactory) {
-      this.frameProcessorFactory = frameProcessorFactory;
-      return this;
-    }
-
-    public Builder setMuxerFactory(Muxer.Factory muxerFactory) {
-      this.muxerFactory = muxerFactory;
-      return this;
-    }
-
-    public Builder setLooper(Looper looper) {
-      this.looper = looper;
-      this.listeners = listeners.copy(looper, (listener, flags) -> {});
-      return this;
-    }
-
-    @VisibleForTesting
-    /* package */ Builder setClock(Clock clock) {
-      this.clock = clock;
-      this.listeners = listeners.copy(looper, clock, (listener, flags) -> {});
-      return this;
-    }
-
-    /**
-     * Builds a {@link Transformer} instance.
-     *
-     * @throws NullPointerException If the {@link Context} has not been provided.
-     * @throws IllegalStateException If both audio and video have been removed (otherwise the output
-     *     would not contain any samples).
-     * @throws IllegalStateException If the muxer doesn't support the requested audio MIME type.
-     * @throws IllegalStateException If the muxer doesn't support the requested video MIME type.
-     */
     public Transformer build() {
       if (mediaSourceFactory == null) {
         DefaultExtractorsFactory defaultExtractorsFactory = new DefaultExtractorsFactory();
@@ -320,101 +262,22 @@ public final class Transformer {
             clock);
   }
 
-  /** Returns a {@link Builder} initialized with the values of this instance. */
   public Builder buildUpon() {
     return new Builder(this);
   }
 
-  /**
-   * @deprecated Use {@link #addListener(Listener)}, {@link #removeListener(Listener)} or {@link
-   *     #removeAllListeners()} instead.
-   */
-  @Deprecated
   public void setListener(Listener listener) {
     verifyApplicationThread();
     this.listeners.clear();
     this.listeners.add(listener);
   }
 
-  /**
-   * Adds a {@link Listener} to listen to the transformation events.
-   *
-   * @param listener A {@link Listener}.
-   * @throws IllegalStateException If this method is called from the wrong thread.
-   */
-  public void addListener(Listener listener) {
-    verifyApplicationThread();
-    this.listeners.add(listener);
-  }
-
-  /**
-   * Removes a {@link Listener}.
-   *
-   * @param listener A {@link Listener}.
-   * @throws IllegalStateException If this method is called from the wrong thread.
-   */
-  public void removeListener(Listener listener) {
-    verifyApplicationThread();
-    this.listeners.remove(listener);
-  }
-
-  /**
-   * Removes all {@linkplain Listener listeners}.
-   *
-   * @throws IllegalStateException If this method is called from the wrong thread.
-   */
-  public void removeAllListeners() {
-    verifyApplicationThread();
-    this.listeners.clear();
-  }
-
-  /**
-   * Starts an asynchronous operation to transform the given {@link MediaItem}.
-   *
-   * <p>The transformation state is notified through the {@linkplain Builder#addListener(Listener)
-   * listener}.
-   *
-   * <p>Concurrent transformations on the same Transformer object are not allowed.
-   *
-   * <p>The output is an MP4 file. It can contain at most one video track and one audio track. Other
-   * track types are ignored. For adaptive bitrate {@linkplain MediaSource media sources}, the
-   * highest bitrate video and audio streams are selected.
-   *
-   * @param mediaItem The {@link MediaItem} to transform.
-   * @param path The path to the output file.
-   * @throws IllegalArgumentException If the path is invalid.
-   * @throws IllegalArgumentException If the {@link MediaItem} is not supported.
-   * @throws IllegalStateException If this method is called from the wrong thread.
-   * @throws IllegalStateException If a transformation is already in progress.
-   */
   public void startTransformation(MediaItem mediaItem, String path) {
     this.outputPath = path;
     this.outputParcelFileDescriptor = null;
     startTransformationInternal(mediaItem);
   }
 
-  /**
-   * Starts an asynchronous operation to transform the given {@link MediaItem}.
-   *
-   * <p>The transformation state is notified through the {@linkplain Builder#addListener(Listener)
-   * listener}.
-   *
-   * <p>Concurrent transformations on the same Transformer object are not allowed.
-   *
-   * <p>The output is an MP4 file. It can contain at most one video track and one audio track. Other
-   * track types are ignored. For adaptive bitrate {@linkplain MediaSource media sources}, the
-   * highest bitrate video and audio streams are selected.
-   *
-   * @param mediaItem The {@link MediaItem} to transform.
-   * @param parcelFileDescriptor A readable and writable {@link ParcelFileDescriptor} of the output.
-   *     The file referenced by this ParcelFileDescriptor should not be used before the
-   *     transformation is completed. It is the responsibility of the caller to close the
-   *     ParcelFileDescriptor. This can be done after this method returns.
-   * @throws IllegalArgumentException If the file descriptor is invalid.
-   * @throws IllegalArgumentException If the {@link MediaItem} is not supported.
-   * @throws IllegalStateException If this method is called from the wrong thread.
-   * @throws IllegalStateException If a transformation is already in progress.
-   */
   @RequiresApi(26)
   public void startTransformation(MediaItem mediaItem, ParcelFileDescriptor parcelFileDescriptor) {
     this.outputParcelFileDescriptor = parcelFileDescriptor;
@@ -448,14 +311,6 @@ public final class Transformer {
         /* listener= */ componentListener,
         fallbackListener,
         /* asyncErrorListener= */ componentListener);
-  }
-
-  /**
-   * Returns the {@link Looper} associated with the application thread that's used to access the
-   * transformer and on which transformer events are received.
-   */
-  public Looper getApplicationLooper() {
-    return looper;
   }
 
   public @ProgressState int getProgress(ProgressHolder progressHolder) {
@@ -589,16 +444,11 @@ public final class Transformer {
         resourceReleaseException = TransformationException.createForUnexpected(e);
       }
       if (exception == null) {
-        // We only report the exception caused by releasing the resources if there is no other
-        // exception. It is more intuitive to call the error callback only once and reporting the
-        // exception caused by releasing the resources can be confusing if it is a consequence of
-        // the first exception.
         exception = resourceReleaseException;
       }
 
       if (exception != null) {
         TransformationException finalException = exception;
-        // TODO(b/213341814): Add event flags for Transformer events.
         listeners.queueEvent(
             /* eventFlag= */ CommonUtil.INDEX_UNSET,
             listener -> listener.onTransformationError(mediaItem, finalException));
