@@ -185,7 +185,7 @@ public final class GlEffectsFrameProcessor implements FrameProcessor {
   }
 
   private static final String THREAD_NAME = "Effect:GlThread";
-  private static final long RELEASE_WAIT_TIME_MS = 100;
+  private static final long RELEASE_WAIT_TIME_MS = 1000;
 
   private final EGLDisplay eglDisplay;
   private final EGLContext eglContext;
