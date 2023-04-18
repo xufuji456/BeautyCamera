@@ -27,16 +27,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-/** A default implementation of {@link Codec.EncoderFactory}. */
-// TODO(b/224949986) Split audio and video encoder factory.
+
 public final class DefaultEncoderFactory implements Codec.EncoderFactory {
   private static final int DEFAULT_FRAME_RATE = 30;
   /** Best effort, or as-fast-as-possible priority setting for {@link MediaFormat#KEY_PRIORITY}. */
   private static final int PRIORITY_BEST_EFFORT = 1;
 
-  private static final String TAG = "DefaultEncoderFactory";
-
-  /** A builder for {@link DefaultEncoderFactory} instances. */
   public static final class Builder {
     private final Context context;
 
@@ -44,21 +40,9 @@ public final class DefaultEncoderFactory implements Codec.EncoderFactory {
     @Nullable private VideoEncoderSettings requestedVideoEncoderSettings;
     private boolean enableFallback;
 
-    /** Creates a new {@link Builder}. */
     public Builder(Context context) {
       this.context = context;
       this.enableFallback = true;
-    }
-
-    public Builder setVideoEncoderSelector(EncoderSelector encoderSelector) {
-      this.encoderSelector = encoderSelector;
-      return this;
-    }
-
-    public Builder setRequestedVideoEncoderSettings(
-        VideoEncoderSettings requestedVideoEncoderSettings) {
-      this.requestedVideoEncoderSettings = requestedVideoEncoderSettings;
-      return this;
     }
 
     public Builder setEnableFallback(boolean enableFallback) {
