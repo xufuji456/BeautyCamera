@@ -5,11 +5,9 @@ import static java.lang.annotation.ElementType.TYPE_USE;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.ParcelFileDescriptor;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
 
 import com.frank.videoedit.listener.FrameProcessor;
@@ -223,7 +221,6 @@ public final class Transformer {
 
   @Nullable private MuxerWrapper muxerWrapper;
   @Nullable private String outputPath;
-  @Nullable private ParcelFileDescriptor outputParcelFileDescriptor;
   private boolean transformationInProgress;
   private boolean isCancelling;
 
@@ -275,14 +272,6 @@ public final class Transformer {
 
   public void startTransformation(MediaItem mediaItem, String path) {
     this.outputPath = path;
-    this.outputParcelFileDescriptor = null;
-    startTransformationInternal(mediaItem);
-  }
-
-  @RequiresApi(26)
-  public void startTransformation(MediaItem mediaItem, ParcelFileDescriptor parcelFileDescriptor) {
-    this.outputParcelFileDescriptor = parcelFileDescriptor;
-    this.outputPath = null;
     startTransformationInternal(mediaItem);
   }
 
@@ -296,9 +285,8 @@ public final class Transformer {
     MuxerWrapper muxerWrapper =
         new MuxerWrapper(
             outputPath,
-            outputParcelFileDescriptor,
             muxerFactory,
-            /* asyncErrorListener= */ componentListener);
+            componentListener);
     this.muxerWrapper = muxerWrapper;
     FallbackListener fallbackListener =
         new FallbackListener(
@@ -309,7 +297,7 @@ public final class Transformer {
     exoPlayerAssetLoader.start(
         mediaItem,
         muxerWrapper,
-        /* listener= */ componentListener,
+        componentListener,
         fallbackListener);
   }
 
@@ -368,8 +356,6 @@ public final class Transformer {
 
     if (outputPath != null) {
       fileSize = new File(outputPath).length();
-    } else if (outputParcelFileDescriptor != null) {
-      fileSize = outputParcelFileDescriptor.getStatSize();
     }
 
     if (fileSize <= 0) {

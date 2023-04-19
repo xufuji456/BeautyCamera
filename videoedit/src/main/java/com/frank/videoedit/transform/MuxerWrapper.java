@@ -1,7 +1,6 @@
 
 package com.frank.videoedit.transform;
 
-import android.os.ParcelFileDescriptor;
 import android.util.SparseIntArray;
 import android.util.SparseLongArray;
 
@@ -34,8 +33,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
    */
   private static final long MAX_TRACK_WRITE_AHEAD_US = CommonUtil.msToUs(500);
 
-  @Nullable private final String outputPath;
-  @Nullable private final ParcelFileDescriptor outputParcelFileDescriptor;
+  private final String outputPath;
   private final Muxer.Factory muxerFactory;
   private final TransformListener transformListener;
   private final SparseIntArray trackTypeToIndex;
@@ -54,16 +52,14 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
   private Muxer muxer;
 
   public MuxerWrapper(
-      @Nullable String outputPath,
-      @Nullable ParcelFileDescriptor outputParcelFileDescriptor,
+      String outputPath,
       Muxer.Factory muxerFactory,
       TransformListener transformListener) {
-    if (outputPath == null && outputParcelFileDescriptor == null) {
-      throw new NullPointerException("Both output path and ParcelFileDescriptor are null");
+    if (outputPath == null) {
+      throw new NullPointerException("output path is null");
     }
 
     this.outputPath = outputPath;
-    this.outputParcelFileDescriptor = outputParcelFileDescriptor;
     this.muxerFactory = muxerFactory;
     this.transformListener = transformListener;
 
@@ -217,8 +213,6 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
     if (muxer == null) {
       if (outputPath != null) {
         muxer = muxerFactory.create(outputPath);
-      } else {
-        muxer = muxerFactory.create(outputParcelFileDescriptor);
       }
     }
   }
