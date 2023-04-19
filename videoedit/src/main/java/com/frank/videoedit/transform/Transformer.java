@@ -16,6 +16,7 @@ import com.frank.videoedit.listener.FrameProcessor;
 import com.frank.videoedit.transform.entity.ProgressHolder;
 import com.frank.videoedit.transform.listener.Codec;
 import com.frank.videoedit.transform.listener.Muxer;
+import com.frank.videoedit.transform.listener.TransformListener;
 import com.frank.videoedit.transform.util.MediaUtil;
 import com.frank.videoedit.util.CommonUtil;
 import com.frank.videoedit.effect.GlEffectsFrameProcessor;
@@ -309,8 +310,7 @@ public final class Transformer {
         mediaItem,
         muxerWrapper,
         /* listener= */ componentListener,
-        fallbackListener,
-        /* asyncErrorListener= */ componentListener);
+        fallbackListener);
   }
 
   public @ProgressState int getProgress(ProgressHolder progressHolder) {
@@ -379,18 +379,7 @@ public final class Transformer {
     return fileSize;
   }
 
-  /** Listener for exceptions that occur during a transformation. */
-  /* package */ interface AsyncErrorListener {
-    /**
-     * Called when a {@link TransformationException} occurs.
-     *
-     * <p>Can be called from any thread.
-     */
-    void onTransformationException(TransformationException exception);
-  }
-
-  private final class ComponentListener
-      implements ExoPlayerAssetLoader.Listener, AsyncErrorListener {
+  private final class ComponentListener implements TransformListener {
 
     private final MediaItem mediaItem;
     private final Handler handler;
@@ -402,23 +391,18 @@ public final class Transformer {
 
     @Override
     public void onError(Exception e) {
-      TransformationException transformationException =
-          TransformationException.createForUnexpected(e);
-      handleTransformationException(transformationException);
-    }
-
-    @Override
-    public void onEnded() {
-      handleTransformationEnded(/* exception= */ null);
-    }
-
-    @Override
-    public void onTransformationException(TransformationException exception) {
+      TransformationException exception =
+              TransformationException.createForUnexpected(e);
       if (Looper.myLooper() == looper) {
         handleTransformationException(exception);
       } else {
         handler.post(() -> handleTransformationException(exception));
       }
+    }
+
+    @Override
+    public void onEnded() {
+      handler.post(() -> handleTransformationEnded(null));
     }
 
     private void handleTransformationException(TransformationException transformationException) {

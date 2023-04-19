@@ -3,6 +3,7 @@ package com.frank.videoedit.transform;
 import androidx.annotation.Nullable;
 
 import com.frank.videoedit.transform.listener.SamplePipeline;
+import com.frank.videoedit.transform.listener.TransformListener;
 import com.frank.videoedit.transform.util.MediaUtil;
 import com.frank.videoedit.transform.util.RenderCapability;
 import com.google.android.exoplayer2.BaseRenderer;
@@ -16,7 +17,7 @@ import com.google.android.exoplayer2.util.MediaClock;
   protected final MuxerWrapper muxerWrapper;
   protected final TransformerMediaClock mediaClock;
   protected final TransformationRequest transformationRequest;
-  protected final Transformer.AsyncErrorListener asyncErrorListener;
+  protected final TransformListener transformListener;
   protected final FallbackListener fallbackListener;
 
   private boolean isTransformationRunning;
@@ -29,13 +30,13 @@ import com.google.android.exoplayer2.util.MediaClock;
       MuxerWrapper muxerWrapper,
       TransformerMediaClock mediaClock,
       TransformationRequest transformationRequest,
-      Transformer.AsyncErrorListener asyncErrorListener,
+      TransformListener transformListener,
       FallbackListener fallbackListener) {
     super(trackType);
     this.muxerWrapper = muxerWrapper;
     this.mediaClock = mediaClock;
     this.transformationRequest = transformationRequest;
-    this.asyncErrorListener = asyncErrorListener;
+    this.transformListener = transformListener;
     this.fallbackListener = fallbackListener;
   }
 
@@ -78,7 +79,7 @@ import com.google.android.exoplayer2.util.MediaClock;
       while (samplePipeline.processData() || feedPipelineFromInput()) {}
     } catch (TransformationException e) {
       isTransformationRunning = false;
-      asyncErrorListener.onTransformationException(e);
+      transformListener.onError(e);
     }
   }
 

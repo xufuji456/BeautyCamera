@@ -8,6 +8,7 @@ import android.util.SparseLongArray;
 import androidx.annotation.Nullable;
 
 import com.frank.videoedit.transform.listener.Muxer;
+import com.frank.videoedit.transform.listener.TransformListener;
 import com.frank.videoedit.transform.util.MediaUtil;
 import com.frank.videoedit.util.CommonUtil;
 
@@ -36,7 +37,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
   @Nullable private final String outputPath;
   @Nullable private final ParcelFileDescriptor outputParcelFileDescriptor;
   private final Muxer.Factory muxerFactory;
-  private final Transformer.AsyncErrorListener asyncErrorListener;
+  private final TransformListener transformListener;
   private final SparseIntArray trackTypeToIndex;
   private final SparseIntArray trackTypeToSampleCount;
   private final SparseLongArray trackTypeToTimeUs;
@@ -56,7 +57,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
       @Nullable String outputPath,
       @Nullable ParcelFileDescriptor outputParcelFileDescriptor,
       Muxer.Factory muxerFactory,
-      Transformer.AsyncErrorListener asyncErrorListener) {
+      TransformListener transformListener) {
     if (outputPath == null && outputParcelFileDescriptor == null) {
       throw new NullPointerException("Both output path and ParcelFileDescriptor are null");
     }
@@ -64,7 +65,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
     this.outputPath = outputPath;
     this.outputParcelFileDescriptor = outputParcelFileDescriptor;
     this.muxerFactory = muxerFactory;
-    this.asyncErrorListener = asyncErrorListener;
+    this.transformListener = transformListener;
 
     trackTypeToIndex = new SparseIntArray();
     trackTypeToSampleCount = new SparseIntArray();
@@ -200,7 +201,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
                 return;
               }
               isAborted = true;
-              asyncErrorListener.onTransformationException(
+              transformListener.onError(
                   TransformationException.createForMuxer(
                       new IllegalStateException(
                           "No output sample written in the last "

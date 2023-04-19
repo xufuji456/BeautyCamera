@@ -7,6 +7,7 @@ import android.content.Context;
 import com.frank.videoedit.listener.FrameProcessor;
 import com.frank.videoedit.transform.listener.Codec;
 
+import com.frank.videoedit.transform.listener.TransformListener;
 import com.frank.videoedit.transform.util.MediaUtil;
 import com.frank.videoedit.util.CommonUtil;
 import com.frank.videoedit.effect.listener.GlEffect;
@@ -39,14 +40,14 @@ import java.util.List;
       FrameProcessor.Factory frameProcessorFactory,
       Codec.EncoderFactory encoderFactory,
       Codec.DecoderFactory decoderFactory,
-      Transformer.AsyncErrorListener asyncErrorListener,
+      TransformListener transformListener,
       FallbackListener fallbackListener) {
     super(
         MediaUtil.TRACK_TYPE_VIDEO,
         muxerWrapper,
         mediaClock,
         transformationRequest,
-        asyncErrorListener,
+        transformListener,
         fallbackListener);
     this.context = context;
     this.clippingStartsAtKeyFrame = clippingStartsAtKeyFrame;
@@ -104,7 +105,7 @@ import java.util.List;
               encoderFactory,
               muxerWrapper,
               fallbackListener,
-              asyncErrorListener);
+              transformListener);
     } else {
       samplePipeline =
           new PassthroughSamplePipeline(

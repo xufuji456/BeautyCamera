@@ -3,6 +3,7 @@ package com.frank.videoedit.transform;
 import static com.google.android.exoplayer2.source.SampleStream.FLAG_REQUIRE_FORMAT;
 
 import com.frank.videoedit.transform.listener.Codec;
+import com.frank.videoedit.transform.listener.TransformListener;
 import com.frank.videoedit.transform.util.MediaUtil;
 
 import com.google.android.exoplayer2.FormatHolder;
@@ -22,14 +23,14 @@ import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
       TransformationRequest transformationRequest,
       Codec.EncoderFactory encoderFactory,
       Codec.DecoderFactory decoderFactory,
-      Transformer.AsyncErrorListener asyncErrorListener,
+      TransformListener transformListener,
       FallbackListener fallbackListener) {
     super(
         MediaUtil.TRACK_TYPE_AUDIO,
         muxerWrapper,
         mediaClock,
         transformationRequest,
-        asyncErrorListener,
+        transformListener,
         fallbackListener);
     this.encoderFactory = encoderFactory;
     this.decoderFactory = decoderFactory;

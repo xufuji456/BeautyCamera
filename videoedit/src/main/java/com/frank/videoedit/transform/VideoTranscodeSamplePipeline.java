@@ -13,6 +13,7 @@ import com.frank.videoedit.effect.Presentation;
 import com.frank.videoedit.entity.SurfaceInfo;
 import com.frank.videoedit.entity.FrameInfo;
 import com.frank.videoedit.entity.ColorInfo;
+import com.frank.videoedit.transform.listener.TransformListener;
 import com.frank.videoedit.transform.util.MediaUtil;
 import com.frank.videoedit.util.CommonUtil;
 import com.frank.videoedit.util.FrameProcessingException;
@@ -63,7 +64,7 @@ import java.util.List;
       Codec.EncoderFactory encoderFactory,
       MuxerWrapper muxerWrapper,
       FallbackListener fallbackListener,
-      Transformer.AsyncErrorListener asyncErrorListener)
+      TransformListener transformListener)
       throws TransformationException {
     super(
         inputFormat,
@@ -134,7 +135,7 @@ import java.util.List;
                     frameProcessor
                         .setOutputSurfaceInfo(encoderWrapper.getSurfaceInfo(width, height));
                   } catch (TransformationException exception) {
-                    asyncErrorListener.onTransformationException(exception);
+                    transformListener.onError(exception);
                   }
                 }
 
@@ -145,7 +146,7 @@ import java.util.List;
 
                 @Override
                 public void onFrameProcessingError(FrameProcessingException exception) {
-                  asyncErrorListener.onTransformationException(
+                  transformListener.onError(
                       TransformationException.createForFrameProcessingException(
                           exception, TransformationException.ERROR_CODE_FRAME_PROCESSING_FAILED));
                 }
@@ -155,7 +156,7 @@ import java.util.List;
                   try {
                     encoderWrapper.signalEndOfInputStream();
                   } catch (TransformationException exception) {
-                    asyncErrorListener.onTransformationException(exception);
+                    transformListener.onError(exception);
                   }
                 }
               },

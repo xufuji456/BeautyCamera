@@ -19,6 +19,7 @@ import androidx.annotation.Nullable;
 import com.frank.videoedit.listener.FrameProcessor;
 import com.frank.videoedit.transform.entity.ProgressHolder;
 import com.frank.videoedit.transform.listener.Codec;
+import com.frank.videoedit.transform.listener.TransformListener;
 import com.frank.videoedit.util.CommonUtil;
 import com.frank.videoedit.transform.entity.MediaItem;
 import com.frank.videoedit.effect.listener.GlEffect;
@@ -42,13 +43,6 @@ import com.google.android.exoplayer2.video.VideoRendererEventListener;
 import java.util.List;
 
 /* package */ final class ExoPlayerAssetLoader {
-
-  public interface Listener {
-
-    void onEnded();
-
-    void onError(Exception e);
-  }
 
   private final Context context;
   private final TransformationRequest transformationRequest;
@@ -89,9 +83,8 @@ import java.util.List;
   public void start(
       MediaItem mediaItem,
       MuxerWrapper muxerWrapper,
-      Listener listener,
-      FallbackListener fallbackListener,
-      Transformer.AsyncErrorListener asyncErrorListener) {
+      TransformListener listener,
+      FallbackListener fallbackListener) {
     this.muxerWrapper = muxerWrapper;
 
     DefaultTrackSelector trackSelector = new DefaultTrackSelector(context);
@@ -122,7 +115,7 @@ import java.util.List;
                     encoderFactory,
                     decoderFactory,
                     fallbackListener,
-                    asyncErrorListener))
+                    listener))
             .setMediaSourceFactory(mediaSourceFactory)
             .setTrackSelector(trackSelector)
             .setLoadControl(loadControl)
@@ -173,7 +166,7 @@ import java.util.List;
     private final Codec.EncoderFactory encoderFactory;
     private final Codec.DecoderFactory decoderFactory;
     private final FallbackListener fallbackListener;
-    private final Transformer.AsyncErrorListener asyncErrorListener;
+    private final TransformListener transformListener;
 
     public RenderersFactoryImpl(
         Context context,
@@ -185,7 +178,7 @@ import java.util.List;
         Codec.EncoderFactory encoderFactory,
         Codec.DecoderFactory decoderFactory,
         FallbackListener fallbackListener,
-        Transformer.AsyncErrorListener asyncErrorListener) {
+        TransformListener transformListener) {
       this.context = context;
       this.muxerWrapper = muxerWrapper;
       this.transformationRequest = transformationRequest;
@@ -195,7 +188,7 @@ import java.util.List;
       this.encoderFactory = encoderFactory;
       this.decoderFactory = decoderFactory;
       this.fallbackListener = fallbackListener;
-      this.asyncErrorListener = asyncErrorListener;
+      this.transformListener = transformListener;
       mediaClock = new TransformerMediaClock();
     }
 
@@ -215,7 +208,7 @@ import java.util.List;
               transformationRequest,
               encoderFactory,
               decoderFactory,
-              asyncErrorListener,
+              transformListener,
               fallbackListener);
       renderers[1] =
           new TransformerVideoRenderer(
@@ -228,7 +221,7 @@ import java.util.List;
               frameProcessorFactory,
               encoderFactory,
               decoderFactory,
-              asyncErrorListener,
+              transformListener,
               fallbackListener);
       return renderers;
     }
@@ -236,9 +229,9 @@ import java.util.List;
 
   private final class PlayerListener implements Player.Listener {
 
-    private final Listener listener;
+    private final TransformListener listener;
 
-    public PlayerListener(Listener listener) {
+    public PlayerListener(TransformListener listener) {
       this.listener = listener;
     }
 
