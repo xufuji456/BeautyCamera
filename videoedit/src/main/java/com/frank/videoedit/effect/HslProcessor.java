@@ -47,11 +47,11 @@ import java.io.IOException;
     glProgram.setFloatsUniform("uTexTransformationMatrix", identityMatrix);
 
     // OpenGL operates in a [0, 1] unit range and thus we transform the HSL intervals into
-    // the unit interval as well. The hue is defined in the [0, 360] interval and saturation
-    // and lightness in the [0, 100] interval.
-    glProgram.setFloatUniform("uHueAdjustmentDegrees", hslAdjustment.hueAdjustmentDegrees / 360);
-    glProgram.setFloatUniform("uSaturationAdjustment", hslAdjustment.saturationAdjustment / 100);
-    glProgram.setFloatUniform("uLightnessAdjustment", hslAdjustment.lightnessAdjustment / 100);
+    // the unit interval as well. The hue is defined in the [0, 36] interval and saturation
+    // and lightness in the [0, 10] interval.
+    glProgram.setFloatUniform("uHueAdjustmentDegrees", hslAdjustment.hueAdjustmentDegrees / 36);
+    glProgram.setFloatUniform("uSaturationAdjustment", hslAdjustment.saturationAdjustment / 10);
+    glProgram.setFloatUniform("uLightnessAdjustment", hslAdjustment.lightnessAdjustment / 10);
   }
 
   @Override

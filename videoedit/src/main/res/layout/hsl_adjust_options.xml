@@ -24,9 +24,9 @@ android:layout_height="fill_parent">
       android:text="@string/hue_adjustment" />
     <com.google.android.material.slider.Slider
       android:id="@+id/hsl_adjustments_hue"
-      android:valueFrom="-360"
+      android:valueFrom="-36"
       android:value="0"
-      android:valueTo="360"
+      android:valueTo="36"
       android:layout_gravity="end"/>
   </TableRow>
   <TableRow
@@ -36,9 +36,9 @@ android:layout_height="fill_parent">
       android:text="@string/saturation_adjustment" />
     <com.google.android.material.slider.Slider
       android:id="@+id/hsl_adjustments_saturation"
-      android:valueFrom="-100"
+      android:valueFrom="-10"
       android:value="0"
-      android:valueTo="100"
+      android:valueTo="10"
       android:layout_gravity="end"/>
   </TableRow>
   <TableRow
@@ -48,9 +48,9 @@ android:layout_height="fill_parent">
       android:text="@string/lightness_adjustment" />
     <com.google.android.material.slider.Slider
       android:id="@+id/hsl_adjustment_lightness"
-      android:valueFrom="-100"
+      android:valueFrom="-10"
       android:value="0"
-      android:valueTo="100"
+      android:valueTo="10"
       android:layout_gravity="end"/>
   </TableRow>
 </TableLayout>
