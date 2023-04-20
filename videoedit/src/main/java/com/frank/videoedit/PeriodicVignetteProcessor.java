@@ -65,7 +65,7 @@ import java.io.IOException;
       double theta = presentationTimeUs * 2 * Math.PI / DIMMING_PERIOD_US;
       float innerRadius =
           minInnerRadius + deltaInnerRadius * (0.5f - 0.5f * (float) Math.cos(theta));
-      glProgram.setFloatsUniform("uInnerRadius", new float[] {innerRadius});
+      glProgram.setFloatUniform("uInnerRadius", innerRadius);
       glProgram.bindAttributesAndUniforms();
       // The four-vertex triangle strip forms a quad.
       GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, /* first= */ 0, /* count= */ 4);
