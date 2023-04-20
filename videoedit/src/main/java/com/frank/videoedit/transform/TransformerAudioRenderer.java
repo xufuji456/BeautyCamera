@@ -69,42 +69,17 @@ import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
     }
 
     Format inputFormat = convertFormat(formatHolder.format); // TODO
-    if (shouldPassthrough(inputFormat)) {
-      samplePipeline =
-          new PassthroughSamplePipeline(
-              inputFormat,
-              streamOffsetUs,
-              streamStartPositionUs,
-              transformationRequest,
-              muxerWrapper,
-              fallbackListener);
-    } else {
-      samplePipeline =
-          new AudioTranscodeSamplePipeline(
-              inputFormat,
-              streamOffsetUs,
-              streamStartPositionUs,
-              transformationRequest,
-              decoderFactory,
-              encoderFactory,
-              muxerWrapper,
-              fallbackListener);
-    }
-    return true;
-  }
+    samplePipeline =
+        new AudioTranscodeSamplePipeline(
+            inputFormat,
+            streamOffsetUs,
+            streamStartPositionUs,
+            transformationRequest,
+            decoderFactory,
+            encoderFactory,
+            muxerWrapper,
+            fallbackListener);
 
-  private boolean shouldPassthrough(Format inputFormat) {
-    if (encoderFactory.audioNeedsEncoding()) {
-      return false;
-    }
-    if (transformationRequest.audioMimeType != null
-        && !transformationRequest.audioMimeType.equals(inputFormat.sampleMimeType)) {
-      return false;
-    }
-    if (transformationRequest.audioMimeType == null
-        && !muxerWrapper.supportsSampleMimeType(inputFormat.sampleMimeType)) {
-      return false;
-    }
     return true;
   }
 

@@ -160,7 +160,6 @@ import java.util.List;
     private final MuxerWrapper muxerWrapper;
     private final TransformerMediaClock mediaClock;
     private final TransformationRequest transformationRequest;
-    private final boolean clippingStartsAtKeyFrame;
     private final List<GlEffect> videoEffects;
     private final FrameProcessor.Factory frameProcessorFactory;
     private final Codec.EncoderFactory encoderFactory;
@@ -182,7 +181,6 @@ import java.util.List;
       this.context = context;
       this.muxerWrapper = muxerWrapper;
       this.transformationRequest = transformationRequest;
-      this.clippingStartsAtKeyFrame = clippingStartsAtKeyFrame;
       this.videoEffects = videoEffects;
       this.frameProcessorFactory = frameProcessorFactory;
       this.encoderFactory = encoderFactory;
@@ -216,7 +214,6 @@ import java.util.List;
               muxerWrapper,
               mediaClock,
               transformationRequest,
-              clippingStartsAtKeyFrame,
               videoEffects,
               frameProcessorFactory,
               encoderFactory,
