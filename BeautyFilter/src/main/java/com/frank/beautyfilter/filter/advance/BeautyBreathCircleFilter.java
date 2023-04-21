@@ -2,7 +2,6 @@
 package com.frank.beautyfilter.filter.advance;
 
 import android.opengl.GLES30;
-import android.util.Log;
 
 import com.frank.beautyfilter.R;
 import com.frank.beautyfilter.filter.base.gpuimage.GPUImageFilter;
@@ -29,7 +28,6 @@ public class BeautyBreathCircleFilter extends GPUImageFilter {
     this.deltaInnerRadius = maxInnerRadius - minInnerRadius;
   }
 
-
   @Override
   protected void onInit() {
     super.onInit();
@@ -51,7 +49,6 @@ public class BeautyBreathCircleFilter extends GPUImageFilter {
     double theta = currentTimeUs * 2 * Math.PI / BREATH_PERIOD;
     float innerRadius = minInnerRadius + deltaInnerRadius * (0.5f - 0.5f * (float) Math.cos(theta));
     setFloat(uInnerRadius, innerRadius);
-    Log.e("Breath", "innerRadius=" + innerRadius + ", time=" + currentTimeUs/1000);
   }
 
 }
