@@ -54,6 +54,7 @@ public class BeautyFilterActivity extends AppCompatActivity implements View.OnCl
 
     private final static BeautyFilterType[] types = new BeautyFilterType[] {
             BeautyFilterType.NONE,
+            BeautyFilterType.BREATH_CIRCLE,
             BeautyFilterType.ANTIQUE,
             BeautyFilterType.BEAUTY,
             BeautyFilterType.COOL,

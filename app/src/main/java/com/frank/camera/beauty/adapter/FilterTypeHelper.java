@@ -33,6 +33,8 @@ public class FilterTypeHelper {
                 return R.color.filter_color_red;
             case TENDER:
                 return R.color.filter_color_brown;
+            case BREATH_CIRCLE:
+                return R.color.filter_color_pink;
             default:
                 return R.color.filter_color_grey_light;
         }
@@ -116,6 +118,8 @@ public class FilterTypeHelper {
                 return R.string.filter_crayon;
             case SKETCH:
                 return R.string.filter_sketch;
+            case BREATH_CIRCLE:
+                    return R.string.filter_breath_circle;
             default:
                 return R.string.filter_none;
         }

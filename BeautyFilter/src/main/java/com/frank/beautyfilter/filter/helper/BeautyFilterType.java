@@ -30,5 +30,6 @@ public enum BeautyFilterType {
     SUNRISE,
     TENDER,
     WARM,
-    WHITE_CAT
+    WHITE_CAT,
+    BREATH_CIRCLE
 }

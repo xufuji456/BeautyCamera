@@ -1,6 +1,7 @@
 package com.frank.beautyfilter.filter.factory;
 
 import com.frank.beautyfilter.filter.advance.BeautyAntiqueFilter;
+import com.frank.beautyfilter.filter.advance.BeautyBreathCircleFilter;
 import com.frank.beautyfilter.filter.advance.BeautyCoolFilter;
 import com.frank.beautyfilter.filter.advance.BeautyCrayonFilter;
 import com.frank.beautyfilter.filter.advance.BeautyFairytaleFilter;
@@ -84,6 +85,8 @@ public class BeautyFilterFactory {
                 return new BeautyWarmFilter();
             case WHITE_CAT:
                 return new BeautyWhiteCatFilter();
+            case BREATH_CIRCLE:
+                return new BeautyBreathCircleFilter();
             default:
                 return null;
         }
