@@ -1,5 +1,6 @@
-varying highp vec2 textureCoordinate;
 precision mediump float;
+
+varying highp vec2 textureCoordinate;
 
 uniform sampler2D inputImageTexture;
 uniform vec2 singleStepOffset; 

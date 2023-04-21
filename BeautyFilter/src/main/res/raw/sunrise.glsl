@@ -1,5 +1,6 @@
+precision highp float;
+
 varying highp vec2 textureCoordinate;
-precision highp float; 
 
 uniform sampler2D inputImageTexture;
 uniform sampler2D curve;
