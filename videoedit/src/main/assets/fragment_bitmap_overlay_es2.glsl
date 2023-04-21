@@ -32,6 +32,5 @@ void main() {
                                 vec2(vTexSamplingCoord.x * uScaleX,
                                      vTexSamplingCoord.y * uScaleY));
   // Blend the video decoder output and the overlay bitmap.
-  gl_FragColor = videoColor * (1.0 - overlayColor.a)
-      + overlayColor * overlayColor.a;
+  gl_FragColor = mix(videoColor, overlayColor, overlayColor.a);
 }
