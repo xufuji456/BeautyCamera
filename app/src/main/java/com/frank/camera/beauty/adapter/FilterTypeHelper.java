@@ -10,7 +10,7 @@ public class FilterTypeHelper {
         switch (filterType) {
             case NONE:
                 return R.color.filter_color_grey_light;
-            case WHITECAT:
+            case WHITE_CAT:
             case SUNRISE:
                 return R.color.filter_color_brown_light;
             case COOL:
@@ -28,7 +28,7 @@ public class FilterTypeHelper {
             case ANTIQUE:
                 return R.color.filter_color_green_dark;
             case BEAUTY:
-            case SKINWHITEN:
+            case SKIN_WHITEN:
             case HEALTHY:
                 return R.color.filter_color_red;
             case TENDER:
@@ -42,7 +42,7 @@ public class FilterTypeHelper {
         switch (filterType) {
             case NONE:
                 return R.drawable.filter_thumb_original;
-            case WHITECAT:
+            case WHITE_CAT:
                 return R.drawable.filter_thumb_whitecat;
             case ROMANCE:
                 return R.drawable.filter_thumb_romance;
@@ -57,7 +57,7 @@ public class FilterTypeHelper {
             case ANTIQUE:
                 return R.drawable.filter_thumb_antique;
             case BEAUTY:
-            case SKINWHITEN:
+            case SKIN_WHITEN:
                 return R.drawable.filter_thumb_beauty;
             case COOL:
                 return R.drawable.filter_thumb_cool;
@@ -82,7 +82,7 @@ public class FilterTypeHelper {
         switch (filterType) {
             case NONE:
                 return R.string.filter_none;
-            case WHITECAT:
+            case WHITE_CAT:
                 return R.string.filter_whitecat;
             case ROMANCE:
                 return R.string.filter_romance;
@@ -110,7 +110,7 @@ public class FilterTypeHelper {
                 return R.string.filter_warm;
             case SUNRISE:
                 return R.string.filter_sunrise;
-            case SKINWHITEN:
+            case SKIN_WHITEN:
                 return R.string.filter_skinwhiten;
             case CRAYON:
                 return R.string.filter_crayon;

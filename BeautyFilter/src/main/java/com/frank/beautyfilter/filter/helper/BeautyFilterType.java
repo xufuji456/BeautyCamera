@@ -26,9 +26,9 @@ public enum BeautyFilterType {
     SHARPEN,
     SIERRA,
     SKETCH,
-    SKINWHITEN,
+    SKIN_WHITEN,
     SUNRISE,
     TENDER,
     WARM,
-    WHITECAT
+    WHITE_CAT
 }

@@ -62,7 +62,7 @@ public class BeautyFilterFactory {
                 return new GPUImageSharpenFilter();
             case SKETCH:
                 return new BeautySketchFilter();
-            case SKINWHITEN:
+            case SKIN_WHITEN:
                 return new BeautySkinWhitenFilter();
             case SUNRISE:
                 return new BeautySunriseFilter();
@@ -82,7 +82,7 @@ public class BeautyFilterFactory {
                 return new BeautyTenderFilter();
             case WARM:
                 return new BeautyWarmFilter();
-            case WHITECAT:
+            case WHITE_CAT:
                 return new BeautyWhiteCatFilter();
             default:
                 return null;

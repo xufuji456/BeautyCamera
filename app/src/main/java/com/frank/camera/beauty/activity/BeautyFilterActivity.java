@@ -66,11 +66,11 @@ public class BeautyFilterActivity extends AppCompatActivity implements View.OnCl
             BeautyFilterType.ROMANCE,
             BeautyFilterType.SIERRA,
             BeautyFilterType.SKETCH,
-            BeautyFilterType.SKINWHITEN,
+            BeautyFilterType.SKIN_WHITEN,
             BeautyFilterType.SUNRISE,
             BeautyFilterType.TENDER,
             BeautyFilterType.WARM,
-            BeautyFilterType.WHITECAT
+            BeautyFilterType.WHITE_CAT
     };
 
     @Override
