@@ -1,8 +1,5 @@
 package com.frank.videoedit;
 
-import static com.google.android.exoplayer2.util.Assertions.checkArgument;
-import static com.google.android.exoplayer2.util.Assertions.checkStateNotNull;
-
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -42,9 +39,11 @@ import java.util.Locale;
   private float bitmapScaleY;
   private int bitmapTexId;
 
+  private final Matrix matrix = new Matrix();
+
   public BitmapOverlayProcessor(Context context, boolean useHdr) {
     super(useHdr);
-    checkArgument(!useHdr, "BitmapOverlayProcessor does not support HDR colors.");
+
     paint = new Paint();
     paint.setTextSize(64);
     paint.setAntiAlias(true);
@@ -64,23 +63,20 @@ import java.util.Locale;
     }
     try {
       bitmapTexId =
-          GlUtil.createTexture(
-              BITMAP_WIDTH_HEIGHT,
-              BITMAP_WIDTH_HEIGHT,
-              /* useHighPrecisionColorComponents= */ false);
-      GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, /* level= */ 0, overlayBitmap, /* border= */ 0);
+          GlUtil.createTexture(BITMAP_WIDTH_HEIGHT, BITMAP_WIDTH_HEIGHT, false);
+      GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, overlayBitmap, 0);
 
       glProgram = new GlProgram(context, VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
     } catch (GlUtil.GlException | IOException e) {
       Log.e("BitmapOverlayProcessor", "create program error:" + e.getMessage());
       return;
     }
-    // Draw the frame on the entire normalized device coordinate space, from -1 to 1, for x and y.
+
     glProgram.setBufferAttribute(
         "aFramePosition",
         GlUtil.getNormalizedCoordinateBounds(),
         GlUtil.HOMOGENEOUS_COORDINATE_VECTOR_SIZE);
-    glProgram.setSamplerTexIdUniform("uTexSampler1", bitmapTexId, /* texUnitIndex= */ 1);
+    glProgram.setSamplerTexIdUniform("uTexSampler1", bitmapTexId, 1);
   }
 
   @Override
@@ -104,25 +100,19 @@ import java.util.Locale;
     try {
       glProgram.use();
 
-      // Draw to the canvas and store it in a texture.
       String text =
           String.format(Locale.US, "%.02f", presentationTimeUs / (float) CommonUtil.MICROS_PER_SECOND);
       overlayBitmap.eraseColor(Color.TRANSPARENT);
-      overlayCanvas.drawBitmap(checkStateNotNull(logoBitmap), /* left= */ 3, /* top= */ 378, paint);
-      overlayCanvas.drawText(text, /* x= */ 160, /* y= */ 466, paint);
+      overlayCanvas.drawBitmap(logoBitmap, 3, 378, paint);
+      overlayCanvas.drawText(text, 160, 466, paint);
       GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, bitmapTexId);
-      GLUtils.texSubImage2D(
-          GLES20.GL_TEXTURE_2D,
-          /* level= */ 0,
-          /* xoffset= */ 0,
-          /* yoffset= */ 0,
-          flipBitmapVertically(overlayBitmap));
+      GLUtils.texSubImage2D(GLES20.GL_TEXTURE_2D, 0, 0, 0, flipBitmap(overlayBitmap));
       GlUtil.checkGlError();
 
-      glProgram.setSamplerTexIdUniform("uTexSampler0", inputTexId, /* texUnitIndex= */ 0);
+      glProgram.setSamplerTexIdUniform("uTexSampler0", inputTexId, 0);
       glProgram.bindAttributesAndUniforms();
-      // The four-vertex triangle strip forms a quad.
-      GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, /* first= */ 0, /* count= */ 4);
+
+      GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
       GlUtil.checkGlError();
     } catch (GlUtil.GlException e) {
       throw new RuntimeException(e);
@@ -139,16 +129,13 @@ import java.util.Locale;
     }
   }
 
-  private static Bitmap flipBitmapVertically(Bitmap bitmap) {
-    Matrix flip = new Matrix();
-    flip.postScale(1f, -1f);
+  private Bitmap flipBitmap(Bitmap bitmap) {
+    matrix.reset();
+    matrix.postScale(1f, -1f);
     return Bitmap.createBitmap(
-        bitmap,
-        /* x= */ 0,
-        /* y= */ 0,
+        bitmap, 0, 0,
         bitmap.getWidth(),
         bitmap.getHeight(),
-        flip,
-        /* filter= */ true);
+        matrix, true);
   }
 }
