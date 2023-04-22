@@ -22,12 +22,10 @@ uniform sampler2D uTexSampler;
 uniform float uContrastFactor;
 varying vec2 vTexSamplingCoord;
 
+const vec3 halfColor = vec3(0.5);
+
 void main() {
     vec4 inputColor = texture2D(uTexSampler, vTexSamplingCoord);
-
-    gl_FragColor = vec4(
-        uContrastFactor * (inputColor.r - 0.5) + 0.5,
-        uContrastFactor * (inputColor.g - 0.5) + 0.5,
-        uContrastFactor * (inputColor.b - 0.5) + 0.5,
-        inputColor.a);
+    vec3 outputColor = (inputColor.rgb - halfColor) * uContrastFactor + halfColor;
+    gl_FragColor = vec4(outputColor, inputColor.a);
 }
