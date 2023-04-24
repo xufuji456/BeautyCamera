@@ -12,8 +12,6 @@ import com.frank.videoedit.entity.ColorInfo;
 import com.frank.videoedit.transform.listener.Codec;
 import com.frank.videoedit.transform.util.MediaUtil;
 
-import com.google.android.exoplayer2.mediacodec.MediaCodecUtil;
-
 /** A default implementation of {@link Codec.DecoderFactory}. */
 /* package */ final class DefaultDecoderFactory implements Codec.DecoderFactory {
 

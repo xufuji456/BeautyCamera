@@ -1,9 +1,5 @@
 package com.frank.videoedit.transform;
 
-import static com.google.android.exoplayer2.util.Assertions.checkArgument;
-import static com.google.android.exoplayer2.util.Assertions.checkNotNull;
-import static com.google.android.exoplayer2.util.Assertions.checkState;
-import static com.google.android.exoplayer2.util.Assertions.checkStateNotNull;
 import static java.lang.Math.abs;
 import static java.lang.Math.floor;
 import static java.lang.Math.round;
@@ -106,13 +102,8 @@ public final class DefaultEncoderFactory implements Codec.EncoderFactory {
   @Override
   public Codec createForAudioEncoding(Format format, List<String> allowedMimeTypes)
       throws TransformationException {
-    // TODO(b/210591626) Add encoder selection for audio.
-    checkArgument(!allowedMimeTypes.isEmpty());
-    checkNotNull(format.sampleMimeType);
     if (!allowedMimeTypes.contains(format.sampleMimeType)) {
       if (enableFallback) {
-        // TODO(b/210591626): Pick fallback MIME type using same strategy as for encoder
-        // capabilities limitations.
         format = format.buildUpon().setSampleMimeType(allowedMimeTypes.get(0)).build();
       } else {
         throw createTransformationException(format);
@@ -120,7 +111,7 @@ public final class DefaultEncoderFactory implements Codec.EncoderFactory {
     }
     MediaFormat mediaFormat =
         MediaFormat.createAudioFormat(
-            checkNotNull(format.sampleMimeType), format.sampleRate, format.channelCount);
+            format.sampleMimeType, format.sampleRate, format.channelCount);
     mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, format.bitrate);
 
     @Nullable
@@ -154,15 +145,6 @@ public final class DefaultEncoderFactory implements Codec.EncoderFactory {
     if (format.frameRate == Format.NO_VALUE) {
       format = format.buildUpon().setFrameRate(DEFAULT_FRAME_RATE).build();
     }
-    checkArgument(format.width != Format.NO_VALUE);
-    checkArgument(format.height != Format.NO_VALUE);
-    // According to interface Javadoc, format.rotationDegrees should be 0. The video should always
-    // be encoded in landscape orientation.
-    checkArgument(format.height <= format.width);
-    checkArgument(format.rotationDegrees == 0);
-    checkNotNull(format.sampleMimeType);
-    checkArgument(!allowedMimeTypes.isEmpty());
-    checkStateNotNull(videoEncoderSelector);
 
     @Nullable
     VideoEncoderQueryResult encoderAndClosestFormatSupport =
@@ -182,7 +164,7 @@ public final class DefaultEncoderFactory implements Codec.EncoderFactory {
     VideoEncoderSettings supportedVideoEncoderSettings =
         encoderAndClosestFormatSupport.supportedEncoderSettings;
 
-    String mimeType = checkNotNull(encoderSupportedFormat.sampleMimeType);
+    String mimeType = encoderSupportedFormat.sampleMimeType;
     MediaFormat mediaFormat =
         MediaFormat.createVideoFormat(
             mimeType, encoderSupportedFormat.width, encoderSupportedFormat.height);
@@ -324,12 +306,11 @@ public final class DefaultEncoderFactory implements Codec.EncoderFactory {
     }
     // The supported resolution is the same for all remaining encoders.
     Size finalResolution =
-        checkNotNull(
-            EncoderUtil.getSupportedResolution(
-                filteredEncoderInfos.get(0),
-                mimeType,
-                requestedFormat.width,
-                requestedFormat.height));
+          EncoderUtil.getSupportedResolution(
+              filteredEncoderInfos.get(0),
+              mimeType,
+              requestedFormat.width,
+              requestedFormat.height);
 
     int requestedBitrate =
         videoEncoderSettings.bitrate != VideoEncoderSettings.NO_VALUE
@@ -516,7 +497,6 @@ public final class DefaultEncoderFactory implements Codec.EncoderFactory {
       int supportedLevel =
           EncoderUtil.findHighestSupportedEncodingLevel(
               encoderInfo, mimeType, expectedEncodingProfile);
-      checkState(supportedLevel != EncoderUtil.LEVEL_UNSET);
       // Use the baseline profile for safest results, as encoding in baseline is required per
       // https://source.android.com/compatibility/5.0/android-5.0-cdd#5_2_video_encoding
       mediaFormat.setInteger(MediaFormat.KEY_PROFILE, expectedEncodingProfile);
