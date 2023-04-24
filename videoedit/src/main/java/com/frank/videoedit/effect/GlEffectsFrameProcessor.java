@@ -197,7 +197,7 @@ public final class GlEffectsFrameProcessor implements FrameProcessor {
   private final List<GlTextureProcessor> allTextureProcessors;
 
   private FrameInfo nextInputFrameInfo;
-  private boolean inputStreamEnded;
+
   /**
    * Offset compared to original media presentation time that has been added to incoming frame
    * timestamps, in microseconds.
@@ -267,7 +267,6 @@ public final class GlEffectsFrameProcessor implements FrameProcessor {
 
   @Override
   public void signalEndOfInput() {
-    inputStreamEnded = true;
     frameProcessingTaskExecutor.submit(inputExternalTextureManager::signalEndOfInput);
   }
 
