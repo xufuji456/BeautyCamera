@@ -1,26 +1,18 @@
 precision mediump float;
 
-varying mediump vec2 textureCoordinate;
-
 uniform sampler2D inputImageTexture;
 uniform vec2 singleStepOffset;
 uniform mediump float params;
 
-const highp vec3 W = vec3(0.299, 0.587, 0.114);
 vec2 blurCoordinates[20];
 
-float hardLight(float color)
-{
-	if(color <= 0.5)
-		color = color * color * 2.0;
-	else
-		color = 1.0 - ((1.0 - color)*(1.0 - color) * 2.0);
-	return color;
-}
+uniform sampler2D inputTexture;
+varying lowp vec2 textureCoordinate;
 
-void main(){
+uniform float opacity;
 
-    vec3 inputColor = texture2D(inputImageTexture, textureCoordinate).rgb;
+void main() {
+    // 高斯模糊
     blurCoordinates[0]  = textureCoordinate.xy + singleStepOffset * vec2(0.0, -10.0);
     blurCoordinates[1]  = textureCoordinate.xy + singleStepOffset * vec2(0.0, 10.0);
     blurCoordinates[2]  = textureCoordinate.xy + singleStepOffset * vec2(-10.0, 0.0);
@@ -66,17 +58,25 @@ void main(){
 
     blurColor = blurColor / 48.0;
 
+    // 高反差
     float highPass = inputColor.g - blurColor + 0.5;
 
-    for(int i = 0; i < 5;i++)
-    {
-        highPass = hardLight(highPass);
+    // 高反差保留
+    for(int i = 0; i < 5; i++) {
+        if(highPass <= 0.5) {
+            highPass = pow(highPass, 2.0) * 2.0;
+        } else {
+            highPass = 1.0 - pow(1.0 - highPass, 2.0) * 2.0;
+        }
     }
-    float luminance = dot(inputColor, W);
+    // 强光处理
+    float aa = 1.0 + pow(sum, 0.3) * 0.09;
+    vec3 smoothColor = inputColor * aa - vec3(highPass) * (aa - 1.0);
+    smoothColor = clamp(smoothColor, vec3(0.0), vec3(1.0));
 
-    float alpha = pow(luminance, params);
+    smoothColor = mix(inputColor, smoothColor, pow(inputColor.g, 0.33));
+    smoothColor = mix(inputColor, smoothColor, pow(inputColor.g, 0.39));
+    smoothColor = mix(inputColor, smoothColor, opacity);
 
-    vec3 smoothColor = inputColor + (inputColor - vec3(highPass)) * alpha * 0.1;
-
-    gl_FragColor = vec4(mix(smoothColor.rgb, max(smoothColor, inputColor), alpha), 1.0);
+    gl_FragColor = vec4(pow(smoothColor, vec3(0.96)), 1.0);
 }
